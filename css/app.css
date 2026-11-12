@@ -40,7 +40,7 @@
   --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 8px 24px rgb(0 0 0 / .35);
   color-scheme: dark;
 }
-:root[data-theme="dark"] .wall-root { --w-paper: var(--bg); --w-paper-ink: var(--ink); --w-paper-mid: var(--muted); --w-accent: var(--accent); }
+:root[data-theme="dark"] .wall-root { --w-plaster: #2f3526; --w-grout: #262b1f; --w-paper: var(--bg); --w-paper-ink: var(--ink); --w-paper-mid: var(--muted); --w-accent: var(--accent); }
 /* ───────── Base ───────── */
 *, *::before, *::after { box-sizing: border-box; }
 html { font-size: 150%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -386,10 +386,11 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
 .footer-note a { color: var(--accent); }
 
 /* ───────── Home: the wall ───────── */
-body.wall-mode { overflow: hidden; overscroll-behavior: none; background: #767c5e; }
+body.wall-mode { overflow: hidden; overscroll-behavior: none; background: #6b765a; }
+:root[data-theme="dark"] body.wall-mode { background: #2f3526; }
 body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 .wall-root {
-  --w-plaster: #767c5e; --w-grout: #6a7053; --w-ink: #f1eee4; --w-ink-soft: #d9d6c8;
+  --w-plaster: #6b765a; --w-grout: #5f694f; --w-ink: #f1eee4; --w-ink-soft: #d9d6c8;
   --w-paper: #f5f2e8; --w-paper-ink: #2b2e22; --w-paper-mid: #66695a; --w-accent: #5f6549; --w-gold: #767c5e;
 }
 .wall { position: fixed; inset: 0; background: var(--w-grout); cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
@@ -421,7 +422,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
   position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 30;
   display: flex; align-items: center; justify-content: space-between; gap: 48px;
   width: min(880px, 96vw); padding: calc(18px + env(safe-area-inset-top, 0px)) 64px 26px;
-  background: linear-gradient(rgb(106 112 83 / .92), rgb(106 112 83 / .55) 55%, rgb(106 112 83 / 0));
+  background: linear-gradient(color-mix(in srgb, var(--w-grout) 92%, transparent), color-mix(in srgb, var(--w-grout) 55%, transparent) 55%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
           mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
   transition: opacity .5s;
@@ -436,7 +437,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 .wall-root.focused .w-header { opacity: 0; pointer-events: none; }
 
 .w-veil { position: fixed; inset: 0; z-index: 10; pointer-events: none; opacity: 0; transition: opacity .65s cubic-bezier(.4,0,.2,1);
-  background: rgb(118 124 94 / .9); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+  background: color-mix(in srgb, var(--w-plaster) 90%, transparent); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
 .w-veil.show { opacity: 1; pointer-events: auto; transition: opacity .8s cubic-bezier(.22,1,.36,1); }
 .w-focus { position: fixed; top: 0; left: 0; z-index: 11; pointer-events: none; opacity: 0;
   transition: transform .65s cubic-bezier(.4,0,.2,1), width .65s cubic-bezier(.4,0,.2,1), height .65s cubic-bezier(.4,0,.2,1), opacity .5s cubic-bezier(.4,0,.2,1); will-change: transform; }

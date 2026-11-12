@@ -11,7 +11,15 @@ const POETS = [
   { slug: 'ferdousi', era: '۳۲۹ – ۴۱۱ ق · مشهد', full: 'حکیم ابوالقاسم فردوسی توسی', name: 'فردوسی', bayt: ['توانا بود هر که دانا بود', 'ز دانش دل پیر برنا بود'] },
   { slug: 'saeb', era: '۱۰۰۱ – ۱۰۸۰ ق · اصفهان', full: 'صائب تبریزی', name: 'صائب', bayt: ['اظهار عجز پیش ستم‌پیشگان خطاست', 'اشک کباب باعث طغیان آتش است'] },
 ];
-const img = (p) => `img/poets/${p.slug}.webp`;
+const isDark = () => document.documentElement.dataset.theme === 'dark';
+const img = (p) => `img/poets/${p.slug}${isDark() ? '-dark' : ''}.webp`;
+// Swap portraits live when the reader toggles dark mode.
+new MutationObserver(() => {
+  document.querySelectorAll('.w-tile img, #wFocus img').forEach((i) => {
+    const src = i.getAttribute('src');
+    if (src) i.setAttribute('src', src.replace(/(-dark)?\.webp$/, isDark() ? '-dark.webp' : '.webp'));
+  });
+}).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 const fa = (n) => String(n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
