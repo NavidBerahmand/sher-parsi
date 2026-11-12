@@ -39,6 +39,7 @@ export function mountWall() {
       <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><img src="icons/logo-2.svg" alt=""></button>
     </header>
     <main class="wall" id="wall" aria-label="دیوار شاعران"></main>
+    <a class="w-all" href="#/poets">همه شاعران</a>
     <div class="w-grain" aria-hidden="true"></div>
     <div class="w-veil" id="wVeil"></div>
     <div class="w-focus" id="wFocus" aria-hidden="true"><div class="w-glow"></div><img alt=""></div>
