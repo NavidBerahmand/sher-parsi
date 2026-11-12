@@ -463,7 +463,18 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 .wp-close svg { width: 18px; height: 18px; }
 .wp-rule { display: flex; justify-content: center; margin: 36px 0 10px; color: var(--w-accent); font-size: .85rem; font-weight: 500; }
 .wp-head + .wp-rule { margin-top: 18px; }
-.wp-name { text-align: center; font-family: var(--poem); font-weight: 500; font-size: 1.6rem; line-height: 1.4; white-space: nowrap; }
+.wp-name { text-align: center; font-family: var(--poem); font-weight: 500; font-size: 1.6rem; line-height: 1.4; white-space: nowrap; padding-inline: 34px; }
+/* Whole-poet download: outline icon; a ring fills while saving; solid once saved. */
+.wp-dl { position: absolute; top: 34px; right: 26px; z-index: 3; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%;
+  color: var(--w-paper-mid); border: 1.5px solid color-mix(in srgb, var(--w-paper-ink) 22%, transparent); transition: background .3s, color .3s, border-color .3s; }
+.wp-dl svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.wp-dl:hover { color: var(--w-accent); border-color: var(--w-accent); }
+.wp-dl.busy { color: var(--w-accent); cursor: progress; }
+.wp-dl.busy::before { content: ''; position: absolute; inset: -1.5px; border-radius: 50%;
+  background: conic-gradient(var(--w-accent) calc(var(--p) * 360deg), transparent 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); }
+.wp-dl.saved { background: var(--w-accent); border-color: var(--w-accent); color: var(--w-paper); cursor: default; }
 .wp-full { text-align: center; color: var(--w-paper-mid); font-size: .95rem; }
 .wp-era { text-align: center; color: var(--w-paper-mid); font-size: .82rem; margin-top: -2px; line-height: 1.4; }
 .wp-bayt { margin: 30px 0 0; padding: 0 10px; font-family: var(--poem); font-size: 1.15rem; line-height: 1.6; text-align: center; color: var(--w-paper-ink); }
@@ -497,6 +508,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
   .w-panel.open { transform: translateY(calc(36dvh - 20px)); }
   .w-panel.full { overflow-y: auto; }
   .wp-name { font-size: 1.4rem; }
+  .wp-dl { top: 26px; right: 18px; }
   .wp-head + .wp-rule { margin-top: 6px; }
   .wp-grip { display: grid; place-items: center; position: sticky; top: -18px; z-index: 2; height: 24px; margin: -18px -22px 14px; background: var(--w-paper); cursor: grab; }
   .wp-grip i { width: 44px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--w-paper-ink) 22%, transparent); }

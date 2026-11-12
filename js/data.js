@@ -114,6 +114,53 @@ export async function getPoem(url) {
   return expand(body.poems[key]);
 }
 
+// Whole-poet offline copy: every data file of one poet goes into the same cache the
+// service worker reads from, so the poet opens with no connection.
+export const DATA_CACHE = 'sp-data-v1';
+const SAVED_KEY = 'sp.savedPoets';
+const savedSet = () => { try { return new Set(JSON.parse(localStorage.getItem(SAVED_KEY)) || []); } catch { return new Set(); } };
+export const isPoetSaved = (slug) => savedSet().has(slug);
+
+async function poetFiles(slug) {
+  const urls = [];
+  const walk = async (url) => {
+    const cat = await getCat(url);
+    if (BUNDLED) {
+      const base = bundleName(url);
+      for (let i = 0; i < (cat._chunks || 1); i++) urls.push(`${base}${i ? '.' + i : ''}.json`);
+    } else {
+      urls.push(`${DATA_BASE}poets/${clean(url)}/_cat.json`);
+      (cat.Poems || []).forEach((p) => urls.push(`${DATA_BASE}poets/${clean(p.FullUrl)}.json`));
+    }
+    for (const c of cat.ChildCats || []) await walk(c.FullUrl);
+  };
+  await walk(slug);
+  urls.push(BUNDLED ? `data/p/${slug}.json` : `${DATA_BASE}poets/${slug}/poet.json`);
+  return urls;
+}
+
+// onProgress(0..1). Resolves true when every file is stored.
+export async function savePoet(slug, onProgress = () => {}) {
+  const urls = await poetFiles(slug);
+  const cache = 'caches' in self ? await caches.open(DATA_CACHE) : null;
+  let done = 0, fails = 0;
+  const queue = urls.slice();
+  const worker = async () => {
+    while (queue.length) {
+      const u = queue.shift();
+      try {
+        if (cache) { if (!(await cache.match(u))) await cache.add(u); } else { const r = await fetch(u); if (!r.ok) throw 0; }
+      } catch { fails++; }
+      onProgress(++done / urls.length);
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  if (fails) return false;
+  const s = savedSet(); s.add(slug);
+  try { localStorage.setItem(SAVED_KEY, JSON.stringify([...s])); } catch { /* ignore */ }
+  return true;
+}
+
 // Curated poets for the home page, in the order a reader is likely to look for them.
 export const FEATURED = [
   ['hafez', NAMES.hafez], ['saadi', NAMES.saadi], ['moulavi', NAMES.moulavi], ['khayyam', NAMES.khayyam],

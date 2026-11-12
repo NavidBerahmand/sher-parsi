@@ -1,6 +1,6 @@
 // Home page: an endless wall of carved poet portraits.
 // Drag (or scroll) in any direction; tap a portrait to bring it forward with its story.
-import { getPoet, getCat, getManifest, NAMES } from './data.js';
+import { getPoet, getCat, getManifest, NAMES, savePoet, isPoetSaved } from './data.js';
 import { attachSheetDrag } from './sheetdrag.js';
 
 // Poets that have a portrait. The reader picks which of them show on the wall (ticks in the all-poets list).
@@ -326,6 +326,26 @@ export function mountWall() {
     if (over > 1) h.style.fontSize = `calc(${getComputedStyle(h).fontSize} / ${(over * 1.02).toFixed(3)})`;
   }
 
+  // Download the whole poet for offline reading: a small icon that fills in once saved.
+  const saving = new Map(); // slug -> progress 0..1
+  function dlButton(slug) {
+    const saved = isPoetSaved(slug), prog = saving.get(slug);
+    const label = saved ? 'برای خواندن آفلاین ذخیره شده' : 'دانلود همه آثار برای خواندن آفلاین';
+    return `<button class="wp-dl${saved ? ' saved' : ''}${prog != null ? ' busy' : ''}" data-slug="${p_esc(slug)}" aria-label="${label}" title="${label}" style="--p:${prog ?? 0}"><svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg></button>`;
+  }
+  const p_esc = esc;
+  async function startSave(btn) {
+    const slug = btn.dataset.slug;
+    if (isPoetSaved(slug) || saving.has(slug)) return;
+    saving.set(slug, 0);
+    const cur = () => panel.querySelector(`.wp-dl[data-slug="${slug}"]`);
+    cur()?.classList.add('busy');
+    const ok = await savePoet(slug, (f) => { saving.set(slug, f); cur()?.style.setProperty('--p', f.toFixed(3)); }).catch(() => false);
+    saving.delete(slug);
+    const b = cur();
+    if (b) { b.classList.remove('busy'); b.classList.toggle('saved', ok); b.style.setProperty('--p', 0); if (ok) b.setAttribute('aria-label', 'برای خواندن آفلاین ذخیره شده'); }
+  }
+
   function panelHTML(p, poet, cat) {
     panel.dataset.slug = p.slug;
     const years = poet?.BirthYearInLHijri && poet?.DeathYearInLHijri ? `${fa(poet.BirthYearInLHijri)} – ${fa(poet.DeathYearInLHijri)} ق` : '';
@@ -334,6 +354,7 @@ export function mountWall() {
     const books = cat?.ChildCats || [];
     return `
       <div class="wp-grip" id="wpClose" aria-hidden="true"><i></i></div>
+      ${dlButton(p.slug)}
       <h2 class="wp-name">${p.full}</h2>
       <p class="wp-era">${p.era || [years, esc(places)].filter(Boolean).join(' · ')}</p>
       <blockquote class="wp-bayt"><span>${p.bayt[0]}</span><span>${p.bayt[1]}</span></blockquote>
@@ -385,7 +406,10 @@ export function mountWall() {
 
   on(veil, 'click', closeFocus);
   on(focusEl, 'click', closeFocus);
-  on(panel, 'click', (e) => { if (e.target.closest('#wpClose')) closeFocus(); });
+  on(panel, 'click', (e) => {
+    if (e.target.closest('#wpClose')) closeFocus();
+    const dl = e.target.closest('.wp-dl'); if (dl) startSave(dl);
+  });
   on(document, 'keydown', (e) => { if (e.key === 'Escape') closeFocus(); });
   // Phones: the panel rests at 64% height; drag up to open it fully, down to close.
   // It follows the finger and settles by position and flick speed.

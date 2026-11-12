@@ -1,5 +1,5 @@
 // Service worker: app shell is precached; poem data (immutable, pinned commit) is cached on first read.
-const SHELL = 'sp-shell-v8';
+const SHELL = 'sp-shell-v9';
 const DATA = 'sp-data-v1';
 const ASSETS = [
   './', 'index.html', 'css/app.css', 'js/app.js', 'js/data.js', 'js/store.js', 'js/share.js', 'js/wall.js', 'js/sheetdrag.js',
@@ -35,6 +35,19 @@ self.addEventListener('fetch', (e) => {
   }
 
   if (url.origin !== location.origin) return;
+
+  // Bundled poetry files: cache-first from the data cache, which "download poet" fills
+  // and which survives app updates.
+  if (url.pathname.includes('/data/')) {
+    e.respondWith(caches.open(DATA).then(async (c) => {
+      const hit = await c.match(req, { ignoreSearch: true });
+      if (hit) return hit;
+      const res = await fetch(req);
+      if (res.ok) c.put(req, res.clone());
+      return res;
+    }));
+    return;
+  }
 
   // App shell: serve cached copy fast, refresh it in the background.
   e.respondWith(caches.open(SHELL).then(async (c) => {

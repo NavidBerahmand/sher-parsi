@@ -233,8 +233,7 @@ async function viewCat(path) {
   main.dataset.cat = path;
   main.innerHTML = `<div class="wrap fadein">${head}
     ${books ? `<div class="books">${books}</div>` : ''}
-    ${poems.length ? `<div class="list-tools"><span class="count">${fa(poems.length)} شعر</span>
-      <button class="chip-btn" id="off">${ICON.cloud}<span>ذخیره برای آفلاین</span></button></div>
+    ${poems.length ? `<div class="list-tools"><span class="count">${fa(poems.length)} شعر</span></div>
       <ul class="poems" id="pm">${poems.slice(0, shown).map(poemItem).join('')}</ul>
       ${poems.length > shown ? `<button class="btn ghost more-btn" id="more">نمایش بیشتر</button>` : ''}` : ''}
   </div>`;
@@ -250,22 +249,6 @@ async function viewCat(path) {
     shown += next.length;
     observeFirstLines();
     if (shown >= poems.length) e.currentTarget.remove();
-  });
-  $('#off')?.addEventListener('click', async (e) => {
-    const b = e.currentTarget, label = b.querySelector('span');
-    b.disabled = true;
-    let done = 0, fails = 0;
-    const queue = poems.map((p) => p.FullUrl);
-    const worker = async () => {
-      while (queue.length) {
-        const u = queue.shift();
-        try { await getPoem(u); } catch { fails++; }
-        done++; label.textContent = `${fa(Math.round((done / poems.length) * 100))}٪`;
-      }
-    };
-    await Promise.all(Array.from({ length: 6 }, worker));
-    b.innerHTML = fails ? `${ICON.cloud}<span>${fa(fails)} شعر ذخیره نشد</span>` : `${ICON.check}<span>ذخیره شد</span>`;
-    b.disabled = !!fails ? false : true;
   });
 }
 
