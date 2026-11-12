@@ -44,15 +44,59 @@ function expand(p) {
 // One name per poet, used everywhere on the site (wall, lists, poet pages, poems, share images).
 export const NAMES = {
   hafez: 'حافظ شیرازی',
-  saadi: 'سعدی',
-  moulavi: 'مولانا جلال‌الدین محمد بلخی',
   khayyam: 'خیام نیشابوری',
-  ferdousi: 'فردوسی',
-  saeb: 'صائب تبریزی',
+  ferdousi: 'ابوالقاسم فردوسی',
+  moulavi: 'جلال الدین محمد مولوی',
+  nezami: 'نظامی گنجوی',
+  saadi: 'سعدی شیرازی',
+  parvin: 'پروین اعتصامی',
+  attar: 'عطار نیشابوری',
+  sanaee: 'سنایی غزنوی',
+  vahshi: 'وحشی بافقی',
+  roodaki: 'رودکی سمرقندی',
+  naserkhosro: 'ناصرخسرو قبادیانی',
+  manoochehri: 'منوچهری دامغانی',
+  farrokhi: 'فرخی سیستانی',
+  khaghani: 'خاقانی شروانی',
+  anvari: 'انوری ابیوردی',
+  ouhadi: 'اوحدی مراغه‌ای',
+  khajoo: 'خواجوی کرمانی',
+  eraghi: 'عراقی',
+  saeb: 'صائب',
+  shabestari: 'شیخ محمود شبستری',
+  jami: 'جامی',
+  hatef: 'هاتف اصفهانی',
+  abusaeed: 'ابوسعید ابوالخیر',
+  bahar: 'ملک‌الشعرا بهار',
+  babataher: 'باباطاهر',
+  mohtasham: 'محتشم کاشانی',
+  bahaee: 'شیخ بهایی',
+  seyf: 'سیف فرغانی',
+  forooghi: 'فروغی بسطامی',
+  obeyd: 'عبید زاکانی',
+  khosro: 'امیرخسرو دهلوی',
+  shahriar: 'شهریار',
+  feyz: 'فیض کاشانی',
+  rahi: 'رهی معیری',
+  iqbal: 'اقبال لاهوری',
+  bidel: 'بیدل دهلوی',
+  shahnematollah: 'شاه نعمت‌الله ولی',
+  aref: 'عارف قزوینی',
+  abdullah: 'خواجه عبدالله انصاری',
+  iraj: 'ایرج میرزا',
+  yazdi: 'فرخی یزدی',
+  jahan: 'جهان ملک خاتون',
+  eshghi: 'میرزاده عشقی',
 };
+// The poets on the site, in Navid's order (lists follow this order).
+export const TOP = Object.keys(NAMES);
 const named = (slug, o) => { if (o && NAMES[slug]) o.Nickname = o.Name = NAMES[slug]; return o; };
 export const getManifest = () => (BUNDLED ? getLocal('data/manifest.json') : getJSON('manifest.json'))
-  .then((m) => { (m.Poets || []).forEach((p) => named(clean(p.FullUrl), p)); return m; });
+  .then((m) => {
+    const by = new Map((m.Poets || []).map((p) => [clean(p.FullUrl), p]));
+    m.Poets = TOP.filter((s) => by.has(s)).map((s) => named(s, by.get(s)));
+    return m;
+  });
 export const getPoet = (slug) => (BUNDLED ? getLocal(`data/p/${slug}.json`) : getJSON(`poets/${slug}/poet.json`))
   .then((p) => named(slug, p));
 export async function getCat(url) {
@@ -73,8 +117,8 @@ export async function getPoem(url) {
 // Curated poets for the home page, in the order a reader is likely to look for them.
 export const FEATURED = [
   ['hafez', NAMES.hafez], ['saadi', NAMES.saadi], ['moulavi', NAMES.moulavi], ['khayyam', NAMES.khayyam],
-  ['ferdousi', NAMES.ferdousi], ['nezami', 'نظامی'], ['attar', 'عطار'], ['babataher', 'باباطاهر'],
-  ['parvin', 'پروین'], ['shahriar', 'شهریار'], ['rahi', 'رهی'], ['vahshi', 'وحشی'],
+  ['ferdousi', NAMES.ferdousi], ['nezami', NAMES.nezami], ['attar', NAMES.attar], ['babataher', NAMES.babataher],
+  ['parvin', NAMES.parvin], ['shahriar', NAMES.shahriar], ['rahi', NAMES.rahi], ['vahshi', NAMES.vahshi],
 ];
 
 // Pools for "poem of the day" and "random poem": short forms read best on a phone.

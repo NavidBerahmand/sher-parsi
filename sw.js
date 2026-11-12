@@ -1,5 +1,5 @@
 // Service worker: app shell is precached; poem data (immutable, pinned commit) is cached on first read.
-const SHELL = 'sp-shell-v7';
+const SHELL = 'sp-shell-v8';
 const DATA = 'sp-data-v1';
 const ASSETS = [
   './', 'index.html', 'css/app.css', 'js/app.js', 'js/data.js', 'js/store.js', 'js/share.js', 'js/wall.js', 'js/sheetdrag.js',
