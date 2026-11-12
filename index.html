@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>شعر پارسی</title>
+  <meta name="description" content="خواندن شعر فارسی، ساده و آرام">
+  <meta name="theme-color" content="#f5f2e8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="شعر پارسی">
+  <meta name="sp-bundled" content="1">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preload" href="fonts/lateef-arabic-300-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lateef-arabic-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/app.css">
+  <script>
+    // Apply saved theme before first paint to avoid a flash.
+    try {
+      var s = JSON.parse(localStorage.getItem('sp.settings') || '{}');
+      if (s.size) document.documentElement.style.setProperty('--poem-scale', s.size);
+      if (s.theme === 'dark') document.documentElement.dataset.theme = 'dark';
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <div class="splash" id="splash" aria-hidden="true"><div class="splash-box"><b>شعـــــر پـــارســـی</b><small>برگرفته از گنجور</small></div></div>
+  <a class="skip" href="#main">رفتن به متن</a>
+
+  <header class="topbar" id="topbar">
+    <button class="icon-btn menu-btn menu-trigger" aria-label="منو" aria-haspopup="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  </header>
+
+  <div class="menu-veil" id="menuVeil"></div>
+  <nav class="menu" id="menu" aria-label="منو" aria-hidden="true">
+    <a href="#/" data-nav="home">خانه</a>
+    <a href="#/poets" data-nav="poets">شاعران</a>
+    <a href="#/fal" data-nav="fal">فال حافظ</a>
+    <a href="#/saved" data-nav="saved">نشان‌ها</a>
+    <button type="button" id="menuSettings">تنظیمات خواندن</button>
+  </nav>
+
+  <main id="main" tabindex="-1"></main>
+
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true" tabindex="-1">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
