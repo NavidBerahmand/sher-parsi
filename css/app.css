@@ -157,6 +157,7 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
 .skeleton { border-radius: 10px; background: linear-gradient(90deg, var(--surface-2) 0%, var(--line) 40%, var(--surface-2) 80%); background-size: 300% 100%; animation: shimmer 1.4s infinite linear; }
+.sk-verses { width: min(420px, 82%); aspect-ratio: 155 / 132; margin: 56px auto 0; border-radius: 0; -webkit-mask: url(../icons/verses.svg) center / contain no-repeat; mask: url(../icons/verses.svg) center / contain no-repeat; }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 .sk-line { height: 1.1em; margin: 18px 0; }
 

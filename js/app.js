@@ -123,9 +123,9 @@ $('#menuSettings').addEventListener('click', () => { setMenu(false); openSetting
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) { e.stopImmediatePropagation(); setMenu(false); } }, true);
 
 /* ───────── Helpers ───────── */
-function loading(lines = 8) {
-  main.innerHTML = `<div class="wrap" aria-busy="true"><div class="skeleton" style="height:28px;width:40%;margin:32px auto 8px"></div>${
-    Array.from({ length: lines }, (_, i) => `<div class="skeleton sk-line" style="width:${i % 2 ? 70 : 82}%;margin-inline-start:${i % 2 ? 'auto' : '0'}"></div>`).join('')}</div>`;
+function loading() {
+  // The four verse strokes of the logo, twice, shimmering while the page loads.
+  main.innerHTML = '<div class="wrap" aria-busy="true"><div class="skeleton sk-verses"></div></div>';
 }
 function failed(err, retry) {
   const offline = !navigator.onLine;
@@ -678,7 +678,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.6';
+export const VERSION = '0.9.7';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
