@@ -45,7 +45,7 @@ function expand(p) {
 export const NAMES = {
   hafez: 'حافظ شیرازی',
   khayyam: 'خیام نیشابوری',
-  ferdousi: 'ابوالقاسم فردوسی',
+  ferdousi: 'فردوسی',
   moulavi: 'جلال الدین محمد مولوی',
   nezami: 'نظامی گنجوی',
   saadi: 'سعدی شیرازی',
@@ -62,7 +62,7 @@ export const NAMES = {
   ouhadi: 'اوحدی مراغه‌ای',
   khajoo: 'خواجوی کرمانی',
   eraghi: 'عراقی',
-  saeb: 'صائب',
+  saeb: 'صائب تبریزی',
   shabestari: 'شیخ محمود شبستری',
   jami: 'جامی',
   hatef: 'هاتف اصفهانی',
