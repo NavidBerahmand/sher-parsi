@@ -76,7 +76,7 @@ export function mountWall() {
       <div class="w-lb-card" role="dialog" aria-modal="true" aria-label="همه شاعران">
         <h2>همه شاعران</h2>
         <input type="search" class="w-lb-q" placeholder="جست‌وجوی نام شاعر" autocomplete="off">
-        <div class="w-lb-cap"><span>نمایش در خانه</span><label class="w-lb-tick" title="انتخاب همه / هیچ‌کدام"><input type="checkbox" id="wAllTick"><i></i></label></div>
+        <div class="w-lb-cap"><span>نمایش در خانه</span><label class="w-lb-allrow"><b id="wAllTxt">انتخاب همه</b><span class="w-lb-tick"><input type="checkbox" id="wAllTick"><i></i></span></label></div>
         <ul class="w-lb-list"></ul>
       </div>
     </div>
@@ -375,6 +375,7 @@ export function mountWall() {
   const syncAll = () => {
     allTick.checked = POETS.length === ALL.length;
     allTick.indeterminate = POETS.length > 1 && POETS.length < ALL.length;
+    lb.querySelector('#wAllTxt').textContent = allTick.checked ? 'برداشتن همه' : 'انتخاب همه';
   };
   const drawList = () => {
     syncAll();
