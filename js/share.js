@@ -19,7 +19,7 @@ export async function baytImage({ lines, poet, title, dark }) {
   const bg = dark ? '#1d1f18' : '#f5f2e8';
   const ink = dark ? '#f1eee4' : '#2b2e22';
   const muted = dark ? '#a3a690' : '#7a7e69';
-  const gold = dark ? '#a9af8e' : '#767c5e';
+  const gold = dark ? '#a9af8e' : '#585e4a';
 
   await Promise.all([
     document.fonts.load('500 60px Lateef'),

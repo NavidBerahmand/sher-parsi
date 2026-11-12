@@ -16,7 +16,7 @@
   --line: #e2dfd0;
   --accent: #5f6549;
   --accent-soft: #e6e8dc;
-  --gold: #767c5e;
+  --gold: #585e4a;
   --shadow: 0 1px 2px rgb(60 66 45 / .06), 0 8px 24px rgb(60 66 45 / .07);
 
   --ui: "Lateef", system-ui, sans-serif;
@@ -391,12 +391,12 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
 .footer-note a { color: var(--accent); }
 
 /* ───────── Home: the wall ───────── */
-body.wall-mode { overflow: hidden; overscroll-behavior: none; background: #6b765a; }
+body.wall-mode { overflow: hidden; overscroll-behavior: none; background: #585e4a; }
 :root[data-theme="dark"] body.wall-mode { background: #2f3526; }
 body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 .wall-root {
-  --w-plaster: #6b765a; --w-grout: #5f694f; --w-ink: #f1eee4; --w-ink-soft: #d9d6c8;
-  --w-paper: #f5f2e8; --w-paper-ink: #2b2e22; --w-paper-mid: #66695a; --w-accent: #5f6549; --w-gold: #767c5e;
+  --w-plaster: #585e4a; --w-grout: #4d5240; --w-ink: #f1eee4; --w-ink-soft: #d9d6c8;
+  --w-paper: #f5f2e8; --w-paper-ink: #2b2e22; --w-paper-mid: #66695a; --w-accent: #5f6549; --w-gold: #585e4a;
 }
 .wall { position: fixed; inset: 0; background: var(--w-grout); cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
 .wall.dragging { cursor: grabbing; }
