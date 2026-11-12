@@ -496,6 +496,24 @@ function withKashida(s, n) {
   for (let i = 0; i < ch.length; i++) out += 'ـ'.repeat(add.get(i) || 0) + ch[i];
   return out;
 }
+// "About this poem" opens and closes with a gentle slide instead of a jump.
+document.addEventListener('click', (e) => {
+  const sum = e.target.closest('.pcard .about > summary');
+  if (!sum) return;
+  const d = sum.parentElement, p = d.querySelector('p');
+  if (!p || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  e.preventDefault();
+  if (d.dataset.anim) return;
+  d.dataset.anim = '1';
+  const opening = !d.open;
+  if (opening) d.open = true;
+  const h = p.offsetHeight, mt = parseFloat(getComputedStyle(p).marginTop);
+  const shut = { height: '0px', marginTop: '0px', opacity: 0, transform: 'translateY(-6px)' };
+  const full = { height: h + 'px', marginTop: mt + 'px', opacity: 1, transform: 'none' };
+  p.style.overflow = 'hidden';
+  const a = p.animate(opening ? [shut, full] : [full, shut], { duration: opening ? 420 : 300, easing: 'cubic-bezier(.22,1,.36,1)' });
+  a.onfinish = a.oncancel = () => { if (!opening) d.open = false; p.style.overflow = ''; delete d.dataset.anim; };
+});
 let meter, restretchT;
 // Text size changed: work the kashida out again for every poem card on screen.
 function restretchSoon() {
@@ -524,6 +542,8 @@ function stretchCard(card) {
   const twoCol = innerWidth >= 760 && natural * 2 + pairGap <= avail;
   const W = Math.ceil(Math.min(natural, twoCol ? (avail - pairGap) / 2 : avail));
   card.classList.toggle('two-col', twoCol);
+  // The notes under the poem are exactly as wide as the verses above them.
+  card.style.setProperty('--vw', (twoCol ? W * 2 + pairGap : W) + 'px');
   // In em, so the line width follows the text if its size changes before the next pass.
   verses.style.setProperty('--mw', (W / parseFloat(getComputedStyle(verses).fontSize)).toFixed(4) + 'em');
   for (const m of ms) {

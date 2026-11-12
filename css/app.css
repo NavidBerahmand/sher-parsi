@@ -550,6 +550,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 .pcard .about { margin-top: 56px; padding: 20px 4px 112px; border-top: 0; }
 .pcard .about summary { justify-content: center; gap: 6px; font-size: .82rem; font-weight: 300; color: var(--muted); }
 .pcard .about summary svg { width: 14px; height: 14px; }
+.pcard .about p { max-width: var(--vw, none); margin-inline: auto; }
 .pcard .about[open] { padding-bottom: 140px; }
 .pcard .about p { margin-top: 18px; }
 .pcard .footer-note { margin-top: 26px; }
