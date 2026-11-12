@@ -332,7 +332,7 @@ export function mountWall() {
   function dlButton(slug) {
     const saved = isPoetSaved(slug), prog = saving.get(slug);
     const label = saved ? 'برای خواندن آفلاین ذخیره شده' : 'دانلود همه آثار برای خواندن آفلاین';
-    return `<button class="wp-dl${saved ? ' saved' : ''}${prog != null ? ' busy' : ''}" data-slug="${p_esc(slug)}" aria-label="${label}" title="${label}" style="--p:${prog ?? 0}"><svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg></button>`;
+    return `<button class="wp-dl${saved ? ' saved' : ''}${prog != null ? ' busy' : ''}" data-slug="${p_esc(slug)}" aria-label="${label}" data-tip="${saved ? 'ذخیره شده' : 'دانلود برای آفلاین'}" style="--p:${prog ?? 0}"><svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg></button>`;
   }
   const p_esc = esc;
   async function startSave(btn) {
@@ -344,7 +344,7 @@ export function mountWall() {
     const ok = await savePoet(slug, (f) => { saving.set(slug, f); cur()?.style.setProperty('--p', f.toFixed(3)); }).catch(() => false);
     saving.delete(slug);
     const b = cur();
-    if (b) { b.classList.remove('busy'); b.classList.toggle('saved', ok); b.style.setProperty('--p', 0); if (ok) b.setAttribute('aria-label', 'برای خواندن آفلاین ذخیره شده'); }
+    if (b) { b.classList.remove('busy'); b.classList.toggle('saved', ok); b.style.setProperty('--p', 0); if (ok) { b.setAttribute('aria-label', 'برای خواندن آفلاین ذخیره شده'); b.dataset.tip = 'ذخیره شده'; } }
   }
 
   function panelHTML(p, poet, cat) {
@@ -356,6 +356,7 @@ export function mountWall() {
     return `
       <div class="wp-grip" id="wpClose" aria-hidden="true"><i></i></div>
       ${dlButton(p.slug)}
+      <button class="wp-x" id="wpX" aria-label="بستن" data-tip="بستن"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <h2 class="wp-name">${p.full}</h2>
       <p class="wp-era">${p.era || [years, esc(places)].filter(Boolean).join(' · ')}</p>
       <blockquote class="wp-bayt"><span>${p.bayt[0]}</span><span>${p.bayt[1]}</span></blockquote>
@@ -408,7 +409,7 @@ export function mountWall() {
   on(veil, 'click', closeFocus);
   on(focusEl, 'click', closeFocus);
   on(panel, 'click', (e) => {
-    if (e.target.closest('#wpClose')) closeFocus();
+    if (e.target.closest('#wpClose, #wpX')) closeFocus();
     const dl = e.target.closest('.wp-dl'); if (dl) startSave(dl);
   });
   on(document, 'keydown', (e) => { if (e.key === 'Escape') closeFocus(); });

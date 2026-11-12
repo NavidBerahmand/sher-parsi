@@ -82,6 +82,22 @@ p { margin: 0; }
 .settings-btn { margin-inline-start: auto; }
 .icon-btn.on { color: var(--accent); }
 .icon-btn.on svg { fill: currentColor; }
+/* Close button on book pages: top left, level with the logo. */
+.page-x { position: fixed; z-index: 50; left: calc(var(--gutter) - 8px); top: calc(env(safe-area-inset-top, 0px) + 10px); background: color-mix(in srgb, var(--bg) 80%, transparent); }
+.page-x svg, .pclose svg { stroke-width: 1.8; }
+/* Hover hints on icon buttons (mouse only). */
+:where([data-tip]) { position: relative; }
+@media (hover: hover) {
+  [data-tip]::after { content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 50%; translate: -50% -3px; z-index: 60;
+    padding: 3px 10px 5px; border-radius: 8px; background: var(--ink, #2b2e22); color: var(--bg, #f5f2e8);
+    font-family: var(--ui, inherit); font-size: .72rem; font-weight: 300; line-height: 1.4; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity .15s, translate .15s; }
+  [data-tip]:hover::after { opacity: 1; translate: -50% 0; transition-delay: .25s; }
+  .tip-l[data-tip]::after, .wp-x[data-tip]::after { left: 0; translate: 0 -3px; }
+  .tip-l[data-tip]:hover::after, .wp-x[data-tip]:hover::after { translate: 0 0; }
+  .wp-dl[data-tip]::after { left: auto; right: 0; translate: 0 -3px; }
+  .wp-dl[data-tip]:hover::after { translate: 0 0; }
+}
 
 /* Menu: the logo holds everything */
 .menu-btn, .w-menu { display: grid; place-items: center; padding: 6px; background: none; transition: transform .15s, opacity .2s; }
@@ -474,6 +490,9 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
   background: conic-gradient(var(--w-accent) calc(var(--p) * 360deg), transparent 0);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
           mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); }
+.wp-x { position: absolute; top: 34px; left: 26px; z-index: 3; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: var(--w-paper-mid); transition: background .2s, color .2s; }
+.wp-x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.wp-x:hover { color: var(--w-paper-ink); background: rgb(0 0 0 / .05); }
 .wp-dl.saved { background: var(--w-accent); border-color: var(--w-accent); color: var(--w-paper); cursor: default; }
 .wp-full { text-align: center; color: var(--w-paper-mid); font-size: .95rem; }
 .wp-era { text-align: center; color: var(--w-paper-mid); font-size: .82rem; margin-top: -2px; line-height: 1.4; }
@@ -509,6 +528,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
   .w-panel.full { overflow-y: auto; }
   .wp-name { font-size: 1.4rem; }
   .wp-dl { top: 26px; right: 18px; }
+  .wp-x { top: 26px; left: 18px; }
   .wp-head + .wp-rule { margin-top: 6px; }
   .wp-grip { display: grid; place-items: center; position: sticky; top: -18px; z-index: 2; height: 24px; margin: -18px -22px 14px; background: var(--w-paper); cursor: grab; }
   .wp-grip i { width: 44px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--w-paper-ink) 22%, transparent); }

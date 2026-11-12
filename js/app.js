@@ -24,6 +24,7 @@ const ICON = {
   image: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9.5" cy="9.5" r="1.6"/><path d="M20 15l-4.5-4.5L6 20"/></svg>',
   down: '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
   cloud: '<svg viewBox="0 0 24 24"><path d="M12 11v7M9 15l3 3 3-3"/><path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg>',
   star: '<svg viewBox="0 0 24 24"><path d="M12 3l2.2 5.6L20 9.3l-4.5 3.8 1.4 5.9L12 15.9 7.1 19l1.4-5.9L4 9.3l5.8-.7z"/></svg>',
@@ -231,7 +232,7 @@ async function viewCat(path) {
   const poemItem = (p, i) => `<li><a href="${poemHref(p.FullUrl)}" data-u="${esc(clean(p.FullUrl))}"><span class="n">${fa(i + 1)}</span><span class="tt"><span class="fl"></span><small>${esc(p.Title)}</small></span><span class="marks">${marksHTML(clean(p.FullUrl), seen)}</span></a></li>`;
 
   main.dataset.cat = path;
-  main.innerHTML = `<div class="wrap fadein">${head}
+  main.innerHTML = `<button class="icon-btn page-x tip-l" id="pageX" aria-label="بستن" data-tip="بستن">${ICON.x}</button><div class="wrap fadein">${head}
     ${books ? `<div class="books">${books}</div>` : ''}
     ${poems.length ? `<div class="list-tools"><span class="count">${fa(poems.length)} شعر</span></div>
       <ul class="poems" id="pm">${poems.slice(0, shown).map(poemItem).join('')}</ul>
@@ -239,6 +240,11 @@ async function viewCat(path) {
   </div>`;
 
   observeFirstLines();
+  // Close: back to wherever the reader came from in the app; otherwise up one level.
+  $('#pageX').addEventListener('click', () => {
+    if (navCount > 1) window.history.back();
+    else location.hash = isPoet ? '#/' : catHref(parentOf(path));
+  });
   $('#bioT')?.addEventListener('click', (e) => {
     const b = $('#bio'); b.classList.toggle('clamp');
     e.currentTarget.textContent = b.classList.contains('clamp') ? 'بیشتر' : 'کمتر';
@@ -304,11 +310,11 @@ function cardHTML(path, poem, poetN, cat, opts = {}) {
   const on = saved.has(path);
   return `<article class="pcard" data-path="${esc(path)}">
     <div class="poem-bar">
-      <span></span>
       <div class="grp">
-        <button class="icon-btn save ${on ? 'on' : ''}" aria-label="نشان کردن" aria-pressed="${on}">${ICON.bookmark}</button>
-        <button class="icon-btn share" aria-label="اشتراک‌گذاری">${ICON.share}</button>
+        <button class="icon-btn save ${on ? 'on' : ''}" aria-label="نشان کردن" data-tip="نشان کردن" aria-pressed="${on}">${ICON.bookmark}</button>
+        <button class="icon-btn share" aria-label="اشتراک‌گذاری" data-tip="اشتراک‌گذاری">${ICON.share}</button>
       </div>
+      <button class="icon-btn pclose tip-l" aria-label="بستن" data-tip="بستن">${ICON.x}</button>
     </div>
     <header class="poem-head">
       ${opts.fal ? `<div class="fal-badge">${ICON.star}فال تو</div><br>` : ''}
@@ -395,6 +401,7 @@ function openSheetShell() {
   requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
   el.querySelector('.psheet-backdrop').addEventListener('click', requestCloseSheet);
   el.querySelector('.psheet-grip').addEventListener('click', requestCloseSheet);
+  sh.addEventListener('click', (e) => { if (e.target.closest('.pclose')) requestCloseSheet(); });
   // Pull down from the top of the sheet to close it; it follows the finger.
   attachSheetDrag({ el: sh, handle: () => el.querySelector('.psheet-grip'), backdrop: el.querySelector('.psheet-backdrop'), onClose: requestCloseSheet });
   return sh;
@@ -646,7 +653,9 @@ async function route(keepScroll = false) {
   window.scrollTo(0, keepScroll ? y : 0);
   if (!keepScroll) main.focus({ preventScroll: true });
 }
+let navCount = 0; // in-app navigations this visit, so "close" can step back safely
 window.addEventListener('hashchange', () => {
+  navCount++;
   // Back from an open poem to its own list: just lower the sheet, keep the list where it was.
   if (sheetEl && location.hash === catHref(sheetCat)) {
     sheetPushed = false; current.view = 'cat'; current.path = sheetCat;
