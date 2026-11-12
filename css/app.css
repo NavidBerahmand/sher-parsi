@@ -638,3 +638,7 @@ body.psheet-open { overflow: hidden; }
 .w-lb-list a:hover { color: var(--w-accent); }
 .w-lb-empty { padding: 18px 6px; text-align: center; color: var(--w-paper-mid); }
 @media (min-width: 860px) { .w-all { bottom: 36px; font-size: .9rem; padding: 7px 24px 9px; } }
+
+/* Version tag: tiny, bottom right, never in the way. */
+.site-ver { position: fixed; right: 10px; bottom: calc(env(safe-area-inset-bottom, 0px) + 6px); z-index: 5; font-size: .58rem; line-height: 1; color: var(--muted); opacity: .6; pointer-events: none; user-select: none; }
+body.wall-mode .site-ver { color: rgb(255 255 255 / .5); }

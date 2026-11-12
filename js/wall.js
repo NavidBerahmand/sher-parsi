@@ -1,10 +1,10 @@
 // Home page: an endless wall of carved poet portraits.
 // Drag (or scroll) in any direction; tap a portrait to bring it forward with its story.
-import { getPoet, getCat, getManifest, NAMES, savePoet, isPoetSaved } from './data.js';
+import { getPoet, getCat, getManifest, NAMES, TOP, savePoet, isPoetSaved } from './data.js';
 import { attachSheetDrag } from './sheetdrag.js';
 
-// Poets that have a portrait. The reader picks which of them show on the wall (ticks in the all-poets list).
-const ALL = [
+// Hand-written era and a famous bayt for some poets; the rest take their years from the data.
+const INFO = [
   { slug: 'hafez', era: '۷۲۶ – ۷۹۲ ق · شیراز', full: NAMES.hafez, name: 'حافظ', bayt: ['الا یا ایها الساقی ادر کأسا و ناولها', 'که عشق آسان نمود اول ولی افتاد مشکل‌ها'] },
   { slug: 'saadi', era: '۶۱۵ – ۶۹۴ ق · شیراز', full: NAMES.saadi, name: 'سعدی', bayt: ['بنی آدم اعضای یکدیگرند', 'که در آفرینش ز یک گوهرند'] },
   { slug: 'moulavi', era: '۶۰۴ – ۶۷۲ ق · بلخ', full: NAMES.moulavi, name: 'مولانا', bayt: ['بشنو این نی چون شکایت می‌کند', 'از جدایی‌ها حکایت می‌کند'] },
@@ -12,6 +12,8 @@ const ALL = [
   { slug: 'ferdousi', era: '۳۲۹ – ۴۱۱ ق · مشهد', full: NAMES.ferdousi, name: 'فردوسی', bayt: ['توانا بود هر که دانا بود', 'ز دانش دل پیر برنا بود'] },
   { slug: 'saeb', era: '۱۰۰۱ – ۱۰۸۰ ق · اصفهان', full: NAMES.saeb, name: 'صائب', bayt: ['اظهار عجز پیش ستم‌پیشگان خطاست', 'اشک کباب باعث طغیان آتش است'] },
 ];
+// Every poet has a portrait. The reader picks which of them show on the wall (ticks in the all-poets list).
+const ALL = TOP.map((slug) => ({ slug, full: NAMES[slug], ...INFO.find((q) => q.slug === slug) }));
 const WALL_KEY = 'sp.wall';
 const chosen = () => {
   let v = null;
@@ -359,7 +361,7 @@ export function mountWall() {
       <button class="wp-x" id="wpX" aria-label="بستن" data-tip="بستن"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <h2 class="wp-name">${p.full}</h2>
       <p class="wp-era">${p.era || [years, esc(places)].filter(Boolean).join(' · ')}</p>
-      <blockquote class="wp-bayt"><span>${p.bayt[0]}</span><span>${p.bayt[1]}</span></blockquote>
+      ${p.bayt ? `<blockquote class="wp-bayt"><span>${p.bayt[0]}</span><span>${p.bayt[1]}</span></blockquote>` : ''}
       ${intro ? `<p class="wp-intro">${esc(intro)}</p>` : poet ? '' : '<div class="wp-wait"><i></i><i></i><i></i></div>'}
       ${books.length ? `<div class="wp-rule"><span>آثار</span></div>
         <ol class="wp-books">${books.map((b) => `<li><a href="#/c/${b.FullUrl.replace(/^\//, '')}"><span>${esc(b.Title)}</span><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a></li>`).join('')}</ol>` : ''}`;

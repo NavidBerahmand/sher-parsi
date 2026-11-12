@@ -673,6 +673,14 @@ async function route(keepScroll = false) {
   window.scrollTo(0, keepScroll ? y : 0);
   if (!keepScroll) main.focus({ preventScroll: true });
 }
+// Site version, shown very small in the bottom-right corner. Bump it with each release.
+export const VERSION = '0.9.0';
+{
+  const v = document.createElement('div');
+  v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
+  v.textContent = 'نسخه ' + VERSION.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
+  document.body.appendChild(v);
+}
 let navCount = 0; // in-app navigations this visit, so "close" can step back safely
 window.addEventListener('hashchange', () => {
   navCount++;
