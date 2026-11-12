@@ -23,6 +23,8 @@
       if (s.size) document.documentElement.style.setProperty('--poem-scale', s.size);
       if (!s.themeChosen || s.theme === 'dark') document.documentElement.dataset.theme = 'dark'; // dark by default
     } catch (e) {}
+    // The opening card belongs to the home page only.
+    if (!/^#?\/?$/.test(location.hash)) document.documentElement.classList.add('no-splash');
   </script>
 </head>
 <body>

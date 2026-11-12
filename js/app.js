@@ -678,7 +678,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.5';
+export const VERSION = '0.9.6';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -743,5 +743,6 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:' && !document.q
 /* Opening card: show the name for a moment, then fade it out. */
 {
   const sp = document.getElementById('splash');
-  if (sp) setTimeout(() => { sp.classList.add('out'); setTimeout(() => sp.remove(), 800); }, 1500);
+  if (sp && document.documentElement.classList.contains('no-splash')) sp.remove();
+  else if (sp) setTimeout(() => { sp.classList.add('out'); setTimeout(() => sp.remove(), 800); }, 1500);
 }

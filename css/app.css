@@ -601,6 +601,7 @@ body.psheet-open { overflow: hidden; }
 .splash-box b { font-weight: 300; font-size: 1.75rem; line-height: 1.4; color: var(--ink); }
 .splash-box small { font-weight: 200; font-size: .78rem; color: var(--muted); }
 .splash.out { opacity: 0; visibility: hidden; }
+.no-splash .splash { display: none; }
 @keyframes splash-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* Poet panel opened fully: the portrait drifts up and fades softly instead of being cut off */
