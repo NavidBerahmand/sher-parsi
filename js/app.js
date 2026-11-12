@@ -234,6 +234,7 @@ async function viewCat(path) {
   const poemItem = (p, i) => `<li><a href="${poemHref(p.FullUrl)}" data-u="${esc(clean(p.FullUrl))}"><span class="n">${fa(i + 1)}</span><span class="tt"><span class="fl"></span><small>${esc(p.Title)}</small></span><span class="marks">${marksHTML(clean(p.FullUrl), seen)}</span></a></li>`;
 
   main.dataset.cat = path;
+  document.body.classList.toggle('poet-bg', isPoet && !!poet && TOP.includes(slug));
   main.innerHTML = `<button class="icon-btn page-x tip-l" id="pageX" aria-label="بستن" data-tip="بستن">${ICON.x}</button><div class="wrap fadein">${head}
     ${books ? `<div class="books">${books}</div>` : ''}
     ${poems.length ? `<div class="list-tools"><span class="count">${fa(poems.length)} شعر</span></div>
@@ -661,6 +662,7 @@ async function route(keepScroll = false) {
   document.querySelectorAll('.menu a').forEach((a) => (a.dataset.nav === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   setProgress(false);
   if (view !== 'poem') closePoemSheet(true);
+  if (view !== 'poem') document.body.classList.remove('poet-bg');
   try {
     if (view === 'home') { main.innerHTML = ''; mountWall(); } else unmountWall();
     if (view === 'home') { /* the wall is the home page */ }
@@ -676,7 +678,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.4';
+export const VERSION = '0.9.5';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
