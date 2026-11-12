@@ -1,6 +1,6 @@
 // Home page: an endless wall of carved poet portraits.
 // Drag (or scroll) in any direction; tap a portrait to bring it forward with its story.
-import { getPoet, getCat } from './data.js';
+import { getPoet, getCat, getManifest } from './data.js';
 import { attachSheetDrag } from './sheetdrag.js';
 
 const POETS = [
@@ -39,7 +39,14 @@ export function mountWall() {
       <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><img src="icons/logo-2.svg" alt=""></button>
     </header>
     <main class="wall" id="wall" aria-label="دیوار شاعران"></main>
-    <a class="w-all" href="#/poets">همه شاعران</a>
+    <button class="w-all" type="button" aria-haspopup="dialog">همه شاعران</button>
+    <div class="w-lb" id="wLb" aria-hidden="true">
+      <div class="w-lb-card" role="dialog" aria-modal="true" aria-label="همه شاعران">
+        <h2>همه شاعران</h2>
+        <input type="search" class="w-lb-q" placeholder="جست‌وجوی نام شاعر" autocomplete="off">
+        <ul class="w-lb-list"></ul>
+      </div>
+    </div>
     <div class="w-grain" aria-hidden="true"></div>
     <div class="w-veil" id="wVeil"></div>
     <div class="w-focus" id="wFocus" aria-hidden="true"><div class="w-glow"></div><img alt=""></div>
@@ -190,7 +197,7 @@ export function mountWall() {
       const dt = last ? Math.min(t - last, 100) / 1000 : 0; last = t;
       if (document.getElementById('splash')) { calmSince = t; return; }
       if (dragging) { touch(); return; }
-      if (root.classList.contains('focused') || document.hidden) { rest(1200); return; }
+      if (root.classList.contains('focused') || root.classList.contains('listing') || document.hidden) { rest(1200); return; }
       const e = Math.min(1, Math.max(0, (t - calmSince) / 4000)); // ease back in over 4s
       const k = e * e * (3 - 2 * e);
       if (!k) return;
@@ -300,6 +307,29 @@ export function mountWall() {
       ${books.length ? `<div class="wp-rule"><span>آثار</span></div>
         <ol class="wp-books">${books.map((b) => `<li><a href="#/c/${b.FullUrl.replace(/^\//, '')}"><span>${esc(b.Title)}</span><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a></li>`).join('')}</ol>` : ''}`;
   }
+
+  /* ── All poets: a lightbox over the wall ── */
+  const lb = root.querySelector('#wLb'), lbList = lb.querySelector('.w-lb-list'), lbQ = lb.querySelector('.w-lb-q');
+  let lbPoets = null;
+  const norm = (x) => String(x).replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/\u200c/g, ' ').trim();
+  const drawList = () => {
+    if (!lbPoets) { lbList.innerHTML = '<li class="w-lb-empty">…</li>'; return; }
+    const q = norm(lbQ.value);
+    const list = q ? lbPoets.filter((p) => norm(p.Nickname).includes(q)) : lbPoets;
+    lbList.innerHTML = list.length
+      ? list.map((p) => `<li><a href="#/c/${esc(p.FullUrl.replace(/^\//, ''))}">${esc(p.Nickname)}</a></li>`).join('')
+      : '<li class="w-lb-empty">شاعری با این نام پیدا نشد</li>';
+  };
+  const openList = async () => {
+    root.classList.add('listing'); lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false');
+    drawList();
+    if (!lbPoets) { try { lbPoets = (await getManifest()).Poets; } catch { lbPoets = []; } drawList(); }
+  };
+  const closeList = () => { root.classList.remove('listing'); lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); };
+  on(root.querySelector('.w-all'), 'click', openList);
+  on(lb, 'click', (e) => { if (e.target === lb) closeList(); });
+  on(lbQ, 'input', drawList);
+  on(document, 'keydown', (e) => { if (e.key === 'Escape') closeList(); });
 
   on(veil, 'click', closeFocus);
   on(focusEl, 'click', closeFocus);
