@@ -1,4 +1,4 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP } from './data.js';
 import { settings, apply, saved, history } from './store.js';
 import { baytImage, shareBlob } from './share.js';
 import { mountWall, unmountWall } from './wall.js';
@@ -216,7 +216,9 @@ async function viewCat(path) {
   if (isPoet && poet) {
     const years = poet.BirthYearInLHijri && poet.DeathYearInLHijri ? `${fa(poet.BirthYearInLHijri)}–${fa(poet.DeathYearInLHijri)} ق` : '';
     const place = [poet.BirthPlace, poet.DeathPlace].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join('، ');
-    head = `<div class="poet-head">${mono(poet.Nickname)}<div><h1>${esc(poet.Nickname)}</h1>
+    const dark = document.documentElement.dataset.theme === 'dark';
+    const pic = TOP.includes(slug) ? `<img class="poet-pic" src="img/poets/${esc(slug)}${dark ? '-dark' : ''}.webp" alt="" width="1024" height="1024" decoding="async">` : '';
+    head = `<div class="poet-head">${pic}<div><h1>${esc(poet.Nickname)}</h1>
       <p class="meta">${[esc(poet.Name !== poet.Nickname ? poet.Name : ''), years, esc(place)].filter(Boolean).join(' · ')}</p></div></div>
       ${poet.Description ? `<p class="bio clamp" id="bio">${esc(poet.Description)}</p><button class="bio-toggle" id="bioT">بیشتر</button>` : ''}`;
   } else {
@@ -674,7 +676,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.3';
+export const VERSION = '0.9.4';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
