@@ -20,6 +20,27 @@ new MutationObserver(() => {
     if (src) i.setAttribute('src', src.replace(/(-dark)?\.webp$/, isDark() ? '-dark.webp' : '.webp'));
   });
 }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+// The light pool is drawn once into an image with fine noise mixed in (dithering),
+// so its very faint falloff has no visible rings, then it only slides around.
+function sunImage(r, peak = 0.055) {
+  const d = r * 2, c = document.createElement('canvas');
+  c.width = c.height = d;
+  const ctx = c.getContext('2d'), img = ctx.createImageData(d, d), px = img.data;
+  const MAX = peak * 255;
+  for (let y = 0; y < d; y++) {
+    for (let x = 0; x < d; x++) {
+      const t = Math.hypot(x - r + 0.5, y - r + 0.5) / r;
+      if (t >= 1) continue;
+      const f = (1 - t * t) ** 2.2; // smooth, soft edge
+      const a = Math.round(MAX * f + Math.random() - 0.5);
+      if (a <= 0) continue;
+      const i = (y * d + x) * 4;
+      px[i] = px[i + 1] = px[i + 2] = 255; px[i + 3] = a;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return c.toDataURL('image/png');
+}
 const fa = (n) => String(n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -61,6 +82,8 @@ export function mountWall() {
   const SEAM = 1;
   // The opening card is exactly one portrait tile, sitting on the centre one.
   document.documentElement.style.setProperty('--w-tile', TILE - SEAM + 'px');
+  // Tile hover glow, drawn the same banding-free way.
+  root.style.setProperty('--w-tglow', `url(${sunImage(Math.round((TILE - SEAM) / 2), 0.085)})`);
   // Start with a portrait centred, offset half a tile so the grid feels like a wall, not a table.
   // A different poet in the centre each time the site opens (column c of row 0 holds poet c).
   // Coming back to the wall during the same visit keeps the same one.
@@ -163,6 +186,7 @@ export function mountWall() {
     const R = TILE * 0.95;
     sun.style.width = sun.style.height = R * 2 + 'px';
     sun.style.margin = `-${R}px 0 0 -${R}px`;
+    sun.style.backgroundImage = `url(${sunImage(Math.round(R))})`;
     root.appendChild(sun);
     let x = innerWidth / 2, y = innerHeight / 2, tx = x, ty = y, lit = 0, target = 0, loop = false, raf = 0;
     const step = () => {
