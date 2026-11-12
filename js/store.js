@@ -8,7 +8,11 @@ function write(key, value) {
 }
 
 export const settings = {
-  get() { return { theme: 'light', font: 'naskh', size: 1, harakat: true, ...read('sp.settings', {}) }; },
+  // Dark is the default; a theme saved before the reader chose one in settings is ignored.
+  get() {
+    const r = read('sp.settings', {});
+    return { font: 'naskh', size: 1, harakat: true, ...r, theme: r.themeChosen ? r.theme : 'dark' };
+  },
   set(patch) {
     const s = { ...this.get(), ...patch };
     write('sp.settings', s);

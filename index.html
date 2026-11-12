@@ -21,7 +21,7 @@
     try {
       var s = JSON.parse(localStorage.getItem('sp.settings') || '{}');
       if (s.size) document.documentElement.style.setProperty('--poem-scale', s.size);
-      if (s.theme === 'dark') document.documentElement.dataset.theme = 'dark';
+      if (!s.themeChosen || s.theme === 'dark') document.documentElement.dataset.theme = 'dark'; // dark by default
     } catch (e) {}
   </script>
 </head>

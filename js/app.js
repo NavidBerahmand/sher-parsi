@@ -97,7 +97,7 @@ function openSettings() {
     }));
     el.querySelector('#dk').addEventListener('click', (e) => {
       const dark = settings.get().theme !== 'dark';
-      settings.set({ theme: dark ? 'dark' : 'light' });
+      settings.set({ theme: dark ? 'dark' : 'light', themeChosen: true });
       e.currentTarget.setAttribute('aria-checked', dark);
     });
     el.querySelector('#hk').addEventListener('click', (e) => {
