@@ -1,15 +1,15 @@
 // Home page: an endless wall of carved poet portraits.
 // Drag (or scroll) in any direction; tap a portrait to bring it forward with its story.
-import { getPoet, getCat, getManifest } from './data.js';
+import { getPoet, getCat, getManifest, NAMES } from './data.js';
 import { attachSheetDrag } from './sheetdrag.js';
 
 const POETS = [
-  { slug: 'hafez', era: '۷۲۶ – ۷۹۲ ق · شیراز', full: 'خواجه حافظ شیرازی', name: 'حافظ', bayt: ['الا یا ایها الساقی ادر کأسا و ناولها', 'که عشق آسان نمود اول ولی افتاد مشکل‌ها'] },
-  { slug: 'saadi', era: '۶۱۵ – ۶۹۴ ق · شیراز', full: 'سعدی شیرازی', name: 'سعدی', bayt: ['بنی آدم اعضای یکدیگرند', 'که در آفرینش ز یک گوهرند'] },
-  { slug: 'moulavi', era: '۶۰۴ – ۶۷۲ ق · بلخ', full: 'مولانا جلال‌الدین محمد بلخی', name: 'مولانا', bayt: ['بشنو این نی چون شکایت می‌کند', 'از جدایی‌ها حکایت می‌کند'] },
-  { slug: 'khayyam', era: '۴۳۹ – ۵۲۶ ق · نیشابور', full: 'حکیم عمر خیام نیشابوری', name: 'خیام', bayt: ['این قافلهٔ عمر عجب می‌گذرد', 'دریاب دمی که با طرب می‌گذرد'] },
-  { slug: 'ferdousi', era: '۳۲۹ – ۴۱۱ ق · مشهد', full: 'حکیم ابوالقاسم فردوسی توسی', name: 'فردوسی', bayt: ['توانا بود هر که دانا بود', 'ز دانش دل پیر برنا بود'] },
-  { slug: 'saeb', era: '۱۰۰۱ – ۱۰۸۰ ق · اصفهان', full: 'صائب تبریزی', name: 'صائب', bayt: ['اظهار عجز پیش ستم‌پیشگان خطاست', 'اشک کباب باعث طغیان آتش است'] },
+  { slug: 'hafez', era: '۷۲۶ – ۷۹۲ ق · شیراز', full: NAMES.hafez, name: 'حافظ', bayt: ['الا یا ایها الساقی ادر کأسا و ناولها', 'که عشق آسان نمود اول ولی افتاد مشکل‌ها'] },
+  { slug: 'saadi', era: '۶۱۵ – ۶۹۴ ق · شیراز', full: NAMES.saadi, name: 'سعدی', bayt: ['بنی آدم اعضای یکدیگرند', 'که در آفرینش ز یک گوهرند'] },
+  { slug: 'moulavi', era: '۶۰۴ – ۶۷۲ ق · بلخ', full: NAMES.moulavi, name: 'مولانا', bayt: ['بشنو این نی چون شکایت می‌کند', 'از جدایی‌ها حکایت می‌کند'] },
+  { slug: 'khayyam', era: '۴۳۹ – ۵۲۶ ق · نیشابور', full: NAMES.khayyam, name: 'خیام', bayt: ['این قافلهٔ عمر عجب می‌گذرد', 'دریاب دمی که با طرب می‌گذرد'] },
+  { slug: 'ferdousi', era: '۳۲۹ – ۴۱۱ ق · مشهد', full: NAMES.ferdousi, name: 'فردوسی', bayt: ['توانا بود هر که دانا بود', 'ز دانش دل پیر برنا بود'] },
+  { slug: 'saeb', era: '۱۰۰۱ – ۱۰۸۰ ق · اصفهان', full: NAMES.saeb, name: 'صائب', bayt: ['اظهار عجز پیش ستم‌پیشگان خطاست', 'اشک کباب باعث طغیان آتش است'] },
 ];
 const isDark = () => document.documentElement.dataset.theme === 'dark';
 const img = (p) => `img/poets/${p.slug}${isDark() ? '-dark' : ''}.webp`;

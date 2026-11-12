@@ -41,8 +41,20 @@ function expand(p) {
   return p;
 }
 
-export const getManifest = () => (BUNDLED ? getLocal('data/manifest.json') : getJSON('manifest.json'));
-export const getPoet = (slug) => (BUNDLED ? getLocal(`data/p/${slug}.json`) : getJSON(`poets/${slug}/poet.json`));
+// One name per poet, used everywhere on the site (wall, lists, poet pages, poems, share images).
+export const NAMES = {
+  hafez: 'حافظ شیرازی',
+  saadi: 'سعدی',
+  moulavi: 'مولانا جلال‌الدین محمد بلخی',
+  khayyam: 'خیام نیشابوری',
+  ferdousi: 'فردوسی',
+  saeb: 'صائب تبریزی',
+};
+const named = (slug, o) => { if (o && NAMES[slug]) o.Nickname = o.Name = NAMES[slug]; return o; };
+export const getManifest = () => (BUNDLED ? getLocal('data/manifest.json') : getJSON('manifest.json'))
+  .then((m) => { (m.Poets || []).forEach((p) => named(clean(p.FullUrl), p)); return m; });
+export const getPoet = (slug) => (BUNDLED ? getLocal(`data/p/${slug}.json`) : getJSON(`poets/${slug}/poet.json`))
+  .then((p) => named(slug, p));
 export async function getCat(url) {
   if (!BUNDLED) return getJSON(`poets/${clean(url)}/_cat.json`);
   return (await getLocal(`${bundleName(url)}.json`)).cat;
@@ -60,8 +72,8 @@ export async function getPoem(url) {
 
 // Curated poets for the home page, in the order a reader is likely to look for them.
 export const FEATURED = [
-  ['hafez', 'حافظ'], ['saadi', 'سعدی'], ['moulavi', 'مولانا'], ['khayyam', 'خیام'],
-  ['ferdousi', 'فردوسی'], ['nezami', 'نظامی'], ['attar', 'عطار'], ['babataher', 'باباطاهر'],
+  ['hafez', NAMES.hafez], ['saadi', NAMES.saadi], ['moulavi', NAMES.moulavi], ['khayyam', NAMES.khayyam],
+  ['ferdousi', NAMES.ferdousi], ['nezami', 'نظامی'], ['attar', 'عطار'], ['babataher', 'باباطاهر'],
   ['parvin', 'پروین'], ['shahriar', 'شهریار'], ['rahi', 'رهی'], ['vahshi', 'وحشی'],
 ];
 
