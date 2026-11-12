@@ -87,6 +87,8 @@ export const NAMES = {
   yazdi: 'فرخی یزدی',
   jahan: 'جهان ملک خاتون',
   eshghi: 'میرزاده عشقی',
+  beyhaghi: 'ابوالفضل بیهقی',
+  ghaemmagham: 'قائم مقام فراهانی',
 };
 // The poets on the site, in Navid's order (lists follow this order).
 export const TOP = Object.keys(NAMES);
