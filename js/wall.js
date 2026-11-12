@@ -3,7 +3,8 @@
 import { getPoet, getCat, getManifest, NAMES } from './data.js';
 import { attachSheetDrag } from './sheetdrag.js';
 
-const POETS = [
+// Poets that have a portrait. The reader picks which of them show on the wall (ticks in the all-poets list).
+const ALL = [
   { slug: 'hafez', era: '۷۲۶ – ۷۹۲ ق · شیراز', full: NAMES.hafez, name: 'حافظ', bayt: ['الا یا ایها الساقی ادر کأسا و ناولها', 'که عشق آسان نمود اول ولی افتاد مشکل‌ها'] },
   { slug: 'saadi', era: '۶۱۵ – ۶۹۴ ق · شیراز', full: NAMES.saadi, name: 'سعدی', bayt: ['بنی آدم اعضای یکدیگرند', 'که در آفرینش ز یک گوهرند'] },
   { slug: 'moulavi', era: '۶۰۴ – ۶۷۲ ق · بلخ', full: NAMES.moulavi, name: 'مولانا', bayt: ['بشنو این نی چون شکایت می‌کند', 'از جدایی‌ها حکایت می‌کند'] },
@@ -11,6 +12,14 @@ const POETS = [
   { slug: 'ferdousi', era: '۳۲۹ – ۴۱۱ ق · مشهد', full: NAMES.ferdousi, name: 'فردوسی', bayt: ['توانا بود هر که دانا بود', 'ز دانش دل پیر برنا بود'] },
   { slug: 'saeb', era: '۱۰۰۱ – ۱۰۸۰ ق · اصفهان', full: NAMES.saeb, name: 'صائب', bayt: ['اظهار عجز پیش ستم‌پیشگان خطاست', 'اشک کباب باعث طغیان آتش است'] },
 ];
+const WALL_KEY = 'sp.wall';
+const chosen = () => {
+  let v = null;
+  try { v = JSON.parse(localStorage.getItem(WALL_KEY)); } catch { /* storage blocked */ }
+  const list = Array.isArray(v) ? ALL.filter((p) => v.includes(p.slug)) : [];
+  return list.length ? list : ALL.slice();
+};
+let POETS = chosen();
 const isDark = () => document.documentElement.dataset.theme === 'dark';
 const img = (p) => `img/poets/${p.slug}${isDark() ? '-dark' : ''}.webp`;
 // Swap portraits live when the reader toggles dark mode.
@@ -99,7 +108,8 @@ export function mountWall() {
   const pool = new Map();
   // 4 columns per row-step and 6 poets: horizontal and vertical neighbours never repeat.
   const touchNames = !matchMedia('(hover: hover)').matches;
-  const poetAt = (r, c) => ((r * 4 + c) % POETS.length + POETS.length) % POETS.length;
+  // Row step: 4 for most counts; 1 when 4 would line the same poet up vertically.
+  const poetAt = (r, c) => { const n = POETS.length, k = 4 % n ? 4 : 1; return ((r * k + c) % n + n) % n; };
 
   function render() {
     const vw = innerWidth, vh = innerHeight;
@@ -174,7 +184,7 @@ export function mountWall() {
     openFocus(+tile.dataset.pi, tile);
   });
   on(window, 'wheel', (e) => {
-    if (panel.contains(e.target) || focusEl.classList.contains('show')) return;
+    if (panel.contains(e.target) || focusEl.classList.contains('show') || root.classList.contains('listing')) return;
     offX -= e.deltaX; offY -= e.deltaY;
     render();
   }, { passive: true });
@@ -341,7 +351,11 @@ export function mountWall() {
     const q = norm(lbQ.value);
     const list = q ? lbPoets.filter((p) => norm(p.Nickname).includes(q)) : lbPoets;
     lbList.innerHTML = list.length
-      ? list.map((p) => `<li><a href="#/c/${esc(p.FullUrl.replace(/^\//, ''))}">${esc(p.Nickname)}</a></li>`).join('')
+      ? list.map((p) => {
+        const slug = p.FullUrl.replace(/^\//, ''), has = ALL.some((q) => q.slug === slug);
+        const on = POETS.some((q) => q.slug === slug);
+        return `<li><label class="w-lb-tick${has ? '' : ' off'}" title="${has ? 'نمایش روی دیوار' : 'هنوز تصویری ندارد'}"><input type="checkbox" data-slug="${esc(slug)}"${on ? ' checked' : ''}${has ? '' : ' disabled'}><i></i></label><a href="#/c/${esc(slug)}">${esc(p.Nickname)}</a></li>`;
+      }).join('')
       : '<li class="w-lb-empty">شاعری با این نام پیدا نشد</li>';
   };
   const openList = async () => {
@@ -353,6 +367,20 @@ export function mountWall() {
   on(root.querySelector('.w-all'), 'click', openList);
   on(lb, 'click', (e) => { if (e.target === lb) closeList(); });
   on(lbQ, 'input', drawList);
+  // Ticks choose which portraits make up the wall; at least one always stays.
+  on(lbList, 'change', (e) => {
+    const box = e.target.closest('input[type=checkbox]');
+    if (!box) return;
+    const keep = new Set(POETS.map((q) => q.slug));
+    if (box.checked) keep.add(box.dataset.slug); else keep.delete(box.dataset.slug);
+    if (!keep.size) { box.checked = true; return; }
+    POETS = ALL.filter((q) => keep.has(q.slug));
+    try { localStorage.setItem(WALL_KEY, JSON.stringify(POETS.map((q) => q.slug))); } catch { /* ignore */ }
+    for (const el of pool.values()) el.remove();
+    pool.clear();
+    render();
+    POETS.forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
+  });
   on(document, 'keydown', (e) => { if (e.key === 'Escape') closeList(); });
 
   on(veil, 'click', closeFocus);
