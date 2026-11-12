@@ -36,7 +36,7 @@ export function mountWall() {
   root.className = 'wall-root';
   root.innerHTML = `
     <header class="w-header">
-      <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><img src="icons/logo-2.svg" alt=""></button>
     </header>
     <main class="wall" id="wall" aria-label="دیوار شاعران"></main>
     <div class="w-grain" aria-hidden="true"></div>

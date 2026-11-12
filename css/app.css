@@ -64,9 +64,9 @@ p { margin: 0; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ───────── Top bar & navigation ───────── */
-/* No bar: only the menu button floats at the top left, above everything, on every page. */
+/* No bar: only the logo floats at the top (right on phones, centre on desktop); it opens the menu. */
 .topbar {
-  position: fixed; z-index: 50; left: calc(var(--gutter) - 10px); top: calc(env(safe-area-inset-top, 0px) + 10px);
+  position: fixed; z-index: 50; right: calc(var(--gutter) - 6px); top: calc(env(safe-area-inset-top, 0px) + 10px);
   pointer-events: none;
 }
 .topbar > * { pointer-events: auto; }
@@ -83,16 +83,20 @@ p { margin: 0; }
 .icon-btn.on { color: var(--accent); }
 .icon-btn.on svg { fill: currentColor; }
 
-/* Menu: one hamburger at the top left holds everything */
-.menu-btn, .menu-btn:hover { background: none; }
-.menu-btn svg { width: 24px; height: 24px; }
+/* Menu: the logo holds everything */
+.menu-btn, .w-menu { display: grid; place-items: center; padding: 6px; background: none; transition: transform .15s, opacity .2s; }
+.menu-btn:active, .w-menu:active { transform: scale(.94); }
+.menu-btn img, .w-menu img { display: block; width: 40px; height: auto; }
+.logo-on-dark { display: none !important; }
+:root[data-theme="dark"] .logo-on-light { display: none !important; }
+:root[data-theme="dark"] .logo-on-dark { display: block !important; }
 .menu-veil { position: fixed; inset: 0; z-index: 60; background: rgb(30 33 24 / .18); opacity: 0; pointer-events: none; transition: opacity .25s; }
 .menu-veil.show { opacity: 1; pointer-events: auto; }
 .menu {
-  position: fixed; z-index: 61; left: 14px; top: calc(env(safe-area-inset-top, 0px) + 12px);
+  position: fixed; z-index: 61; right: 14px; top: calc(env(safe-area-inset-top, 0px) + 62px);
   min-width: 210px; padding: 8px 0; background: var(--surface); border-radius: 18px;
   box-shadow: 0 12px 40px rgb(30 33 24 / .18);
-  opacity: 0; transform: translateY(-8px) scale(.97); transform-origin: top left; pointer-events: none;
+  opacity: 0; transform: translateY(-8px) scale(.97); transform-origin: top right; pointer-events: none;
   transition: opacity .2s, transform .25s cubic-bezier(.2,.8,.2,1);
 }
 .menu.open { opacity: 1; transform: none; pointer-events: auto; }
@@ -107,8 +111,9 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
 
 @media (min-width: 860px) {
   :root { --gutter: 32px; --bar-h: 68px; }
-  .topbar { left: max(22px, calc((100vw - 1080px) / 2 - 10px)); top: calc(env(safe-area-inset-top, 0px) + 14px); }
-  .menu { left: max(24px, calc((100vw - 1080px) / 2 - 8px)); top: calc(env(safe-area-inset-top, 0px) + 16px); }
+  .topbar { right: auto; left: 50%; translate: -50% 0; top: calc(env(safe-area-inset-top, 0px) + 14px); }
+  .menu-btn img { width: 54px; }
+  .menu { right: auto; left: 50%; translate: -50% 0; transform-origin: top center; top: calc(env(safe-area-inset-top, 0px) + 80px); }
   main { padding-bottom: 80px; }
 }
 
@@ -420,7 +425,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 
 .w-header {
   position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 30;
-  display: flex; align-items: center; justify-content: space-between; gap: 48px;
+  display: flex; align-items: center; justify-content: center; gap: 48px;
   width: min(880px, 96vw); padding: calc(18px + env(safe-area-inset-top, 0px)) 64px 26px;
   background: linear-gradient(color-mix(in srgb, var(--w-grout) 92%, transparent), color-mix(in srgb, var(--w-grout) 55%, transparent) 55%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
@@ -428,9 +433,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
   transition: opacity .5s;
 }
 .w-title { font-family: var(--poem); font-weight: 500; font-size: 1.35rem; color: var(--w-ink); text-shadow: 0 1px 0 rgb(0 0 0 / .15); white-space: nowrap; }
-.w-menu { margin-inline-start: auto; display: grid; place-items: center; width: 42px; height: 42px; margin-inline-end: -10px; color: var(--w-ink-soft); transition: color .25s; }
-.w-menu:hover { color: #fff; }
-.w-menu svg { width: 24px; height: 24px; }
+.w-menu img { width: 54px; }
 .w-btn { display: inline-flex; align-items: center; gap: 7px; font-size: .9rem; color: var(--w-ink-soft); white-space: nowrap; transition: color .25s; }
 .w-btn:hover { color: #fff; }
 .w-btn svg { width: 17px; height: 17px; }
@@ -560,3 +563,9 @@ body.psheet-open { overflow: hidden; }
 /* Poet panel opened fully: the portrait drifts up and fades softly instead of being cut off */
 .w-focus img { transition: opacity .76s cubic-bezier(.22,1,.36,1), transform .76s cubic-bezier(.22,1,.36,1); }
 .wall-root.panel-full .w-focus img { opacity: 0; transform: translateY(-14%) scale(.94); }
+
+/* Phones and narrow tablets: the logo sits at the top right, matching the inner pages. */
+@media (max-width: 859px) {
+  .w-header { justify-content: flex-start; padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-inline: calc(var(--gutter) - 6px); }
+  .w-menu img { width: 40px; }
+}
