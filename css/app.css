@@ -615,14 +615,14 @@ body.psheet-open { overflow: hidden; }
   background: color-mix(in srgb, var(--w-grout) 72%, transparent); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   opacity: 0; pointer-events: none; transition: opacity .35s ease; }
 .w-lb.open { opacity: 1; pointer-events: auto; }
-.w-lb-card { width: min(400px, 100%); max-height: min(72dvh, 640px); display: flex; flex-direction: column;
+.w-lb-card { width: min(400px, 100%); height: min(72dvh, 640px); display: flex; flex-direction: column;
   background: var(--w-paper); color: var(--w-paper-ink); border-radius: 22px; box-shadow: 0 24px 70px rgb(15 18 10 / .35);
   padding: 24px 22px 10px; transform: translateY(14px) scale(.97); transition: transform .45s cubic-bezier(.22,1,.36,1); }
 .w-lb.open .w-lb-card { transform: none; }
 .w-lb-card h2 { text-align: center; font-size: 1.3rem; font-weight: 500; margin: 0 0 14px; }
 .w-lb-q { width: 100%; padding: 8px 16px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--w-paper-ink) 14%, transparent);
   background: transparent; color: inherit; font: inherit; font-size: 1rem; outline: none; margin-bottom: 8px; }
-.w-lb-list { list-style: none; margin: 0; padding: 0; overflow: auto; overscroll-behavior: contain; }
+.w-lb-list { flex: 1; min-height: 0; list-style: none; margin: 0; padding: 0; overflow: auto; overscroll-behavior: contain; }
 .w-lb-list li + li { border-top: 1px solid color-mix(in srgb, var(--w-paper-ink) 8%, transparent); }
 .w-lb-list li { display: flex; align-items: center; gap: 12px; padding-inline: 6px; }
 .w-lb-list a { flex: 1; display: block; padding: 10px 0; font-size: 1.1rem; color: inherit; }
