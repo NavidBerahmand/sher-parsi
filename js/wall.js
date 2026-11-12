@@ -74,6 +74,7 @@ export function mountWall() {
       <div class="w-lb-card" role="dialog" aria-modal="true" aria-label="همه شاعران">
         <h2>همه شاعران</h2>
         <input type="search" class="w-lb-q" placeholder="جست‌وجوی نام شاعر" autocomplete="off">
+        <div class="w-lb-cap">نمایش در خانه</div>
         <ul class="w-lb-list"></ul>
       </div>
     </div>
@@ -375,7 +376,7 @@ export function mountWall() {
       ? list.map((p) => {
         const slug = p.FullUrl.replace(/^\//, ''), has = ALL.some((q) => q.slug === slug);
         const on = POETS.some((q) => q.slug === slug);
-        return `<li><label class="w-lb-tick${has ? '' : ' off'}" title="${has ? 'نمایش روی دیوار' : 'هنوز تصویری ندارد'}"><input type="checkbox" data-slug="${esc(slug)}"${on ? ' checked' : ''}${has ? '' : ' disabled'}><i></i></label><a href="#/c/${esc(slug)}">${esc(p.Nickname)}</a></li>`;
+        return `<li><a href="#/c/${esc(slug)}">${esc(p.Nickname)}</a><label class="w-lb-tick${has ? '' : ' off'}" title="${has ? 'نمایش در خانه' : 'هنوز تصویری ندارد'}"><input type="checkbox" data-slug="${esc(slug)}"${on ? ' checked' : ''}${has ? '' : ' disabled'}><i></i></label></li>`;
       }).join('')
       : '<li class="w-lb-empty">شاعری با این نام پیدا نشد</li>';
   };
