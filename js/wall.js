@@ -91,7 +91,7 @@ export function mountWall() {
   const mobile = innerWidth < 768;
   // About four portraits across a desktop, however wide; larger tiles on big screens.
   const TILE = mobile ? 220 : Math.round(Math.max(360, Math.min(innerWidth / 3.6, innerHeight / 2.4)));
-  const SEAM = 1;
+  const SEAM = 0; // no line between portraits (Navid, 2026-11-12)
   // The opening card is exactly one portrait tile, sitting on the centre one.
   document.documentElement.style.setProperty('--w-tile', TILE - SEAM + 'px');
   // Tile hover glow, drawn the same banding-free way.

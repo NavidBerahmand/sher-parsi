@@ -414,12 +414,11 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
   --w-plaster: #585e4a; --w-grout: #4d5240; --w-ink: #f1eee4; --w-ink-soft: #d9d6c8;
   --w-paper: #f5f2e8; --w-paper-ink: #2b2e22; --w-paper-mid: #66695a; --w-accent: #5f6549; --w-gold: #585e4a;
 }
-.wall { position: fixed; inset: 0; background: var(--w-grout); cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
+.wall { position: fixed; inset: 0; background: var(--w-plaster); cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
 .wall.dragging { cursor: grabbing; }
 .w-tile {
   position: absolute; top: 0; left: 0; overflow: hidden; will-change: transform;
   background: var(--w-plaster);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .07), inset -1px 0 0 rgb(255 255 255 / .05);
 }
 .w-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; opacity: 0; transition: opacity .6s; transform: scale(.8); }
 .w-tile img.loaded { opacity: 1; }
