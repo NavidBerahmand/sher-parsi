@@ -173,21 +173,25 @@ export function mountWall() {
     cleanup.push(() => cancelAnimationFrame(raf));
   }
 
-  // Slow drift at 30° once the opening card has gone. It pauses while the wall is dragged,
-  // scrolled or a poet is open, then eases back in.
+  // Slow drift at 30° once the opening card has gone. When the reader drags or scrolls the
+  // wall it stops for 30 seconds, then eases back in; it also rests while a poet is open.
   {
     const SPEED = 9; // px per second
     const vx = Math.cos(Math.PI / 6) * SPEED, vy = -Math.sin(Math.PI / 6) * SPEED;
     let last = 0, calmSince = 0, raf = 0;
-    const touch = () => { calmSince = performance.now() + 1200; };
+    const rest = (ms) => { calmSince = Math.max(calmSince, performance.now() + ms); };
+    const touch = () => rest(30000);
     on(wall, 'pointerdown', touch);
+    on(wall, 'pointermove', () => { if (dragging) touch(); });
     on(window, 'wheel', touch, { passive: true });
     const tick = (t) => {
       raf = requestAnimationFrame(tick);
       const dt = last ? Math.min(t - last, 100) / 1000 : 0; last = t;
       if (document.getElementById('splash')) { calmSince = t; return; }
-      if (dragging || root.classList.contains('focused') || document.hidden) { touch(); return; }
-      const k = Math.min(1, Math.max(0, (t - calmSince) / 2500)); // ease back in over 2.5s
+      if (dragging) { touch(); return; }
+      if (root.classList.contains('focused') || document.hidden) { rest(1200); return; }
+      const e = Math.min(1, Math.max(0, (t - calmSince) / 4000)); // ease back in over 4s
+      const k = e * e * (3 - 2 * e);
       if (!k) return;
       offX += vx * dt * k; offY += vy * dt * k;
       render();
