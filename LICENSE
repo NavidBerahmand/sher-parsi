@@ -1,0 +1,43 @@
+شعر پارسی — license overview
+
+This repository contains material under different terms:
+
+1. Site code (HTML, CSS, JavaScript, service worker, manifest, icons):
+   MIT License, text below.
+
+2. Poem texts and book data in `data/`:
+   Taken from Ganjoor's public export (https://github.com/ganjoor/ganjoor-data).
+   They remain under Ganjoor's own terms and are not covered by the MIT License.
+   The classical poems themselves are in the public domain; the edited texts and
+   their arrangement are Ganjoor's work.
+
+3. Font files in `fonts/` (Lateef, SIL Global):
+   SIL Open Font License 1.1, see `fonts/OFL.txt`.
+
+4. Poet portraits in `img/poets/`:
+   Copyright (c) 2026 Navid Berahmand. All rights reserved.
+   Not covered by the MIT License; do not reuse without permission.
+
+--------------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2026 Navid Berahmand
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

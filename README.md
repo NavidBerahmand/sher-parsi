@@ -27,3 +27,7 @@ Any static host. GitHub Pages works as-is (routes use `#/`, and `.nojekyll` is p
 ## Later
 
 See `TODO.md` (Ganjoor public API for full search and audio once hosted).
+
+## License
+
+Code: MIT. Poem data: Ganjoor's terms. Font: OFL. Portraits: all rights reserved. See `LICENSE`.
