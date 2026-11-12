@@ -1,5 +1,5 @@
 // Service worker: app shell is precached; poem data (immutable, pinned commit) is cached on first read.
-const SHELL = 'sp-shell-v11';
+const SHELL = 'sp-shell-v12';
 const DATA = 'sp-data-v1';
 const ASSETS = [
   './', 'index.html', 'css/app.css', 'js/app.js', 'js/data.js', 'js/store.js', 'js/share.js', 'js/wall.js', 'js/sheetdrag.js',
@@ -49,10 +49,14 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // App shell: serve cached copy fast, refresh it in the background.
+  // App shell: network first so every update shows on the next open; the cache is the offline fallback.
   e.respondWith(caches.open(SHELL).then(async (c) => {
-    const hit = await c.match(req, { ignoreSearch: true }) || (req.mode === 'navigate' ? await c.match('index.html') : null);
-    const net = fetch(req).then((res) => { if (res.ok) c.put(req, res.clone()); return res; }).catch(() => hit);
-    return hit || net;
+    try {
+      const res = await fetch(req, { cache: 'no-cache' });
+      if (res.ok) c.put(req, res.clone());
+      return res;
+    } catch {
+      return (await c.match(req, { ignoreSearch: true })) || (req.mode === 'navigate' ? await c.match('index.html') : Response.error());
+    }
   }));
 });
