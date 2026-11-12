@@ -76,7 +76,7 @@ export function mountWall() {
       <div class="w-lb-card" role="dialog" aria-modal="true" aria-label="همه شاعران">
         <h2>همه شاعران</h2>
         <input type="search" class="w-lb-q" placeholder="جست‌وجوی نام شاعر" autocomplete="off">
-        <div class="w-lb-cap">نمایش در خانه</div>
+        <div class="w-lb-cap"><span>نمایش در خانه</span><label class="w-lb-tick" title="انتخاب همه / هیچ‌کدام"><input type="checkbox" id="wAllTick"><i></i></label></div>
         <ul class="w-lb-list"></ul>
       </div>
     </div>
@@ -371,7 +371,13 @@ export function mountWall() {
   const lb = root.querySelector('#wLb'), lbList = lb.querySelector('.w-lb-list'), lbQ = lb.querySelector('.w-lb-q');
   let lbPoets = null;
   const norm = (x) => String(x).replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/\u200c/g, ' ').trim();
+  const allTick = lb.querySelector('#wAllTick');
+  const syncAll = () => {
+    allTick.checked = POETS.length === ALL.length;
+    allTick.indeterminate = POETS.length > 1 && POETS.length < ALL.length;
+  };
   const drawList = () => {
+    syncAll();
     if (!lbPoets) { lbList.innerHTML = '<li class="w-lb-empty">…</li>'; return; }
     const q = norm(lbQ.value);
     const list = q ? lbPoets.filter((p) => norm(p.Nickname).includes(q)) : lbPoets;
@@ -399,13 +405,22 @@ export function mountWall() {
     const keep = new Set(POETS.map((q) => q.slug));
     if (box.checked) keep.add(box.dataset.slug); else keep.delete(box.dataset.slug);
     if (!keep.size) { box.checked = true; return; }
+    setWall(keep);
+  });
+  // Select all / none. The wall can't be empty, so "none" keeps only the first poet.
+  on(allTick, 'change', () => {
+    setWall(new Set(allTick.checked ? ALL.map((q) => q.slug) : [ALL[0].slug]));
+    drawList();
+  });
+  function setWall(keep) {
     POETS = ALL.filter((q) => keep.has(q.slug));
+    syncAll();
     try { localStorage.setItem(WALL_KEY, JSON.stringify(POETS.map((q) => q.slug))); } catch { /* ignore */ }
     for (const el of pool.values()) el.remove();
     pool.clear();
     render();
     POETS.forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
-  });
+  }
   on(document, 'keydown', (e) => { if (e.key === 'Escape') closeList(); });
 
   on(veil, 'click', closeFocus);
