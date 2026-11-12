@@ -46,7 +46,7 @@ export const NAMES = {
   hafez: 'حافظ شیرازی',
   khayyam: 'خیام نیشابوری',
   ferdousi: 'فردوسی',
-  moulavi: 'جلال الدین محمد مولوی',
+  moulavi: 'مولوی',
   nezami: 'نظامی گنجوی',
   saadi: 'سعدی شیرازی',
   parvin: 'پروین اعتصامی',
