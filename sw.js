@@ -1,11 +1,11 @@
 // Service worker: app shell is precached; poem data (immutable, pinned commit) is cached on first read.
-const SHELL = 'sp-shell-v6';
+const SHELL = 'sp-shell-v7';
 const DATA = 'sp-data-v1';
 const ASSETS = [
   './', 'index.html', 'css/app.css', 'js/app.js', 'js/data.js', 'js/store.js', 'js/share.js', 'js/wall.js', 'js/sheetdrag.js',
   'img/poets/hafez.webp', 'img/poets/saadi.webp', 'img/poets/moulavi.webp', 'img/poets/khayyam.webp', 'img/poets/ferdousi.webp', 'img/poets/saeb.webp',
   'img/poets/hafez-dark.webp', 'img/poets/saadi-dark.webp', 'img/poets/moulavi-dark.webp', 'img/poets/khayyam-dark.webp', 'img/poets/ferdousi-dark.webp', 'img/poets/saeb-dark.webp',
-  'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
+  'manifest.webmanifest', 'icons/icon.svg', 'icons/logo.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/lateef-arabic-200-normal.woff2', 'fonts/lateef-arabic-300-normal.woff2', 'fonts/lateef-arabic-500-normal.woff2', 'fonts/lateef-latin-300-normal.woff2', 'fonts/lateef-latin-500-normal.woff2',
   ];
 
