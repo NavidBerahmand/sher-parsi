@@ -1,17 +1,54 @@
 // Render a couplet as a 1080×1920 story image: portrait green in dark mode, light cream in light mode, the site logo small at the top,
 // the hemistichs justified to one width in the middle, poet name and poem title at the bottom. Nothing else.
+/* Kashida (shared with the poem page): stretch letter joins with tatweel. */
+const NONJOIN = new Set([...'اآأإٱدذرزژوؤةءى']);
+const MARK = /[ً-ٰٟۖ-ۭ]/;
+const LETTER = /[ؠ-يٮ-ۓۺ-ۿ]/;
+function joinSlots(s) {
+  // Positions after a letter that joins forward to the next letter, best ones first:
+  // the last join of each word, then the rest from the end of the word backwards.
+  const ch = [...s];
+  const words = [];
+  let cur = [];
+  for (let i = 0; i < ch.length; i++) {
+    if (!LETTER.test(ch[i]) || NONJOIN.has(ch[i]) || ch[i] === 'ـ') { if (ch[i] === ' ' || ch[i] === '‌') { if (cur.length) words.push(cur); cur = []; } continue; }
+    let j = i + 1;
+    while (j < ch.length && MARK.test(ch[j])) j++;
+    if (j < ch.length && LETTER.test(ch[j]) && !(ch[i] === 'ل' && 'اآأإ'.includes(ch[j]))) cur.push(j);
+  }
+  if (cur.length) words.push(cur);
+  const order = [];
+  const maxLen = Math.max(0, ...words.map((w) => w.length));
+  for (let k = 0; k < maxLen; k++) for (const w of words) if (w.length > k) order.push(w[w.length - 1 - k]);
+  return { ch, order };
+}
+export function withKashida(s, n) {
+  if (n <= 0) return s;
+  const { ch, order } = joinSlots(s);
+  if (!order.length) return s;
+  const add = new Map();
+  for (let k = 0; k < n; k++) { const p = order[k % order.length]; add.set(p, (add.get(p) || 0) + 1); }
+  let out = '';
+  for (let i = 0; i < ch.length; i++) out += 'ـ'.repeat(add.get(i) || 0) + ch[i];
+  return out;
+}
 const words = (t) => t.split(/\s+/).filter(Boolean);
 
-// Draw one hemistich stretched to width w (right-aligned start, extra space shared between words).
+// Draw one hemistich stretched to width w around centre cx: about half the extra room goes into
+// letter joins (kashida), the rest into the spaces between words.
 function justify(ctx, text, cx, y, w) {
-  const ws = words(text);
+  const natural = ctx.measureText(text).width;
+  if (natural >= w || words(text).length < 2) { ctx.textAlign = 'center'; ctx.fillText(text, cx, y, w); return; }
+  const tw = ctx.measureText('ـ'.repeat(10)).width / 10;
+  let n = Math.floor(((w - natural) * 0.55) / tw);
+  let t = withKashida(text, n);
+  while (n > 0 && ctx.measureText(t).width > w) t = withKashida(text, --n);
+  const ws = words(t);
   const sizes = ws.map((x) => ctx.measureText(x).width);
-  const natural = sizes.reduce((a, b) => a + b, 0);
-  if (ws.length < 2) { ctx.textAlign = 'center'; ctx.fillText(text, cx, y); return; }
-  const gap = (w - natural) / (ws.length - 1);
+  const gap = (w - sizes.reduce((a, b) => a + b, 0)) / (ws.length - 1);
   ctx.textAlign = 'right';
   let x = cx + w / 2;
-  ws.forEach((t, i) => { ctx.fillText(t, x, y); x -= sizes[i] + gap; });
+  ws.forEach((x0, i) => { ctx.fillText(x0, x, y); x -= sizes[i] + gap; });
 }
 
 function loadImg(src) {
@@ -55,17 +92,18 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
   const sharp = shown.slice(a - from, b - from + 1).flat();
 
   // One font size so the widest sharp hemistich fits; every hemistich justified to that width.
-  const maxW = W - 220;
+  const off = 46; // first hemistich sits a little right, the second a little left
+  const maxW = W - 220 - 2 * off;
   const fading = shown.length > b - a + 1;
   // Leave room above and below the sharp couplets for the fade.
-  let size = fading ? 44 : 60;
+  let size = fading ? 42 : 58;
   const font = () => { ctx.font = `300 ${size}px Lateef`; };
   font();
   const widest = (ls) => Math.max(...ls.map((l) => ctx.measureText(l).width));
   while (size > 34 && widest(sharp) > maxW) { size -= 2; font(); }
   const width = Math.min(maxW, widest(sharp));
-  const lh = size * 2;
-  const gap = size * 0.9;
+  const lh = size * (fading ? 1.65 : 2);
+  const gap = size * (fading ? 0.55 : 0.9);
   const hOf = (g) => g.length * lh;
 
   // Lay the couplets out on their own layer, centred on the sharp block.
@@ -80,10 +118,9 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
   for (let i = a - from - 1; i >= 0; i--) y -= hOf(shown[i]) + gap;
   const top = mid - sharpH / 2, bottom = mid + sharpH / 2;
   shown.forEach((g) => {
-    g.forEach((l) => {
-      const fit = lc.measureText(l).width > width ? Math.max(width, lc.measureText(l).width) : width;
-      if (fit > width) { lc.save(); lc.textAlign = 'center'; lc.fillText(l, W / 2, y + lh / 2, width); lc.restore(); }
-      else justify(lc, l, W / 2, y + lh / 2, width);
+    g.forEach((l, j) => {
+      const cx = W / 2 + (g.length > 1 ? (j % 2 ? -off : off) : 0);
+      justify(lc, l, cx, y + lh / 2, width);
       y += lh;
     });
     y += gap;

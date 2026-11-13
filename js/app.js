@@ -1,6 +1,6 @@
 import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP } from './data.js';
 import { settings, apply, saved, history } from './store.js';
-import { baytImage, poemImage, shareBlob } from './share.js';
+import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { mountWall, unmountWall } from './wall.js';
 import { attachSheetDrag } from './sheetdrag.js';
 
@@ -487,37 +487,6 @@ async function viewPoem(path, opts = {}, fromList = false) {
 
 /* Kashida: every misra of a poem is drawn to the width of its longest misra by
    stretching letter joins (tatweel), never by widening the spaces. */
-const NONJOIN = new Set([...'اآأإٱدذرزژوؤةءى']);
-const MARK = /[ً-ٰٟۖ-ۭ]/;
-const LETTER = /[ؠ-يٮ-ۓۺ-ۿ]/;
-function joinSlots(s) {
-  // Positions after a letter that joins forward to the next letter, best ones first:
-  // the last join of each word, then the rest from the end of the word backwards.
-  const ch = [...s];
-  const words = [];
-  let cur = [];
-  for (let i = 0; i < ch.length; i++) {
-    if (!LETTER.test(ch[i]) || NONJOIN.has(ch[i]) || ch[i] === 'ـ') { if (ch[i] === ' ' || ch[i] === '‌') { if (cur.length) words.push(cur); cur = []; } continue; }
-    let j = i + 1;
-    while (j < ch.length && MARK.test(ch[j])) j++;
-    if (j < ch.length && LETTER.test(ch[j]) && !(ch[i] === 'ل' && 'اآأإ'.includes(ch[j]))) cur.push(j);
-  }
-  if (cur.length) words.push(cur);
-  const order = [];
-  const maxLen = Math.max(0, ...words.map((w) => w.length));
-  for (let k = 0; k < maxLen; k++) for (const w of words) if (w.length > k) order.push(w[w.length - 1 - k]);
-  return { ch, order };
-}
-function withKashida(s, n) {
-  if (n <= 0) return s;
-  const { ch, order } = joinSlots(s);
-  if (!order.length) return s;
-  const add = new Map();
-  for (let k = 0; k < n; k++) { const p = order[k % order.length]; add.set(p, (add.get(p) || 0) + 1); }
-  let out = '';
-  for (let i = 0; i < ch.length; i++) out += 'ـ'.repeat(add.get(i) || 0) + ch[i];
-  return out;
-}
 // "About this poem" opens and closes with a gentle slide instead of a jump.
 document.addEventListener('click', (e) => {
   const sum = e.target.closest('.pcard .about > summary');
@@ -737,7 +706,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.14';
+export const VERSION = '0.9.15';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
