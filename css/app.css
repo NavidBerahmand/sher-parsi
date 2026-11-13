@@ -744,5 +744,5 @@ body.poet-bg .search label { background: rgb(255 255 255 / .08); border-color: r
 body.poet-bg .search input { color: var(--ink); }
 body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color: rgb(255 255 255 / .16); color: var(--ink); }
 /* «همه شاعران»: a small round portrait beside each name. */
-.w-lb-list a { display: flex; align-items: center; gap: 12px; }
+.w-lb-list a { display: flex; align-items: center; gap: 12px; padding-inline-start: 12px; }
 .w-lb-face { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; background: color-mix(in srgb, var(--w-paper-ink) 8%, transparent); }
