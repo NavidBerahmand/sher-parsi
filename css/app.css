@@ -17,7 +17,7 @@
 
   --ui: "Dibaj", system-ui, sans-serif;
   /* Dibaj weights chosen by Navid (2026-11-13) */
-  --fw-brand: 500; --fw-name: 450; --fw-meta: 450; --fw-title: 450; --fw-text: 300; --fw-verse: 350; --fw-cover: 800; --fw-btn: 400; --fw-strong: 450;
+  --fw-brand: 500; --fw-name: 450; --fw-meta: 450; --fw-title: 450; --fw-text: 350; --fw-verse: 350; --fw-cover: 800; --fw-btn: 400; --fw-strong: 450;
   --poem: "Dibaj", serif;
   --verse: "Dibaj", serif;
   --poem-scale: 1;
@@ -45,7 +45,7 @@ html { font-size: 106%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; 
 body {
   margin: 0; min-height: 100dvh;
   background: var(--bg); color: var(--ink);
-  font: 300 1rem/1.75 var(--ui); letter-spacing: -0.01em;
+  font: 350 1rem/1.75 var(--ui); letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
@@ -95,7 +95,7 @@ body.psheet-open .page-x { opacity: 0; pointer-events: none; }
 @media (hover: hover) {
   [data-tip]::after { content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 50%; translate: -50% -3px; z-index: 60;
     padding: 3px 10px 5px; border-radius: 8px; background: var(--ink, #2b2e22); color: var(--bg, #f5f2e8);
-    font-family: var(--ui, inherit); font-size: .72rem; font-weight: 300; line-height: 1.4; white-space: nowrap;
+    font-family: var(--ui, inherit); font-size: .72rem; font-weight: 350; line-height: 1.4; white-space: nowrap;
     opacity: 0; pointer-events: none; transition: opacity .15s, translate .15s; }
   [data-tip]:hover::after { opacity: 1; translate: -50% 0; transition-delay: .25s; }
   .tip-l[data-tip]::after, .wp-x[data-tip]::after { left: 0; translate: 0 -3px; }
@@ -572,7 +572,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 .pcard .ptitle { margin-top: 8px; font-size: 1.35rem; font-weight: var(--fw-strong); }
 .pcard .verses { margin: 26px 0 8px; }
 .pcard .about { margin-top: 56px; padding: 20px 4px 112px; border-top: 0; }
-.pcard .about summary { justify-content: center; gap: 6px; font-size: .82rem; font-weight: 300; color: var(--muted); }
+.pcard .about summary { justify-content: center; gap: 6px; font-size: .82rem; font-weight: 350; color: var(--muted); }
 .pcard .about summary svg { width: 14px; height: 14px; }
 .pcard .about p { max-width: var(--vw, none); margin-inline: auto; }
 .pcard .about[open] { padding-bottom: 140px; }
@@ -612,8 +612,8 @@ body.psheet-open { overflow: hidden; }
 .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; pointer-events: none; transition: opacity .7s ease, visibility .7s; }
 .splash-box { width: var(--w-tile, min(62vw, 250px)); aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
   background: var(--surface); box-shadow: 0 10px 40px rgb(30 33 24 / .18); opacity: 0; animation: splash-in .7s ease .1s forwards; }
-.splash-box b { font-weight: 300; font-size: 1.75rem; line-height: 1.4; color: var(--ink); display: inline-block; white-space: nowrap; }
-.splash-box small { font-weight: 200; font-size: .78rem; color: var(--muted); }
+.splash-box b { font-weight: 350; font-size: 1.75rem; line-height: 1.4; color: var(--ink); display: inline-block; white-space: nowrap; }
+.splash-box small { font-weight: 350; font-size: .78rem; color: var(--muted); }
 .splash.out { opacity: 0; visibility: hidden; }
 .no-splash .splash { display: none; }
 @keyframes splash-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -796,7 +796,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .cover b { font-weight: var(--fw-cover); }
 .btn, .w-all, .wp-cta, .mx-pill, .lb-x, .sheet button, .share-opts button { font-weight: var(--fw-btn); }
 .wp-bayt, .mx-l { font-weight: var(--fw-verse); }
-.w-name { font-size: .88rem; font-weight: 300; }
+.w-name { font-size: .88rem; font-weight: 350; }
 @media (max-width: 767px) { .w-name { font-size: .72rem; } }
 /* Parts inside a book (غزلیات، قصاید…): a plain list. */
 .parts { display: flex; flex-direction: column; margin-top: 18px; max-width: 640px; }
@@ -861,7 +861,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .mx-toggles { justify-content: flex-start; gap: 14px; }
 .mx-sw[data-tip]::after { content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 50%; translate: -50% -3px; z-index: 60;
   padding: 3px 10px 5px; border-radius: 8px; background: var(--ink); color: var(--bg);
-  font-size: .72rem; font-weight: 300; line-height: 1.4; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s, translate .15s; }
+  font-size: .72rem; font-weight: 350; line-height: 1.4; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s, translate .15s; }
 .mx-sw[data-tip]:hover::after, .mx-sw.tip-show::after { opacity: 1; translate: -50% 0; }
 
 /* First-load hint under the logo: black bubble, white text, an arrow pointing up at the logo. */

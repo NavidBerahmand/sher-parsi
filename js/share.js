@@ -148,7 +148,7 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
   ctx.textAlign = 'center';
   ctx.fillStyle = ink; ctx.font = '450 42px Dibaj';
   ctx.fillText(poet || '', W / 2, H - 380);
-  if (title) { ctx.fillStyle = soft; ctx.font = '300 32px Dibaj'; ctx.fillText(title, W / 2, H - 310); }
+  if (title) { ctx.fillStyle = soft; ctx.font = '350 32px Dibaj'; ctx.fillText(title, W / 2, H - 310); }
 
   return new Promise((res) => c.toBlob(res, 'image/png'));
 }
