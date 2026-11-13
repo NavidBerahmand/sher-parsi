@@ -43,7 +43,7 @@ function expand(p) {
 
 // One name per poet, used everywhere on the site (wall, lists, poet pages, poems, share images).
 export const NAMES = {
-  moulavi: 'مولوی',
+  moulavi: 'مولانا',
   saadi: 'سعدی شیرازی',
   hafez: 'حافظ شیرازی',
   khayyam: 'خیام نیشابوری',
