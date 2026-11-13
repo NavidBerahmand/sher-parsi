@@ -873,3 +873,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 /* Keep the ticks clear of the scrollbar (it sits on the left in RTL). */
 .w-lb-list li { padding-inline-end: 22px; }
 .w-lb-cap { padding-inline-end: 22px; }
+/* Poem head spacing (Navid): double the room above the poet line, between it and the title, and between the title and the verses; title inset twice as far from the sides. */
+.pcard .poem-head { padding-top: 56px; }
+.pcard .ptitle { margin-top: 18px; padding-inline: 16px; }
+.pcard .verses { margin-top: 60px; }
