@@ -136,7 +136,8 @@ $('#mxLg').addEventListener('click', () => nudgeSize(0.1));
 $('#mxTheme').addEventListener('click', () => {
   const dark = settings.get().theme !== 'dark';
   settings.set({ theme: dark ? 'dark' : 'light', themeChosen: true }); syncMenuSettings();
-  if (current.view === 'cat' || current.view === 'poem') document.querySelectorAll('img.poet-pic').forEach((im) => { im.src = im.src.replace(/(-dark)?\.webp/, dark ? '-dark.webp' : '.webp'); });
+  document.querySelectorAll('img.poet-pic, img.pl-face').forEach((im) => { im.src = im.src.replace(/(-dark)?\.webp/, dark ? '-dark.webp' : '.webp'); });
+  document.querySelectorAll('img.w-lb-face').forEach((im) => { im.src = im.src.replace(/(-dark)?\.webp/, dark ? '.webp' : '-dark.webp'); });
 });
 $('#mxHk').addEventListener('click', () => {
   settings.set({ harakat: !settings.get().harakat }); syncMenuSettings();
@@ -272,6 +273,7 @@ async function viewPoets() {
   loading(10);
   const m = await getManifest();
   const poets = m.Poets;
+  document.body.classList.add('poet-bg');
   main.innerHTML = `<div class="wrap fadein">
     <div class="page-title"><h1>شاعران</h1><p>${fa(poets.length)} شاعر</p></div>
     <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام شاعر" autocomplete="off"></label></div>
@@ -281,7 +283,9 @@ async function viewPoets() {
   const draw = (q = '') => {
     const nq = norm(q);
     const list = nq ? poets.filter((p) => norm(p.Nickname).includes(nq)) : poets;
-    pl.innerHTML = list.length ? list.map((p) => `<li><a href="${catHref(p.FullUrl)}">${mono(p.Nickname)}<b>${esc(p.Nickname)}</b>${ICON.chev}</a></li>`).join('')
+    const dark = settings.get().theme === 'dark';
+    const face = (p) => { const s = clean(p.FullUrl); return TOP.includes(s) ? `<img class="pl-face" src="img/poets/${esc(s)}${dark ? '-dark' : ''}.webp" alt="" width="1024" height="1024" loading="lazy" decoding="async">` : mono(p.Nickname); };
+    pl.innerHTML = list.length ? list.map((p) => `<li><a href="${catHref(p.FullUrl)}">${face(p)}<b>${esc(p.Nickname)}</b>${ICON.chev}</a></li>`).join('')
       : `<li class="empty-state"><b>شاعری با این نام پیدا نشد</b></li>`;
   };
   draw();
@@ -784,7 +788,7 @@ async function route(keepScroll = false) {
   document.querySelectorAll('.mx-nav a').forEach((a) => (a.dataset.nav === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   setProgress(false);
   if (view !== 'poem') closePoemSheet(true);
-  if (view !== 'poem') document.body.classList.remove('poet-bg');
+  if (view !== 'poem' && view !== 'poets') document.body.classList.remove('poet-bg');
   if (view !== 'poem') searchBack = false;
   try {
     if (view === 'home') { main.innerHTML = ''; mountWall(); } else unmountWall();
@@ -801,7 +805,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.18';
+export const VERSION = '0.9.19';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

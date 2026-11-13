@@ -736,3 +736,13 @@ body.menu-open { overflow: hidden; }
 .w-lb-card h2 { margin-bottom: 4px; padding-inline: 40px; }
 .w-lb-hint { margin: 0 0 14px; text-align: center; font-size: .8rem; line-height: 1.7; color: var(--w-paper-mid); padding-inline: 8px; }
 .w-lb-cap { justify-content: flex-end; }
+
+/* Poets list on the portrait green: each poet's portrait, unframed, in place of the letter circle. */
+.pl-face { flex: none; width: 64px; height: 64px; object-fit: cover; margin: -8px 0;
+  -webkit-mask-image: radial-gradient(closest-side, #000 72%, transparent); mask-image: radial-gradient(closest-side, #000 72%, transparent); }
+body.poet-bg .search label { background: rgb(255 255 255 / .08); border-color: rgb(255 255 255 / .16); }
+body.poet-bg .search input { color: var(--ink); }
+body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color: rgb(255 255 255 / .16); color: var(--ink); }
+/* «همه شاعران»: a small round portrait beside each name. */
+.w-lb-list a { display: flex; align-items: center; gap: 12px; }
+.w-lb-face { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; background: color-mix(in srgb, var(--w-paper-ink) 8%, transparent); }

@@ -388,7 +388,9 @@ export function mountWall() {
       ? list.map((p) => {
         const slug = p.FullUrl.replace(/^\//, ''), has = ALL.some((q) => q.slug === slug);
         const on = POETS.some((q) => q.slug === slug);
-        return `<li><a href="#/c/${esc(slug)}">${esc(p.Nickname)}</a><label class="w-lb-tick${has ? '' : ' off'}" title="${has ? 'نمایش در خانه' : 'هنوز تصویری ندارد'}"><input type="checkbox" data-slug="${esc(slug)}"${on ? ' checked' : ''}${has ? '' : ' disabled'}><i></i></label></li>`;
+        // The opposite portrait reads best on the card: dark portrait on the light card, light on the dark.
+        const face = has ? `<img class="w-lb-face" src="img/poets/${esc(slug)}${document.documentElement.dataset.theme === 'dark' ? '' : '-dark'}.webp" alt="" loading="lazy" decoding="async">` : '<i class="w-lb-face"></i>';
+        return `<li><a href="#/c/${esc(slug)}">${face}<span>${esc(p.Nickname)}</span></a><label class="w-lb-tick${has ? '' : ' off'}" title="${has ? 'نمایش در خانه' : 'هنوز تصویری ندارد'}"><input type="checkbox" data-slug="${esc(slug)}"${on ? ' checked' : ''}${has ? '' : ' disabled'}><i></i></label></li>`;
       }).join('')
       : '<li class="w-lb-empty">شاعری با این نام پیدا نشد</li>';
   };
