@@ -914,3 +914,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 @media (max-width: 859px) { .w-menu img { width: 46px; } }
 /* A solid band under the phone status bar, so scrolled text never shows there as a blurred smear. */
 body:not(.wall-mode)::before { content: ''; position: fixed; z-index: 49; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--bg); pointer-events: none; }
+/* Poet download button: same size as the close button; black with a white icon once downloaded (Navid, 2026-11-13). */
+.wp-dl { width: 36px; height: 36px; }
+.wp-dl svg { width: 18px; height: 18px; }
+.wp-dl.saved, .wp-dl.saved:hover { background: #000; border-color: #000; color: #fff; }
