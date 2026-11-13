@@ -1,4 +1,4 @@
-// Render a couplet as a 1080×1920 story image: the portrait wall green, the site logo small at the top,
+// Render a couplet as a 1080×1920 story image: portrait green in dark mode, light cream in light mode, the site logo small at the top,
 // the hemistichs justified to one width in the middle, poet name and poem title at the bottom. Nothing else.
 const words = (t) => t.split(/\s+/).filter(Boolean);
 
@@ -23,26 +23,26 @@ export async function baytImage({ lines, poet, title, dark }) {
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const ctx = c.getContext('2d');
-  const bg = dark ? '#2f3526' : '#585e4a';
-  const ink = '#f3f1e7';
-  const soft = dark ? '#b9bca6' : '#d3d5c2';
+  const bg = dark ? '#2f3526' : '#f5f2e8';
+  const ink = dark ? '#f3f1e7' : '#2b2e22';
+  const soft = dark ? '#b9bca6' : '#7a7e69';
 
   await Promise.all([
     document.fonts.load('300 72px Lateef'),
     document.fonts.load('300 40px Lateef'),
   ]).catch(() => {});
-  const logo = await loadImg('icons/logo-2.svg');
+  const logo = await loadImg(dark ? 'icons/logo-2.svg' : 'icons/logo.svg');
 
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
   ctx.direction = 'rtl';
   ctx.textBaseline = 'middle';
 
   // Logo, small, top centre.
-  if (logo) { const lw = 120, lh = lw * 119.36 / 154.66; ctx.drawImage(logo, (W - lw) / 2, 150, lw, lh); }
+  if (logo) { const lw = 120, lh = lw * 119.36 / 154.66; ctx.drawImage(logo, (W - lw) / 2, 250, lw, lh); }
 
   // Verses: one font size so the widest hemistich fits; every hemistich justified to that width.
   const maxW = W - 220;
-  let size = 76;
+  let size = 60;
   ctx.font = `300 ${size}px Lateef`;
   const widest = () => Math.max(...lines.map((l) => ctx.measureText(l).width));
   while (size > 40 && widest() > maxW) { size -= 2; ctx.font = `300 ${size}px Lateef`; }
@@ -60,8 +60,8 @@ export async function baytImage({ lines, poet, title, dark }) {
   // Poet name, and the poem title under it.
   ctx.textAlign = 'center';
   ctx.fillStyle = ink; ctx.font = '300 48px Lateef';
-  ctx.fillText(poet || '', W / 2, H - 280);
-  if (title) { ctx.fillStyle = soft; ctx.font = '300 36px Lateef'; ctx.fillText(title, W / 2, H - 210); }
+  ctx.fillText(poet || '', W / 2, H - 380);
+  if (title) { ctx.fillStyle = soft; ctx.font = '300 36px Lateef'; ctx.fillText(title, W / 2, H - 310); }
 
   return new Promise((res) => c.toBlob(res, 'image/png'));
 }
