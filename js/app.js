@@ -389,6 +389,13 @@ function requestCloseSheet() {
   current.view = 'cat'; current.path = sheetCat;
   closePoemSheet();
 }
+let activeCard = null;
+function syncTools() {
+  const b = sheetEl?.querySelector('.pt-save');
+  if (!b || !activeCard) return;
+  const on = activeCard.querySelector('.save').classList.contains('on');
+  b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+}
 function openSheetShell() {
   closePoemSheet(true);
   const el = document.createElement('div');
@@ -397,7 +404,12 @@ function openSheetShell() {
     <section class="psheet" role="dialog" aria-modal="true" aria-label="شعر" tabindex="-1">
       <div class="psheet-grip" aria-label="بستن"><i></i></div>
       <div class="stack" id="stack"></div><div class="stack-end" id="stackEnd"></div>
-    </section>`;
+    </section>
+    <div class="psheet-tools">
+      <button class="icon-btn pt-x tip-l" aria-label="بستن" data-tip="بستن">${ICON.x}</button>
+      <button class="icon-btn pt-share" aria-label="اشتراک‌گذاری" data-tip="اشتراک‌گذاری">${ICON.share}</button>
+      <button class="icon-btn pt-save" aria-label="نشان کردن" data-tip="نشان کردن">${ICON.bookmark}</button>
+    </div>`;
   document.body.appendChild(el);
   sheetEl = el;
   document.body.classList.add('psheet-open');
@@ -406,6 +418,10 @@ function openSheetShell() {
   el.querySelector('.psheet-backdrop').addEventListener('click', requestCloseSheet);
   el.querySelector('.psheet-grip').addEventListener('click', requestCloseSheet);
   sh.addEventListener('click', (e) => { if (e.target.closest('.pclose')) requestCloseSheet(); });
+  // The three buttons above the sheet act on the poem being read.
+  el.querySelector('.pt-x').addEventListener('click', requestCloseSheet);
+  el.querySelector('.pt-share').addEventListener('click', () => activeCard?.querySelector('.share').click());
+  el.querySelector('.pt-save').addEventListener('click', () => { activeCard?.querySelector('.save').click(); syncTools(); });
   // Pull down from the top of the sheet to close it; it follows the finger.
   attachSheetDrag({ el: sh, handle: () => el.querySelector('.psheet-grip'), backdrop: el.querySelector('.psheet-backdrop'), onClose: requestCloseSheet });
   return sh;
@@ -431,6 +447,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
       if (!en.isIntersecting) continue;
       const c = cardCtx.get(en.target);
       if (!c || current.view !== 'poem') continue;
+      activeCard = en.target; syncTools();
       const want = poemHref(c.meta.url);
       if (location.hash !== want) { window.history.replaceState(null, '', want); current.path = c.meta.url; }
       document.title = `${c.meta.title} · ${c.meta.poet} · شعر پارسی`;
@@ -438,7 +455,8 @@ async function viewPoem(path, opts = {}, fromList = false) {
     }
   }, { root: sh, rootMargin: '-45% 0px -50% 0px' });
 
-  mountCard(stack, path, poem, poetN, cat, opts).classList.add('fadein');
+  activeCard = mountCard(stack, path, poem, poetN, cat, opts);
+  activeCard.classList.add('fadein'); syncTools();
   // Widths must be measured in the real font: stretch again once it has loaded.
   document.fonts?.load('300 20px Lateef', 'ـبـ').then(() => document.fonts.ready).then(restretchSoon);
   history.add(cardCtx.get(stack.firstElementChild).meta); refreshMarks(cardCtx.get(stack.firstElementChild).meta.url);
@@ -719,7 +737,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.13';
+export const VERSION = '0.9.14';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

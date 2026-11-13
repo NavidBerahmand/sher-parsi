@@ -666,3 +666,14 @@ body.psheet-open { overflow: hidden; }
 /* Version tag: tiny, bottom right, never in the way. */
 .site-ver { position: fixed; right: 10px; bottom: calc(env(safe-area-inset-bottom, 0px) + 6px); z-index: 5; font-size: .58rem; line-height: 1; color: var(--muted); opacity: .6; pointer-events: none; user-select: none; }
 body.wall-mode .site-ver { color: rgb(255 255 255 / .5); }
+
+/* Poem sheet: close, share and bookmark sit above the sheet, top left, as black discs like the page close button. */
+.pcard .poem-bar { display: none; }
+.psheet-tools { position: absolute; z-index: 2; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 16px); display: flex; gap: 10px; direction: ltr;
+  opacity: 0; transition: opacity .35s; }
+.psheet-wrap.open .psheet-tools { opacity: 1; }
+.psheet-tools .icon-btn { width: 36px; height: 36px; background: #000; color: #fff; }
+.psheet-tools .icon-btn:hover { background: #000; }
+.psheet-tools .icon-btn svg { width: 18px; height: 18px; stroke-width: 1.8; }
+.psheet-tools .pt-save.on svg { fill: currentColor; }
+@media (min-width: 860px) { .psheet-tools { top: calc(env(safe-area-inset-top, 0px) + 20px); } .psheet-tools .icon-btn { width: 42px; height: 42px; } }
