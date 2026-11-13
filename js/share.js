@@ -71,7 +71,7 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
   const soft = dark ? '#b9bca6' : '#7a7e69';
 
   await Promise.all([
-    document.fonts.load('250 72px Dibaj'),
+    document.fonts.load('350 72px Dibaj'),
     document.fonts.load('450 40px Dibaj'),
   ]).catch(() => {});
   const logo = await loadImg(dark ? 'icons/logo-2.svg' : 'icons/logo.svg');
@@ -97,7 +97,7 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
   const fading = shown.length > b - a + 1;
   // Leave room above and below the sharp couplets for the fade.
   let size = 48; // the same size as the single-couplet image
-  const font = () => { ctx.font = `250 ${size}px Dibaj`; };
+  const font = () => { ctx.font = `350 ${size}px Dibaj`; };
   font();
   const widest = (ls) => Math.max(...ls.map((l) => ctx.measureText(l).width));
   while (size > 30 && widest(sharp) > maxW) { size -= 2; font(); }
