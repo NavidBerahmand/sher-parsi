@@ -352,6 +352,11 @@ export function mountWall() {
     if (b) { b.classList.remove('busy'); b.classList.toggle('saved', ok); b.style.setProperty('--p', 0); if (ok) { b.setAttribute('aria-label', 'برای خواندن آفلاین ذخیره شده'); b.dataset.tip = 'ذخیره شده'; } }
   }
 
+  // Same cloth-bound covers as the poet page, cloth colour picked from the title.
+  function cover(href, title, author, i) {
+    const h = [...title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+    return `<a class="book" href="${href}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover c${h % 4}"><span class="frame"><b>${esc(title)}</b><small>${esc(author)}</small></span></span></a>`;
+  }
   function panelHTML(p, poet, cat) {
     panel.dataset.slug = p.slug;
     const years = poet?.BirthYearInLHijri && poet?.DeathYearInLHijri ? `${fa(poet.BirthYearInLHijri)} – ${fa(poet.DeathYearInLHijri)} ق` : '';
@@ -367,7 +372,7 @@ export function mountWall() {
       ${p.bayt ? `<blockquote class="wp-bayt"><span>${p.bayt[0]}</span><span>${p.bayt[1]}</span></blockquote>` : ''}
       ${intro ? `<p class="wp-intro">${esc(intro)}</p>` : poet ? '' : '<div class="wp-wait"><i></i><i></i><i></i></div>'}
       ${books.length ? `<div class="wp-rule"><span>آثار</span></div>
-        <ol class="wp-books">${books.map((b) => `<li><a href="#/c/${b.FullUrl.replace(/^\//, '')}"><span>${esc(b.Title)}</span><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a></li>`).join('')}</ol>` : ''}`;
+        <div class="books wp-shelf">${books.map((b, i) => cover(`#/c/${b.FullUrl.replace(/^\//, '')}`, b.Title, p.full, i)).join('')}${cat.Poems?.length ? cover(`#/c/${p.slug}/~other`, 'سایر اشعار', p.full, books.length) : ''}</div>` : ''}`;
   }
 
   /* ── All poets: a lightbox over the wall ── */

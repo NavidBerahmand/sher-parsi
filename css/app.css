@@ -768,3 +768,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 /* «همه شاعران»: a small round portrait beside each name. */
 .w-lb-list a { display: flex; align-items: center; gap: 12px; padding-inline-start: 12px; }
 .w-lb-face { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; background: color-mix(in srgb, var(--w-paper-ink) 8%, transparent); }
+
+/* The wall's poet panel: the same book covers, always two to a row. */
+.books.wp-shelf { grid-template-columns: repeat(2, 1fr); gap: 22px 18px; margin: 4px 0 30px; padding: 0 4px; }
+.wp-shelf .cover b { font-size: 1.02rem; }
