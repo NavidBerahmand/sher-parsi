@@ -85,6 +85,9 @@ p { margin: 0; }
 /* Close button on book pages: top left, level with the logo. */
 .page-x { position: fixed; z-index: 50; left: calc(var(--gutter) - 8px); top: calc(env(safe-area-inset-top, 0px) + 10px); background: color-mix(in srgb, var(--bg) 80%, transparent); }
 .page-x svg, .pclose svg { stroke-width: 1.8; }
+/* While a poem sheet is open, only the sheet's own close button shows. */
+body.psheet-open .page-x { opacity: 0; pointer-events: none; }
+.page-x { transition: opacity .3s; }
 /* Hover hints on icon buttons (mouse only). */
 :where([data-tip]) { position: relative; }
 @media (hover: hover) {
