@@ -11,6 +11,7 @@ const INFO = [
   { slug: 'khayyam', era: '۴۳۹ – ۵۲۶ ق · نیشابور', full: NAMES.khayyam, name: 'خیام', bayt: ['این قافلهٔ عمر عجب می‌گذرد', 'دریاب دمی که با طرب می‌گذرد'] },
   { slug: 'ferdousi', era: '۳۲۹ – ۴۱۱ ق · مشهد', full: NAMES.ferdousi, name: 'فردوسی', bayt: ['توانا بود هر که دانا بود', 'ز دانش دل پیر برنا بود'] },
   { slug: 'saeb', era: '۱۰۰۱ – ۱۰۸۰ ق · اصفهان', full: NAMES.saeb, name: 'صائب', bayt: ['اظهار عجز پیش ستم‌پیشگان خطاست', 'اشک کباب باعث طغیان آتش است'] },
+  { slug: 'seyf', full: NAMES.seyf, name: 'سیف فرغانی', bayt: ['ای تیغتان چو نیزه برای ستم دراز', 'این تیزی سنان شما نیز بگذرد'] },
 ];
 // Every poet has a portrait. The reader picks which of them show on the wall (ticks in the all-poets list).
 const ALL = TOP.map((slug) => ({ slug, full: NAMES[slug], ...INFO.find((q) => q.slug === slug) }));
