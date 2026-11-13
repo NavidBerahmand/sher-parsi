@@ -925,7 +925,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.52';
+export const VERSION = '0.9.53';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
