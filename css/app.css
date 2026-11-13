@@ -242,12 +242,34 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 .cat-title { padding-top: 10px; font-size: 1.5rem; }
 .cat-desc { margin-top: 8px; color: var(--muted); font-size: .92rem; }
 
-.books { display: flex; flex-direction: column; margin-top: 18px; max-width: 640px; }
-.book { display: flex; align-items: center; justify-content: space-between; padding: 14px 2px; font-size: 1.05rem; }
-.book + .book { border-top: 1px solid var(--hair); }
-.book b { font-weight: 500; }
-.book .chev { color: var(--muted); width: 18px; height: 18px; }
-@media (hover: hover) { .book:hover { color: var(--accent); } }
+/* A poet's works: a shelf of cloth-bound covers. Persian books bind on the right, so the spine is on the right. */
+.books { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px 20px; margin: 26px 0 8px; padding: 0 6px; }
+@media (min-width: 560px) { .books { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 860px) { .books { grid-template-columns: repeat(4, 1fr); gap: 34px 26px; } }
+.book { display: block; perspective: 900px; animation: bookIn .6s cubic-bezier(.22,1,.36,1) both; animation-delay: var(--d, 0ms); }
+@keyframes bookIn { from { opacity: 0; transform: translateY(14px); } }
+.cover { --cloth: #3d4232; --ink-c: #e9e4d0; --foil: rgb(233 228 208 / .45);
+  position: relative; display: block; aspect-ratio: 5 / 7; border-radius: 3px 7px 7px 3px; overflow: hidden;
+  background: var(--cloth); color: var(--ink-c);
+  box-shadow: 0 1px 1px rgb(0 0 0 / .18), 0 10px 22px -8px rgb(0 0 0 / .45), inset 0 0 0 1px rgb(255 255 255 / .05);
+  transform-origin: right center; transition: transform .45s cubic-bezier(.22,1,.36,1), box-shadow .45s; }
+/* Cloth grain and the spine with its hinge groove. */
+.cover::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .5; mix-blend-mode: overlay;
+  background: repeating-linear-gradient(0deg, rgb(255 255 255 / .05) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgb(0 0 0 / .05) 0 1px, transparent 1px 3px); }
+.cover::after { content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 13%; pointer-events: none;
+  background: linear-gradient(to left, rgb(0 0 0 / .28), rgb(255 255 255 / .07) 55%, rgb(0 0 0 / .22) 62%, rgb(255 255 255 / .05) 70%, transparent); }
+.cover .frame { position: absolute; inset: 9% 17% 9% 9%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center;
+  border: 1px solid var(--foil); border-radius: 2px; padding: 22% 8% 10%; }
+.cover b { font-weight: 500; font-size: 1.12rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; text-wrap: balance; }
+.cover small { font-size: .68rem; opacity: .72; line-height: 1.4; }
+.cover.c1 { --cloth: #a9ad91; --ink-c: #2b2e22; --foil: rgb(43 46 34 / .35); }
+.cover.c2 { --cloth: #e7e1cf; --ink-c: #3d4232; --foil: rgb(61 66 50 / .4); }
+.cover.c3 { --cloth: #262b1f; }
+@media (hover: hover) { .book:hover .cover { transform: rotateY(-9deg) translateX(-3px); box-shadow: 0 1px 1px rgb(0 0 0 / .18), 0 18px 30px -10px rgb(0 0 0 / .5); } }
+.book:active .cover { transform: scale(.97); }
+.book:focus-visible { outline: none; }
+.book:focus-visible .cover { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .book { animation: none; } .cover { transition: none; } }
 
 .list-tools { display: flex; align-items: center; gap: 10px; margin-top: 26px; }
 .list-tools .count { font-size: .85rem; color: var(--muted); margin-inline-end: auto; }

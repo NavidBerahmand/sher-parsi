@@ -325,8 +325,14 @@ async function viewCat(path) {
       + `<h1 class="cat-title">${esc(cat.Title)}</h1>`;
   }
 
-  const books = (cat.ChildCats || []).map((c) => `<a class="book" href="${catHref(c.FullUrl)}"><b>${esc(c.Title)}</b>${ICON.chev}</a>`).join('')
-    + (looseAsBook ? `<a class="book" href="#/c/${esc(slug)}/~other"><b>سایر اشعار</b>${ICON.chev}</a>` : '');
+  // Works as a shelf of book covers: cloth colour picked from the title, so each book keeps its own.
+  const author = poet?.Nickname || '';
+  const cover = (href, title, i) => {
+    const h = [...title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+    return `<a class="book" href="${href}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover c${h % 4}"><span class="frame"><b>${esc(title)}</b><small>${esc(author)}</small></span></span></a>`;
+  };
+  const books = (cat.ChildCats || []).map((c, i) => cover(catHref(c.FullUrl), c.Title, i)).join('')
+    + (looseAsBook ? cover(`#/c/${esc(slug)}/~other`, 'سایر اشعار', (cat.ChildCats || []).length) : '');
   const poemItem = (p, i) => `<li><a href="${poemHref(p.FullUrl)}" data-u="${esc(clean(p.FullUrl))}"><span class="n">${fa(i + 1)}</span><span class="tt"><span class="fl"></span><small>${esc(p.Title)}</small></span><span class="marks">${marksHTML(clean(p.FullUrl), seen)}</span></a></li>`;
 
   main.dataset.cat = path;
@@ -805,7 +811,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.22';
+export const VERSION = '0.9.23';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
