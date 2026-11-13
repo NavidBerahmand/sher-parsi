@@ -57,7 +57,7 @@ const chosen = () => {
   let v = null;
   try { v = JSON.parse(localStorage.getItem(WALL_KEY)); } catch { /* storage blocked */ }
   const list = Array.isArray(v) ? ALL.filter((p) => v.includes(p.slug)) : [];
-  return list.length ? list : ALL.slice();
+  return list.length ? list : ALL.slice(0, 15); // first visit: the 15 most-read poets
 };
 let POETS = chosen();
 const isDark = () => document.documentElement.dataset.theme === 'dark';
