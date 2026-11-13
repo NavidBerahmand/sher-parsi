@@ -898,7 +898,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.35';
+export const VERSION = '0.9.36';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -965,5 +965,20 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:' && !document.q
 {
   const sp = document.getElementById('splash');
   if (sp && document.documentElement.classList.contains('no-splash')) sp.remove();
-  else if (sp) setTimeout(() => { sp.classList.add('out'); setTimeout(() => sp.remove(), 800); }, 1500);
+  else if (sp) {
+    // Keep the name clear of the card's edges: first take out stretch (kashida), then shrink the type.
+    const box = sp.querySelector('.splash-box'), t = box.querySelector('b'), full = t.textContent;
+    const fit = () => {
+      const room = box.clientWidth * 0.78;
+      t.textContent = full; t.style.fontSize = '';
+      let guard = 40;
+      while (t.scrollWidth > room && guard--) {
+        const runs = t.textContent.match(/ـ+/g);
+        if (runs) { const longest = runs.reduce((a, b) => (b.length > a.length ? b : a)); t.textContent = t.textContent.replace(longest, longest.slice(1)); }
+        else t.style.fontSize = `${parseFloat(getComputedStyle(t).fontSize) * 0.94}px`;
+      }
+    };
+    fit(); document.fonts?.ready.then(fit);
+    setTimeout(() => { sp.classList.add('out'); setTimeout(() => sp.remove(), 800); }, 1500);
+  }
 }
