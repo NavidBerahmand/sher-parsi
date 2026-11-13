@@ -106,7 +106,8 @@ menu.addEventListener('click', (e) => {
   if (e.target === menu) return setMenu(false);
   const a = e.target.closest('a');
   if (!a) return;
-  if (a.dataset.line) pendingFind = { url: a.dataset.url, line: a.dataset.line };
+  // A search result: remember the line to show, and that closing the poem should come back here.
+  if (a.dataset.line) { pendingFind = { url: a.dataset.url, line: a.dataset.line }; searchBack = true; }
   setMenu(false);
 });
 document.addEventListener('keydown', (e) => {
@@ -125,6 +126,7 @@ document.addEventListener('keydown', (e) => {
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
 }, true);
+$('#mxX').addEventListener('click', () => setMenu(false));
 $('#mxRandom').addEventListener('click', () => { setMenu(false); randomPoem(); });
 $('#mxAbout').addEventListener('click', () => { setMenu(false); openAbout(); });
 $('#mxSz').addEventListener('input', (e) => { settings.set({ size: +e.target.value }); restretchSoon(); });
@@ -182,7 +184,7 @@ async function runSearch() {
 }
 
 /* After opening a poem from a search result, bring that line into view and mark it briefly. */
-let pendingFind = null;
+let pendingFind = null, searchBack = false;
 function findLine(card, path) {
   if (!pendingFind || pendingFind.url !== path) return;
   const want = searchNorm(pendingFind.line).replace(/[\s‌]+/g, '');
@@ -468,6 +470,13 @@ function closePoemSheet(instant) {
 }
 function requestCloseSheet() {
   if (!sheetEl) return;
+  // Opened from search: go back to the page we were on, with the menu and its results open again.
+  if (searchBack) {
+    searchBack = false; sheetPushed = false;
+    window.history.back();
+    setTimeout(() => setMenu(true), 380);
+    return;
+  }
   if (sheetPushed) { sheetPushed = false; window.history.back(); return; }
   window.history.replaceState(null, '', catHref(sheetCat));
   current.view = 'cat'; current.path = sheetCat;
@@ -776,6 +785,7 @@ async function route(keepScroll = false) {
   setProgress(false);
   if (view !== 'poem') closePoemSheet(true);
   if (view !== 'poem') document.body.classList.remove('poet-bg');
+  if (view !== 'poem') searchBack = false;
   try {
     if (view === 'home') { main.innerHTML = ''; mountWall(); } else unmountWall();
     if (view === 'home') { /* the wall is the home page */ }
@@ -791,7 +801,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.17';
+export const VERSION = '0.9.18';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

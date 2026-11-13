@@ -457,7 +457,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 .w-btn { display: inline-flex; align-items: center; gap: 7px; font-size: .9rem; color: var(--w-ink-soft); white-space: nowrap; transition: color .25s; }
 .w-btn:hover { color: #fff; }
 .w-btn svg { width: 17px; height: 17px; }
-.wall-root.focused .w-header { opacity: 0; pointer-events: none; }
+.wall-root.focused .w-header { background: none; }
 
 .w-veil { position: fixed; inset: 0; z-index: 10; pointer-events: none; opacity: 0; transition: opacity .65s cubic-bezier(.4,0,.2,1);
   background: color-mix(in srgb, var(--w-plaster) 90%, transparent); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
@@ -722,3 +722,17 @@ body.menu-open { overflow: hidden; }
   background: color-mix(in srgb, var(--ink) 10%, transparent); color: var(--ink); display: grid; place-items: center; padding: 0; }
 .mx-clr svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; position: static; translate: none; fill: none; }
 .mx-search input { padding-left: 42px; }
+
+/* Close buttons of the menu and «همه شاعران» */
+.lb-x { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); transition: background .2s; }
+.lb-x:hover { background: color-mix(in srgb, var(--ink) 15%, transparent); }
+.lb-x svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.lb-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mx-top { display: flex; align-items: center; gap: 10px; flex: none; }
+.mx-top .mx-search { flex: 1; }
+.w-lb-card { position: relative; }
+.w-lb-card .lb-x { position: absolute; top: 16px; left: 16px; color: var(--w-paper-ink); background: color-mix(in srgb, var(--w-paper-ink) 9%, transparent); }
+.w-lb-card h2 { margin-bottom: 4px; padding-inline: 40px; }
+.w-lb-hint { margin: 0 0 14px; text-align: center; font-size: .8rem; line-height: 1.7; color: var(--w-paper-mid); padding-inline: 8px; }
+.w-lb-cap { justify-content: flex-end; }

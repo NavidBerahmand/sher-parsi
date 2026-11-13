@@ -74,9 +74,11 @@ export function mountWall() {
     <button class="w-all" type="button" aria-haspopup="dialog">همه شاعران</button>
     <div class="w-lb" id="wLb" aria-hidden="true">
       <div class="w-lb-card" role="dialog" aria-modal="true" aria-label="همه شاعران">
+        <button type="button" class="lb-x" id="wLbX" aria-label="بستن"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8"/></svg></button>
         <h2>همه شاعران</h2>
+        <p class="w-lb-hint">با تیک زدن، شاعران منتخب خود را همیشه در صفحهٔ اصلی داشته باشید.</p>
         <input type="search" class="w-lb-q" placeholder="جست‌وجوی نام شاعر" autocomplete="off">
-        <div class="w-lb-cap"><span>نمایش در خانه</span><label class="w-lb-allrow"><b id="wAllTxt">انتخاب همه</b><span class="w-lb-tick"><input type="checkbox" id="wAllTick"><i></i></span></label></div>
+        <div class="w-lb-cap"><label class="w-lb-allrow"><b id="wAllTxt">انتخاب همه</b><span class="w-lb-tick"><input type="checkbox" id="wAllTick"><i></i></span></label></div>
         <ul class="w-lb-list"></ul>
       </div>
     </div>
@@ -398,6 +400,7 @@ export function mountWall() {
   const closeList = () => { root.classList.remove('listing'); lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); };
   on(root.querySelector('.w-all'), 'click', openList);
   on(lb, 'click', (e) => { if (e.target === lb) closeList(); });
+  on(root.querySelector('#wLbX'), 'click', closeList);
   on(lbQ, 'input', drawList);
   // Ticks choose which portraits make up the wall; at least one always stays.
   on(lbList, 'change', (e) => {

@@ -14,6 +14,7 @@ ROOT = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(os.path.dirname(os.
 DATA = os.path.join(ROOT, 'data')
 OUT = os.path.join(DATA, 's')
 LINES_PER_SHARD = 2000
+VERSE = {'R', 'L', 'C1', 'C2', 'S'}
 STOP_SHARE = 0.02  # words found in more than 2% of all lines are not indexed (they are still matched in the text)
 
 HARAKAT = re.compile('[ً-ٰٟـۖ-ۭ]')
@@ -74,11 +75,14 @@ def main():
             continue
         for url, title, verses in walk('/' + slug):
             pi = len(poems)
-            poems.append([url, title, slug])
+            had = False
             for v in verses:
                 text = v[1]
-                if not text or not text.strip():
+                # Verse only: prose paragraphs (P) and notes (N) are not searched.
+                if v[0] not in VERSE or not text or not text.strip():
                     continue
+                if not had:
+                    poems.append([url, title, slug]); had = True
                 t = HARAKAT.sub('', text).strip()
                 lines.append([pi, t, norm(text)])
         print(slug, len(poems), len(lines), file=sys.stderr)
