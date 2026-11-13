@@ -205,10 +205,15 @@ async function viewPoets() {
 async function viewCat(path) {
   loading(8);
   const slug = path.split('/')[0];
-  const [cat, poet] = await Promise.all([getCat(path), getPoet(slug).catch(() => null)]);
+  // "Other poems": a poet's loose poems, listed as their own book when the poet also has books.
+  const other = path.endsWith('/~other');
+  const real = other ? path.slice(0, -7) : path;
+  const [cat0, poet] = await Promise.all([getCat(real), getPoet(slug).catch(() => null)]);
+  const cat = other ? { ...cat0, Title: 'سایر اشعار', ChildCats: [] } : cat0;
   const isPoet = !path.includes('/');
   const seen = history.seen();
-  const poems = cat.Poems || [];
+  const looseAsBook = isPoet && (cat.ChildCats || []).length > 0 && (cat.Poems || []).length > 0;
+  const poems = looseAsBook ? [] : cat.Poems || [];
   const PAGE = 120;
   let shown = Math.min(poems.length, PAGE);
 
@@ -230,7 +235,8 @@ async function viewCat(path) {
       + `<h1 class="cat-title">${esc(cat.Title)}</h1>`;
   }
 
-  const books = (cat.ChildCats || []).map((c) => `<a class="book" href="${catHref(c.FullUrl)}"><b>${esc(c.Title)}</b>${ICON.chev}</a>`).join('');
+  const books = (cat.ChildCats || []).map((c) => `<a class="book" href="${catHref(c.FullUrl)}"><b>${esc(c.Title)}</b>${ICON.chev}</a>`).join('')
+    + (looseAsBook ? `<a class="book" href="#/c/${esc(slug)}/~other"><b>سایر اشعار</b>${ICON.chev}</a>` : '');
   const poemItem = (p, i) => `<li><a href="${poemHref(p.FullUrl)}" data-u="${esc(clean(p.FullUrl))}"><span class="n">${fa(i + 1)}</span><span class="tt"><span class="fl"></span><small>${esc(p.Title)}</small></span><span class="marks">${marksHTML(clean(p.FullUrl), seen)}</span></a></li>`;
 
   main.dataset.cat = path;
@@ -409,14 +415,14 @@ async function viewPoem(path, opts = {}, fromList = false) {
   const slug = path.split('/')[0];
   const parent = parentOf(path);
   const listPath = parent || slug;
-  if (!fromList && main.dataset.cat !== listPath) { await viewCat(listPath).catch(() => {}); current.view = 'poem'; current.path = path; }
+  if (!fromList && main.dataset.cat !== listPath && main.dataset.cat !== `${listPath}/~other`) { await viewCat(listPath).catch(() => {}); current.view = 'poem'; current.path = path; }
   const [poem, poet, cat] = await Promise.all([getPoem(path), getPoet(slug).catch(() => null), getCat(parent).catch(() => null)]);
   const poetN = poet?.Nickname || '';
   const list = cat?.Poems || [];
   let idx = list.findIndex((p) => clean(p.FullUrl) === path);
 
   const sh = openSheetShell();
-  sheetCat = listPath;
+  sheetCat = main.dataset.cat === `${listPath}/~other` ? main.dataset.cat : listPath;
   const stack = $('#stack'), end = $('#stackEnd');
   stackRO = new ResizeObserver((es) => es.forEach((en) => placeCard(en.target)));
   // The card nearest the top of the screen is the one being read: keep the address in step.
@@ -713,7 +719,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.10';
+export const VERSION = '0.9.11';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
