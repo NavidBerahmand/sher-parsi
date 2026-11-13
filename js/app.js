@@ -903,7 +903,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.43';
+export const VERSION = '0.9.44';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -994,7 +994,7 @@ function logoHint() {
   if (!logo || current.view !== 'home' || menu.classList.contains('open')) return;
   const r = logo.getBoundingClientRect();
   const tip = document.createElement('div');
-  tip.className = 'logo-hint'; tip.setAttribute('role', 'status'); tip.textContent = 'پیکربندی از اینجاست';
+  tip.className = 'logo-hint'; tip.setAttribute('role', 'status'); tip.textContent = 'پیکربندی اینجاست';
   document.body.appendChild(tip);
   const w = tip.offsetWidth, cx = r.left + r.width / 2;
   const left = Math.max(12, Math.min(innerWidth - w - 12, cx - w / 2));
