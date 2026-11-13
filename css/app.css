@@ -1,4 +1,4 @@
-@font-face { font-family: "Dibaj"; src: url(../fonts/dibaj-vf.woff2) format("woff2"); font-weight: 200 950; font-display: swap; }
+@font-face { font-family: "Kahroba"; src: url(../fonts/kahroba-vf.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
 /* ───────── Fonts ───────── */
 
 /* ───────── Tokens ───────── */
@@ -15,11 +15,12 @@
   --gold: #585e4a;
   --shadow: 0 1px 2px rgb(60 66 45 / .06), 0 8px 24px rgb(60 66 45 / .07);
 
-  --ui: "Dibaj", system-ui, sans-serif;
-  /* Dibaj weights chosen by Navid (2026-11-13) */
+  --ui: "Kahroba", system-ui, sans-serif;
+  /* Weights chosen by Navid (2026-11-13) */
+  --cntr: 50; /* Kahroba contrast axis (0 low – 100 high); width stays at the standard 100 */
   --fw-brand: 500; --fw-name: 450; --fw-meta: 450; --fw-title: 450; --fw-text: 350; --fw-verse: 350; --fw-cover: 800; --fw-btn: 400; --fw-strong: 450;
-  --poem: "Dibaj", serif;
-  --verse: "Dibaj", serif;
+  --poem: "Kahroba", serif;
+  --verse: "Kahroba", serif;
   --poem-scale: 1;
   --poem-size: calc(1.15rem * var(--poem-scale));
 
@@ -42,6 +43,8 @@
 /* ───────── Base ───────── */
 *, *::before, *::after { box-sizing: border-box; }
 html { font-size: 106%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+/* Kahroba contrast on every element (the font shorthand would otherwise reset it); set --cntr anywhere to change it there. */
+*, *::before, *::after { font-variation-settings: "CNTR" var(--cntr, 50), "wdth" 100; }
 body {
   margin: 0; min-height: 100dvh;
   background: var(--bg); color: var(--ink);
@@ -784,7 +787,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .wall-root.solo .w-tile { box-shadow: none !important; outline: none; }
 .wall-root.solo .wall { cursor: default; }
 
-/* Dibaj weights per part of the site (Navid, 2026-11-13). */
+/* Weights per part of the site (Navid, 2026-11-13). */
 .brand, .w-title, .splash-box b { font-weight: var(--fw-brand); }
 .poet-head h1, .wp-name, .poet-list b, .w-lb-list a { font-weight: var(--fw-name); }
 .poet-list b { font-weight: var(--fw-name); }

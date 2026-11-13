@@ -598,7 +598,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
   if (!pendingFind) setTimeout(saveSpot, 600);
   findLine(activeCard, path);
   // Widths must be measured in the real font: stretch again once it has loaded.
-  document.fonts?.load('350 20px Dibaj', 'ـبـ').then(() => document.fonts.ready).then(restretchSoon);
+  document.fonts?.load('350 20px Kahroba', 'ـبـ').then(() => document.fonts.ready).then(restretchSoon);
   history.add(cardCtx.get(stack.firstElementChild).meta); refreshMarks(cardCtx.get(stack.firstElementChild).meta.url);
   document.title = `${poem.Title} · ${poetN} · شعر پارسی`;
 
@@ -925,7 +925,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.54';
+export const VERSION = '0.9.55';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
