@@ -333,13 +333,14 @@ async function viewCat(path) {
   };
   // On a poet's page the works are grouped (a divan's forms get their own shelf); deeper pages show one shelf.
   const groups = isPoet && !other ? await shelf(cat) : null;
-  const books = groups ? '' : (cat.ChildCats || []).map((c, i) => cover(catHref(c.FullUrl), c.Title, i)).join('');
+  // Inside a book its parts are a plain list, not more covers.
+  const books = groups ? '' : (cat.ChildCats || []).map((c) => `<a class="part" href="${catHref(c.FullUrl)}"><b>${esc(c.Title)}</b>${ICON.chev}</a>`).join('');
   const poemItem = (p, i) => `<li><a href="${poemHref(p.FullUrl)}" data-u="${esc(clean(p.FullUrl))}"><span class="n">${fa(i + 1)}</span><span class="tt"><span class="fl"></span><small>${esc(p.Title)}</small></span><span class="marks">${marksHTML(clean(p.FullUrl), seen)}</span></a></li>`;
 
   main.dataset.cat = path;
   document.body.classList.toggle('poet-bg', isPoet && !!poet && TOP.includes(slug));
   main.innerHTML = `<button class="icon-btn page-x tip-l" id="pageX" aria-label="بستن" data-tip="بستن">${ICON.x}</button><div class="wrap fadein">${head}
-    ${groups ? shelfHTML(groups, author) : books ? `<div class="books">${books}</div>` : ''}
+    ${groups ? shelfHTML(groups, author) : books ? `<div class="parts">${books}</div>` : ''}
     ${poems.length ? `<div class="list-tools"><span class="count">${fa(poems.length)} شعر</span></div>
       <ul class="poems" id="pm">${poems.slice(0, shown).map(poemItem).join('')}</ul>
       ${poems.length > shown ? `<button class="btn ghost more-btn" id="more">نمایش بیشتر</button>` : ''}` : ''}
@@ -812,7 +813,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.31';
+export const VERSION = '0.9.32';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

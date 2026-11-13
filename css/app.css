@@ -798,3 +798,10 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .wp-bayt, .mx-l { font-weight: var(--fw-verse); }
 .w-name { font-size: .88rem; font-weight: 300; }
 @media (max-width: 767px) { .w-name { font-size: .72rem; } }
+/* Parts inside a book (غزلیات، قصاید…): a plain list. */
+.parts { display: flex; flex-direction: column; margin-top: 18px; max-width: 640px; }
+.part { display: flex; align-items: center; justify-content: space-between; padding: 14px 2px; font-size: 1.05rem; }
+.part + .part { border-top: 1px solid var(--hair); }
+.part b { font-weight: var(--fw-text); }
+.part .chev { color: var(--muted); width: 18px; height: 18px; }
+@media (hover: hover) { .part:hover { color: var(--accent); } }

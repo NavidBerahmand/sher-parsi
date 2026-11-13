@@ -230,27 +230,11 @@ export function hash(s) {
 const FORMS = /غزل|قصا?ید|قصیده|رباعی|قطعات|قطعه|ترجیع|ترکیب|مسمط|مثنوی|مثنویات|مستدرک|ملحقات|مفردات|مراثی|دوبیتی|اشعار|منتسب|تصنیف|مستزاد|چکامه|سایر/;
 const catUrl = (u) => String(u).replace(/^\/+/, '');
 export async function shelf(poetCat) {
+  // One cover per work (Navid, 2026-11-13): a divan is one book, its parts are listed inside it.
   const kids = poetCat.ChildCats || [];
-  const subs = await Promise.all(kids.map((c) => getCat(catUrl(c.FullUrl)).catch(() => null)));
-  const works = { title: 'آثار', books: [] };
-  const groups = [];
-  kids.forEach((c, i) => {
-    const sub = subs[i], parts = sub?.ChildCats || [];
-    const isDivan = parts.length > 1 && parts.filter((p) => FORMS.test(p.Title)).length >= Math.ceil(parts.length / 2);
-    if (!isDivan) {
-      if (!works.books.length) groups.push(works);
-      works.books.push({ href: `#/c/${catUrl(c.FullUrl)}`, title: c.Title });
-      return;
-    }
-    const g = { title: c.Title, books: parts.map((p) => ({ href: `#/c/${catUrl(p.FullUrl)}`, title: p.Title })) };
-    if ((sub.Poems || []).length) g.books.push({ href: `#/c/${catUrl(c.FullUrl)}/~other`, title: 'سایر اشعار' });
-    groups.push(g);
-  });
-  if (kids.length && (poetCat.Poems || []).length) {
-    if (!works.books.length) groups.push(works);
-    works.books.push({ href: `#/c/${catUrl(poetCat.FullUrl || '')}/~other`, title: 'سایر اشعار' });
-  }
-  return groups;
+  const books = kids.map((c) => ({ href: `#/c/${catUrl(c.FullUrl)}`, title: c.Title }));
+  if (kids.length && (poetCat.Poems || []).length) books.push({ href: `#/c/${catUrl(poetCat.FullUrl || '')}/~other`, title: 'سایر اشعار' });
+  return books.length ? [{ title: 'آثار', books }] : [];
 }
 export function coverHTML(b, author, i) {
   const h = [...b.title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
