@@ -872,3 +872,4 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .logo-hint.show { opacity: 1; translate: 0 0; }
 /* Keep the ticks clear of the scrollbar (it sits on the left in RTL). */
 .w-lb-list li { padding-inline-end: 22px; }
+.w-lb-cap { padding-inline-end: 22px; }
