@@ -1,4 +1,4 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, shelf, shelfHTML } from './data.js';
 import { settings, apply, saved, history } from './store.js';
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
@@ -331,14 +331,15 @@ async function viewCat(path) {
     const h = [...title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
     return `<a class="book" href="${href}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover c${h % 4}"><span class="frame"><b>${esc(title)}</b><small>${esc(author)}</small></span></span></a>`;
   };
-  const books = (cat.ChildCats || []).map((c, i) => cover(catHref(c.FullUrl), c.Title, i)).join('')
-    + (looseAsBook ? cover(`#/c/${esc(slug)}/~other`, 'سایر اشعار', (cat.ChildCats || []).length) : '');
+  // On a poet's page the works are grouped (a divan's forms get their own shelf); deeper pages show one shelf.
+  const groups = isPoet && !other ? await shelf(cat) : null;
+  const books = groups ? '' : (cat.ChildCats || []).map((c, i) => cover(catHref(c.FullUrl), c.Title, i)).join('');
   const poemItem = (p, i) => `<li><a href="${poemHref(p.FullUrl)}" data-u="${esc(clean(p.FullUrl))}"><span class="n">${fa(i + 1)}</span><span class="tt"><span class="fl"></span><small>${esc(p.Title)}</small></span><span class="marks">${marksHTML(clean(p.FullUrl), seen)}</span></a></li>`;
 
   main.dataset.cat = path;
   document.body.classList.toggle('poet-bg', isPoet && !!poet && TOP.includes(slug));
   main.innerHTML = `<button class="icon-btn page-x tip-l" id="pageX" aria-label="بستن" data-tip="بستن">${ICON.x}</button><div class="wrap fadein">${head}
-    ${books ? `<div class="books">${books}</div>` : ''}
+    ${groups ? shelfHTML(groups, author) : books ? `<div class="books">${books}</div>` : ''}
     ${poems.length ? `<div class="list-tools"><span class="count">${fa(poems.length)} شعر</span></div>
       <ul class="poems" id="pm">${poems.slice(0, shown).map(poemItem).join('')}</ul>
       ${poems.length > shown ? `<button class="btn ghost more-btn" id="more">نمایش بیشتر</button>` : ''}` : ''}
@@ -811,7 +812,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.24';
+export const VERSION = '0.9.25';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

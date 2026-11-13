@@ -1,6 +1,6 @@
 // Home page: an endless wall of carved poet portraits.
 // Drag (or scroll) in any direction; tap a portrait to bring it forward with its story.
-import { getPoet, getCat, getManifest, NAMES, TOP, savePoet, isPoetSaved } from './data.js';
+import { getPoet, getCat, getManifest, NAMES, TOP, savePoet, isPoetSaved, shelf, shelfHTML } from './data.js';
 import { attachSheetDrag } from './sheetdrag.js';
 
 // Hand-written era and a famous bayt for some poets; the rest take their years from the data.
@@ -292,7 +292,7 @@ export function mountWall() {
     place(targetRect());
     const ready = info.get(p.slug); // loaded in the background when the wall opened
     panel.innerHTML = panelHTML(p, ready?.poet || null, ready?.cat || null);
-    fitName();
+    fitName(); fillShelves(p, ready?.cat);
     drag?.reset(); panel.classList.remove('full'); root.classList.remove('panel-full');
     panel.classList.add('open');
     panel.setAttribute('aria-hidden', 'false');
@@ -302,7 +302,7 @@ export function mountWall() {
     try {
       // Not loaded yet: swap in the full story once the panel has finished rising.
       const [d] = await Promise.all([loadInfo(p.slug), new Promise((r) => setTimeout(r, 850))]);
-      if (panel.dataset.slug === p.slug) { panel.innerHTML = panelHTML(p, d.poet, d.cat); fitName(); }
+      if (panel.dataset.slug === p.slug) { panel.innerHTML = panelHTML(p, d.poet, d.cat); fitName(); fillShelves(p, d.cat); }
     } catch { /* offline: the short panel is still useful */ }
   }
 
@@ -352,17 +352,19 @@ export function mountWall() {
     if (b) { b.classList.remove('busy'); b.classList.toggle('saved', ok); b.style.setProperty('--p', 0); if (ok) { b.setAttribute('aria-label', 'برای خواندن آفلاین ذخیره شده'); b.dataset.tip = 'ذخیره شده'; } }
   }
 
-  // Same cloth-bound covers as the poet page, cloth colour picked from the title.
-  function cover(href, title, author, i) {
-    const h = [...title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
-    return `<a class="book" href="${href}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover c${h % 4}"><span class="frame"><b>${esc(title)}</b><small>${esc(author)}</small></span></span></a>`;
+  const shelves = new Map();
+  async function fillShelves(p, cat) {
+    if (!cat) return;
+    if (!shelves.has(p.slug)) shelves.set(p.slug, shelf(cat).catch(() => { shelves.delete(p.slug); return []; }));
+    const groups = await shelves.get(p.slug);
+    const box = panel.querySelector('#wpShelves');
+    if (box && panel.dataset.slug === p.slug) box.innerHTML = shelfHTML(groups, p.full, 'wp-shelf');
   }
   function panelHTML(p, poet, cat) {
     panel.dataset.slug = p.slug;
     const years = poet?.BirthYearInLHijri && poet?.DeathYearInLHijri ? `${fa(poet.BirthYearInLHijri)} – ${fa(poet.DeathYearInLHijri)} ق` : '';
     const places = poet ? [poet.BirthPlace, poet.DeathPlace].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(' · ') : '';
     const intro = poet?.Description ? poet.Description.split(/(?<=[.!؟])\s+/).slice(0, 3).join(' ') : '';
-    const books = cat?.ChildCats || [];
     return `
       <div class="wp-grip" id="wpClose" aria-hidden="true"><i></i></div>
       ${dlButton(p.slug)}
@@ -371,8 +373,7 @@ export function mountWall() {
       <p class="wp-era">${p.era || [years, esc(places)].filter(Boolean).join(' · ')}</p>
       ${p.bayt ? `<blockquote class="wp-bayt"><span>${p.bayt[0]}</span><span>${p.bayt[1]}</span></blockquote>` : ''}
       ${intro ? `<p class="wp-intro">${esc(intro)}</p>` : poet ? '' : '<div class="wp-wait"><i></i><i></i><i></i></div>'}
-      ${books.length ? `<div class="wp-rule"><span>آثار</span></div>
-        <div class="books wp-shelf">${books.map((b, i) => cover(`#/c/${b.FullUrl.replace(/^\//, '')}`, b.Title, p.full, i)).join('')}${cat.Poems?.length ? cover(`#/c/${p.slug}/~other`, 'سایر اشعار', p.full, books.length) : ''}</div>` : ''}`;
+      <div class="wp-shelves" id="wpShelves"></div>`;
   }
 
   /* ── All poets: a lightbox over the wall ── */

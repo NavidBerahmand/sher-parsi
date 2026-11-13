@@ -772,3 +772,14 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 /* The wall's poet panel: the same book covers, always two to a row. */
 .books.wp-shelf { grid-template-columns: repeat(2, 1fr); gap: 22px 18px; margin: 4px 0 30px; padding: 0 4px; }
 .wp-shelf .cover b { font-size: 1.02rem; }
+
+/* Shelves: one titled group per divan, the other works under «آثار». */
+.shelf { margin-top: 30px; }
+.shelf-h { display: flex; align-items: center; gap: 14px; margin: 0 0 4px; font-size: .9rem; font-weight: 500; color: var(--muted); }
+.shelf-h::before, .shelf-h::after { content: ''; flex: 1; height: 1px; background: var(--hair); }
+.shelf .books { margin-top: 14px; }
+.wp-shelves .shelf-h { color: var(--w-paper-mid); }
+/* Panel covers are the same size as on the poet page. */
+.books.wp-shelf { grid-template-columns: repeat(2, minmax(0, 150px)); justify-content: center; gap: 22px 22px; margin: 14px 0 6px; padding: 0; }
+.wp-shelf .cover b { font-size: 1rem; }
+.wp-shelves { margin-bottom: 30px; }

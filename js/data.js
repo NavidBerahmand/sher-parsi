@@ -223,3 +223,42 @@ export function hash(s) {
   for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
+
+/* A poet's shelf: works grouped for display as book covers.
+   A work whose parts are verse forms (a divan: غزلیات، قصاید…) becomes its own titled group with a cover per part;
+   every other work (a masnavi, a book of prose, a single collection) is one cover in the «آثار» group. */
+const FORMS = /غزل|قصا?ید|قصیده|رباعی|قطعات|قطعه|ترجیع|ترکیب|مسمط|مثنوی|مثنویات|مستدرک|ملحقات|مفردات|مراثی|دوبیتی|اشعار|منتسب|تصنیف|مستزاد|چکامه|سایر/;
+const catUrl = (u) => String(u).replace(/^\/+/, '');
+export async function shelf(poetCat) {
+  const kids = poetCat.ChildCats || [];
+  const subs = await Promise.all(kids.map((c) => getCat(catUrl(c.FullUrl)).catch(() => null)));
+  const works = { title: 'آثار', books: [] };
+  const groups = [];
+  kids.forEach((c, i) => {
+    const sub = subs[i], parts = sub?.ChildCats || [];
+    const isDivan = parts.length > 1 && parts.filter((p) => FORMS.test(p.Title)).length >= Math.ceil(parts.length / 2);
+    if (!isDivan) {
+      if (!works.books.length) groups.push(works);
+      works.books.push({ href: `#/c/${catUrl(c.FullUrl)}`, title: c.Title });
+      return;
+    }
+    const g = { title: c.Title, books: parts.map((p) => ({ href: `#/c/${catUrl(p.FullUrl)}`, title: p.Title })) };
+    if ((sub.Poems || []).length) g.books.push({ href: `#/c/${catUrl(c.FullUrl)}/~other`, title: 'سایر اشعار' });
+    groups.push(g);
+  });
+  if (kids.length && (poetCat.Poems || []).length) {
+    if (!works.books.length) groups.push(works);
+    works.books.push({ href: `#/c/${catUrl(poetCat.FullUrl || '')}/~other`, title: 'سایر اشعار' });
+  }
+  return groups;
+}
+export function coverHTML(b, author, i) {
+  const h = [...b.title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const e = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  return `<a class="book" href="${e(b.href)}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover c${h % 4}"><span class="frame"><b>${e(b.title)}</b><small>${e(author)}</small></span></span></a>`;
+}
+export function shelfHTML(groups, author, extra = '') {
+  let n = 0;
+  return groups.map((g) => `<section class="shelf"><h3 class="shelf-h"><span>${coverEsc(g.title)}</span></h3><div class="books ${extra}">${g.books.map((b) => coverHTML(b, author, n++)).join('')}</div></section>`).join('');
+}
+const coverEsc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
