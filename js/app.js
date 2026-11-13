@@ -82,6 +82,7 @@ let menuReturn = null;
 function syncMenuSettings() {
   const s = settings.get();
   $('#mxSz').value = s.size;
+  $('#mxWt').value = s.weight;
   $('#mxTheme').setAttribute('aria-checked', String(s.theme === 'dark'));
   $('#mxHk').setAttribute('aria-checked', String(!!s.harakat));
 }
@@ -135,6 +136,10 @@ $('#mxSz').addEventListener('input', (e) => { settings.set({ size: +e.target.val
 const nudgeSize = (d) => { const v = Math.min(1.6, Math.max(0.8, Math.round((settings.get().size + d) * 20) / 20)); settings.set({ size: v }); $('#mxSz').value = v; restretchSoon(); };
 $('#mxSm').addEventListener('click', () => nudgeSize(-0.1));
 $('#mxLg').addEventListener('click', () => nudgeSize(0.1));
+$('#mxWt').addEventListener('input', (e) => { settings.set({ weight: +e.target.value }); restretchSoon(); });
+const nudgeWeight = (d) => { const v = Math.min(600, Math.max(250, settings.get().weight + d)); settings.set({ weight: v }); $('#mxWt').value = v; restretchSoon(); };
+$('#mxLt').addEventListener('click', () => nudgeWeight(-25));
+$('#mxBd').addEventListener('click', () => nudgeWeight(25));
 // On touch screens the switches have no hover: show their name for a moment after a tap.
 document.querySelectorAll('.mx-sw').forEach((b) => b.addEventListener('click', () => {
   if (matchMedia('(hover: hover)').matches) return;
@@ -903,7 +908,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.50';
+export const VERSION = '0.9.51';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

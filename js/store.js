@@ -11,7 +11,7 @@ export const settings = {
   // Dark is the default; a theme saved before the reader chose one in settings is ignored.
   get() {
     const r = read('sp.settings', {});
-    return { font: 'naskh', size: 1, harakat: true, ...r, theme: r.themeChosen ? r.theme : 'dark' };
+    return { font: 'naskh', size: 1, weight: 350, harakat: true, ...r, theme: r.themeChosen ? r.theme : 'dark' };
   },
   set(patch) {
     const s = { ...this.get(), ...patch };
@@ -26,6 +26,7 @@ export function apply(s = settings.get()) {
   if (s.theme === 'dark') root.dataset.theme = 'dark'; else delete root.dataset.theme;
   root.dataset.font = s.font === 'sans' ? 'sans' : 'naskh';
   root.style.setProperty('--poem-scale', s.size);
+  root.style.setProperty('--fw-verse', s.weight);
   const bg = getComputedStyle(document.body).backgroundColor;
   document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', bg));
 }

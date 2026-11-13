@@ -877,3 +877,6 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .pcard .poem-head { padding-top: 56px; }
 .pcard .ptitle { margin-top: 18px; padding-inline: 16px; }
 .pcard .verses { margin-top: 60px; }
+/* Weight slider: a thin آ at one end, a bold آ at the other. */
+#mxLt, #mxBd { font-size: 1.1rem; }
+#mxLt { font-weight: 250; } #mxBd { font-weight: 700; }
