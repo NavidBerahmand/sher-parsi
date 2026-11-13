@@ -540,7 +540,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
   .w-title { font-size: 1.15rem; }
   .w-btn span { display: none; }
   .w-btn svg { width: 22px; height: 22px; }
-  .w-name { bottom: 8px; font-size: .85rem; }
+  .w-name { bottom: 8px; font-size: .72rem; }
   .w-tile img { transform: scale(.86); }
   /* A tall sheet resting at 64% of the screen; drag it up to read it all, down to close. */
   .w-panel {
@@ -786,7 +786,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 
 /* Dibaj weights per part of the site (Navid, 2026-11-13). */
 .brand, .w-title, .splash-box b { font-weight: var(--fw-brand); }
-.poet-head h1, .wp-name, .poet-list b, .w-name, .w-lb-list a { font-weight: var(--fw-name); }
+.poet-head h1, .wp-name, .poet-list b, .w-lb-list a { font-weight: var(--fw-name); }
 .poet-list b { font-weight: var(--fw-name); }
 .poet-head .meta, .wp-era { font-weight: var(--fw-meta); }
 .ptitle, .poem-head h1, .cat-title, .page-title h1, .w-lb-card h2 { font-weight: var(--fw-title); }
@@ -796,3 +796,5 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .cover b { font-weight: var(--fw-cover); }
 .btn, .w-all, .wp-cta, .mx-pill, .lb-x, .sheet button, .share-opts button { font-weight: var(--fw-btn); }
 .wp-bayt, .mx-l { font-weight: var(--fw-verse); }
+.w-name { font-size: .88rem; font-weight: 300; }
+@media (max-width: 767px) { .w-name { font-size: .72rem; } }
