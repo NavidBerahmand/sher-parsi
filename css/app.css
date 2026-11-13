@@ -1,9 +1,5 @@
+@font-face { font-family: "Dibaj"; src: url(../fonts/dibaj-vf.woff2) format("woff2"); font-weight: 200 950; font-display: swap; }
 /* ───────── Fonts ───────── */
-@font-face { font-family: "Lateef"; src: url(../fonts/lateef-arabic-200-normal.woff2) format("woff2"); font-weight: 200; font-display: swap; unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC; }
-@font-face { font-family: "Lateef"; src: url(../fonts/lateef-arabic-300-normal.woff2) format("woff2"); font-weight: 300; font-display: swap; unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC; }
-@font-face { font-family: "Lateef"; src: url(../fonts/lateef-latin-300-normal.woff2) format("woff2"); font-weight: 300; font-display: swap; unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
-@font-face { font-family: "Lateef"; src: url(../fonts/lateef-arabic-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; unicode-range: U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC; }
-@font-face { font-family: "Lateef"; src: url(../fonts/lateef-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 
 /* ───────── Tokens ───────── */
 :root {
@@ -19,9 +15,11 @@
   --gold: #585e4a;
   --shadow: 0 1px 2px rgb(60 66 45 / .06), 0 8px 24px rgb(60 66 45 / .07);
 
-  --ui: "Lateef", system-ui, sans-serif;
-  --poem: "Lateef", serif;
-  --verse: "Lateef", serif;
+  --ui: "Dibaj", system-ui, sans-serif;
+  /* Dibaj weights chosen by Navid (2026-11-13) */
+  --fw-brand: 500; --fw-name: 450; --fw-meta: 450; --fw-title: 450; --fw-text: 300; --fw-verse: 250; --fw-cover: 800; --fw-btn: 400; --fw-strong: 450;
+  --poem: "Dibaj", serif;
+  --verse: "Dibaj", serif;
   --poem-scale: 1;
   --poem-size: calc(1.15rem * var(--poem-scale));
 
@@ -43,7 +41,7 @@
 :root[data-theme="dark"] .wall-root { --w-plaster: #2f3526; --w-grout: #262b1f; --w-paper: var(--bg); --w-paper-ink: var(--ink); --w-paper-mid: var(--muted); --w-accent: var(--accent); }
 /* ───────── Base ───────── */
 *, *::before, *::after { box-sizing: border-box; }
-html { font-size: 150%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html { font-size: 106%; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   margin: 0; min-height: 100dvh;
   background: var(--bg); color: var(--ink);
@@ -56,7 +54,7 @@ a { color: inherit; text-decoration: none; }
 button { font: inherit; letter-spacing: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 input { font: inherit; color: inherit; }
 svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-h1, h2, h3 { margin: 0; font-weight: 500; line-height: 1.4; }
+h1, h2, h3 { margin: 0; font-weight: var(--fw-strong); line-height: 1.4; }
 p { margin: 0; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
 .skip { position: absolute; inset-inline-start: -999px; top: 8px; background: var(--ink); color: var(--bg); padding: 6px 12px; border-radius: 8px; z-index: 99; }
@@ -70,7 +68,7 @@ p { margin: 0; }
   pointer-events: none;
 }
 .topbar > * { pointer-events: auto; }
-.brand { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 1.08rem; letter-spacing: -.01em; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: var(--fw-strong); font-size: 1.08rem; letter-spacing: -.01em; }
 .brand-mark { display: grid; place-items: center; width: 30px; height: 30px; color: var(--accent); }
 .brand-mark svg { width: 26px; height: 26px; }
 .icon-btn {
@@ -127,18 +125,18 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
 }
 
 /* ───────── Shared pieces ───────── */
-.eyebrow { font-size: .8rem; color: var(--muted); font-weight: 500; }
+.eyebrow { font-size: .8rem; color: var(--muted); font-weight: var(--fw-strong); }
 .section { margin-top: 36px; }
 .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
 .section-head h2 { font-size: 1.12rem; }
-.link { color: var(--accent); font-weight: 500; font-size: .92rem; }
+.link { color: var(--accent); font-weight: var(--fw-strong); font-size: .92rem; }
 .card {
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  height: 48px; padding: 0 22px; border-radius: 999px; font-weight: 500;
+  height: 48px; padding: 0 22px; border-radius: 999px; font-weight: var(--fw-strong);
   background: var(--accent); color: var(--bg); transition: transform .12s, opacity .15s;
 }
 .btn:active { transform: scale(.97); }
@@ -173,21 +171,21 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
 .today .eyebrow svg { width: 16px; height: 16px; }
 .today .verses { margin: 18px 0 16px; font-size: calc(var(--poem-size) * 1.02); }
 .today .foot { display: flex; align-items: center; justify-content: space-between; font-size: .9rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
-.today .foot b { color: var(--ink); font-weight: 500; }
+.today .foot b { color: var(--ink); font-weight: var(--fw-strong); }
 .today .foot .link { display: inline-flex; align-items: center; gap: 4px; }
 .today .foot .link svg { width: 16px; height: 16px; }
 
 .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
 .tile { display: flex; flex-direction: column; gap: 10px; padding: 18px; text-align: start; }
 .tile .ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
-.tile b { font-weight: 500; font-size: 1rem; }
+.tile b { font-weight: var(--fw-strong); font-size: 1rem; }
 .tile span { font-size: .8rem; color: var(--muted); line-height: 1.6; }
 .tile:active { transform: scale(.98); }
 
 .continue { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
 .continue .ic { width: 42px; height: 42px; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; color: var(--muted); }
 .continue .t { flex: 1; min-width: 0; }
-.continue .t b { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.continue .t b { display: block; font-weight: var(--fw-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .continue .t span { font-size: .8rem; color: var(--muted); }
 
 .poet-strip { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px var(--gutter) 10px; margin: 0 calc(var(--gutter) * -1); scrollbar-width: none; }
@@ -196,7 +194,7 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
 .poet-chip .mono { width: 72px; height: 72px; font-size: 1.7rem; }
 .mono {
   display: grid; place-items: center; border-radius: 50%; flex: none;
-  font-family: var(--poem); font-weight: 500; line-height: 1;
+  font-family: var(--poem); font-weight: var(--fw-strong); line-height: 1;
   background: var(--surface); border: 1px solid var(--line); color: var(--accent);
   box-shadow: var(--shadow);
 }
@@ -216,7 +214,7 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
 .poet-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; }
 .poet-list a { display: flex; align-items: center; gap: 14px; padding: 12px 2px; border-bottom: 1px solid var(--line); }
 .poet-list .mono { width: 44px; height: 44px; font-size: 1.15rem; box-shadow: none; }
-.poet-list b { font-weight: 500; }
+.poet-list b { font-weight: var(--fw-strong); }
 .poet-list .chev { margin-inline-start: auto; color: var(--muted); width: 18px; height: 18px; }
 @media (min-width: 640px) { .poet-list { grid-template-columns: 1fr 1fr; column-gap: 28px; } }
 
@@ -238,7 +236,7 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 .poet-head .meta { color: var(--muted); font-size: .88rem; margin: 4px 0 0; }
 .bio { margin-top: 18px; color: var(--ink-soft); font-size: .95rem; line-height: 2; text-align: justify; }
 .bio.clamp { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-.bio-toggle { margin-top: 6px; color: var(--accent); font-size: .9rem; font-weight: 500; }
+.bio-toggle { margin-top: 6px; color: var(--accent); font-size: .9rem; font-weight: var(--fw-strong); }
 .cat-title { padding-top: 10px; font-size: 1.5rem; }
 .cat-desc { margin-top: 8px; color: var(--muted); font-size: .92rem; }
 
@@ -260,7 +258,7 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
   background: linear-gradient(to left, rgb(0 0 0 / .28), rgb(255 255 255 / .07) 55%, rgb(0 0 0 / .22) 62%, rgb(255 255 255 / .05) 70%, transparent); }
 .cover .frame { position: absolute; inset: 9% 17% 9% 9%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center;
   border: 1px solid var(--foil); border-radius: 2px; padding: 22% 8% 10%; }
-.cover b { font-weight: 500; font-size: 1.12rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; text-wrap: balance; }
+.cover b { font-weight: var(--fw-strong); font-size: 1.12rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; text-wrap: balance; }
 .cover small { font-size: .68rem; opacity: .72; line-height: 1.4; }
 .cover.c1 { --cloth: #a9ad91; --ink-c: #2b2e22; --foil: rgb(43 46 34 / .35); }
 .cover.c2 { --cloth: #e7e1cf; --ink-c: #3d4232; --foil: rgb(61 66 50 / .4); }
@@ -298,11 +296,11 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 .poem-head { text-align: center; padding: 26px 0 8px; }
 .poem-head .who { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .88rem; }
 .poem-head .who a:hover { color: var(--accent); }
-.poem-head h1 { margin-top: 8px; font-size: 1.35rem; font-weight: 500; }
-.fal-badge { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; padding: 4px 12px; border-radius: 999px; font-size: .8rem; background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--gold); font-weight: 500; }
+.poem-head h1 { margin-top: 8px; font-size: 1.35rem; font-weight: var(--fw-strong); }
+.fal-badge { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; padding: 4px 12px; border-radius: 999px; font-size: .8rem; background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--gold); font-weight: var(--fw-strong); }
 .fal-badge svg { width: 15px; height: 15px; }
 
-.verses { font-family: var(--verse); font-weight: 300; font-size: calc(var(--poem-size) * 1.1); line-height: 1.9; color: var(--ink); }
+.verses { font-family: var(--verse); font-weight: var(--fw-verse); font-size: calc(var(--poem-size) * 1.1); line-height: 1.9; color: var(--ink); }
 .poem .verses { margin: 18px 0 8px; }
 .bayt { position: relative; display: block; width: 100%; padding: 10px 6px; border-radius: 12px; text-align: inherit; cursor: pointer; transition: background .2s; }
 @media (hover: hover) { .bayt:hover { background: color-mix(in srgb, var(--surface-2) 70%, transparent); } }
@@ -325,7 +323,7 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 }
 
 .about { margin-top: 26px; padding: 18px 20px; }
-.about summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 500; }
+.about summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: var(--fw-strong); }
 .about summary::-webkit-details-marker { display: none; }
 .about summary svg { width: 18px; height: 18px; color: var(--muted); transition: transform .2s; }
 .about[open] summary svg { transform: rotate(180deg); }
@@ -363,12 +361,12 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 .saved-list { list-style: none; margin: 14px 0 0; padding: 0; }
 .saved-item { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); }
 .saved-item a { flex: 1; min-width: 0; padding: 14px 2px; }
-.saved-item .t { font-weight: 500; }
+.saved-item .t { font-weight: var(--fw-strong); }
 .saved-item .s { display: block; font-size: .82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .saved-item .q { display: block; font-family: var(--poem); font-size: 1rem; color: var(--ink-soft); margin-bottom: 2px; }
 .empty-state { text-align: center; padding: 56px 16px; color: var(--muted); }
 .empty-state svg { width: 44px; height: 44px; stroke-width: 1.2; color: var(--line); margin-bottom: 10px; }
-.empty-state b { display: block; color: var(--ink); font-weight: 500; margin-bottom: 4px; }
+.empty-state b { display: block; color: var(--ink); font-weight: var(--fw-strong); margin-bottom: 4px; }
 
 /* ───────── Sheet ───────── */
 .sheet-backdrop { position: fixed; inset: 0; z-index: 40; background: rgb(30 33 24 / .38); opacity: 0; transition: opacity .25s; }
@@ -391,7 +389,7 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 .sheet .q { font-family: var(--poem); font-size: calc(var(--poem-size) * 1.02); line-height: 2.1; text-align: center; padding: 18px 8px; border-radius: 16px; background: var(--bg); }
 .sheet .q .m { text-align: center; padding: 0; }
 .sheet .meaning { margin-top: 16px; }
-.sheet .meaning b { display: block; font-size: .82rem; color: var(--gold); font-weight: 500; margin-bottom: 4px; }
+.sheet .meaning b { display: block; font-size: .82rem; color: var(--gold); font-weight: var(--fw-strong); margin-bottom: 4px; }
 .sheet .meaning p { color: var(--ink-soft); line-height: 2; font-size: .95rem; }
 .sheet .actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 20px; }
 .sheet .actions button { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border-radius: 14px; background: var(--surface-2); font-size: .82rem; }
@@ -401,7 +399,7 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 .setting > span { display: block; font-size: .85rem; color: var(--muted); margin-bottom: 8px; }
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; border-radius: 14px; background: var(--surface-2); }
 .seg button { height: 42px; border-radius: 10px; font-size: .9rem; color: var(--ink-soft); display: flex; align-items: center; justify-content: center; gap: 6px; }
-.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); font-weight: 500; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); font-weight: var(--fw-strong); }
 .seg .sw { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--line); }
 .size-row { display: flex; align-items: center; gap: 14px; }
 .size-row input[type=range] { flex: 1; accent-color: var(--accent); }
@@ -424,7 +422,7 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 
 .install { display: flex; align-items: center; gap: 12px; padding: 14px 16px; margin-top: 14px; }
 .install .t { flex: 1; font-size: .88rem; }
-.install .t b { display: block; font-weight: 500; font-size: .95rem; }
+.install .t b { display: block; font-weight: var(--fw-strong); font-size: .95rem; }
 .install .btn { height: 38px; padding: 0 16px; font-size: .88rem; }
 
 .footer-note { margin-top: 48px; text-align: center; font-size: .78rem; color: var(--muted); line-height: 2; }
@@ -474,7 +472,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
           mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
   transition: opacity .5s;
 }
-.w-title { font-family: var(--poem); font-weight: 500; font-size: 1.35rem; color: var(--w-ink); text-shadow: 0 1px 0 rgb(0 0 0 / .15); white-space: nowrap; }
+.w-title { font-family: var(--poem); font-weight: var(--fw-strong); font-size: 1.35rem; color: var(--w-ink); text-shadow: 0 1px 0 rgb(0 0 0 / .15); white-space: nowrap; }
 .w-menu img { width: 54px; }
 .w-btn { display: inline-flex; align-items: center; gap: 7px; font-size: .9rem; color: var(--w-ink-soft); white-space: nowrap; transition: color .25s; }
 .w-btn:hover { color: #fff; }
@@ -503,9 +501,9 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 .wp-close { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; color: var(--w-paper-mid); margin-inline-end: -10px; }
 .wp-close:hover { background: rgb(0 0 0 / .05); }
 .wp-close svg { width: 18px; height: 18px; }
-.wp-rule { display: flex; justify-content: center; margin: 36px 0 10px; color: var(--w-accent); font-size: .85rem; font-weight: 500; }
+.wp-rule { display: flex; justify-content: center; margin: 36px 0 10px; color: var(--w-accent); font-size: .85rem; font-weight: var(--fw-strong); }
 .wp-head + .wp-rule { margin-top: 18px; }
-.wp-name { text-align: center; font-family: var(--poem); font-weight: 500; font-size: 1.6rem; line-height: 1.4; white-space: nowrap; padding-inline: 34px; }
+.wp-name { text-align: center; font-family: var(--poem); font-weight: var(--fw-strong); font-size: 1.6rem; line-height: 1.4; white-space: nowrap; padding-inline: 34px; }
 /* Whole-poet download: outline icon; a ring fills while saving; solid once saved. */
 .wp-dl { position: absolute; top: 34px; right: 26px; z-index: 3; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%;
   color: var(--w-paper-mid); border: 1.5px solid color-mix(in srgb, var(--w-paper-ink) 22%, transparent); transition: background .3s, color .3s, border-color .3s; }
@@ -530,7 +528,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 .wp-books li + li a { border-top: 1px solid var(--hair); }
 .wp-books a:hover { color: var(--w-accent); }
 .wp-books svg { width: 16px; height: 16px; color: var(--w-paper-mid); }
-.wp-cta { display: flex; align-items: center; justify-content: center; height: 50px; margin-top: 28px; border-radius: 999px; background: var(--w-plaster); color: var(--w-ink); font-weight: 500; transition: background .2s; }
+.wp-cta { display: flex; align-items: center; justify-content: center; height: 50px; margin-top: 28px; border-radius: 999px; background: var(--w-plaster); color: var(--w-ink); font-weight: var(--fw-strong); transition: background .2s; }
 .wp-cta:hover { background: #687052; }
 .wp-wait { display: flex; justify-content: center; gap: 6px; margin-top: 24px; }
 .wp-wait i { width: 6px; height: 6px; border-radius: 50%; background: var(--w-paper-mid); opacity: .4; animation: wpdot 1.2s infinite; }
@@ -571,7 +569,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 }
 .pcard .poem-bar { margin: 0 -6px; padding-top: 8px; }
 .pcard .poem-head { padding-top: 18px; }
-.pcard .ptitle { margin-top: 8px; font-size: 1.35rem; font-weight: 500; }
+.pcard .ptitle { margin-top: 8px; font-size: 1.35rem; font-weight: var(--fw-strong); }
 .pcard .verses { margin: 26px 0 8px; }
 .pcard .about { margin-top: 56px; padding: 20px 4px 112px; border-top: 0; }
 .pcard .about summary { justify-content: center; gap: 6px; font-size: .82rem; font-weight: 300; color: var(--muted); }
@@ -634,7 +632,7 @@ body.psheet-open { overflow: hidden; }
 .w-all {
   position: fixed; z-index: 30; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom, 0px)); translate: -50% 0;
   padding: 6px 20px 8px; border-radius: 999px; background: var(--w-paper); color: var(--w-paper-ink); font-family: inherit; border: 0; cursor: pointer;
-  font-size: .84rem; font-weight: 500; white-space: nowrap; box-shadow: 0 8px 28px rgb(20 24 14 / .28);
+  font-size: .84rem; font-weight: var(--fw-strong); white-space: nowrap; box-shadow: 0 8px 28px rgb(20 24 14 / .28);
   transition: opacity .5s, transform .15s;
 }
 .w-all:active { transform: scale(.96); }
@@ -647,7 +645,7 @@ body.psheet-open { overflow: hidden; }
   background: var(--w-paper); color: var(--w-paper-ink); border-radius: 22px; box-shadow: 0 24px 70px rgb(15 18 10 / .35);
   padding: 24px 22px 10px; transform: translateY(14px) scale(.97); transition: transform .45s cubic-bezier(.22,1,.36,1); }
 .w-lb.open .w-lb-card { transform: none; }
-.w-lb-card h2 { text-align: center; font-size: 1.3rem; font-weight: 500; margin: 0 0 14px; }
+.w-lb-card h2 { text-align: center; font-size: 1.3rem; font-weight: var(--fw-strong); margin: 0 0 14px; }
 .w-lb-q { width: 100%; padding: 8px 16px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--w-paper-ink) 14%, transparent);
   background: transparent; color: inherit; font: inherit; font-size: 1rem; outline: none; margin-bottom: 8px; }
 .w-lb-list { flex: 1; min-height: 0; list-style: none; margin: 0; padding: 0; overflow: auto; overscroll-behavior: contain; }
@@ -656,7 +654,7 @@ body.psheet-open { overflow: hidden; }
 .w-lb-list a { flex: 1; display: block; padding: 10px 0; font-size: 1.1rem; color: inherit; }
 .w-lb-cap { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 14px 0 2px; padding: 0 6px 8px; border-bottom: 1px solid color-mix(in srgb, var(--w-paper-ink) 8%, transparent); font-size: .72rem; color: var(--w-paper-mid); }
 .w-lb-allrow { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.w-lb-allrow b { font-weight: 500; font-size: .9rem; color: var(--w-paper-ink); }
+.w-lb-allrow b { font-weight: var(--fw-strong); font-size: .9rem; color: var(--w-paper-ink); }
 .w-lb-tick { position: relative; flex: none; width: 20px; height: 20px; cursor: pointer; }
 .w-lb-tick input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: inherit; }
 .w-lb-tick i { position: absolute; inset: 0; border-radius: 5px; border: 1.5px solid color-mix(in srgb, var(--w-paper-ink) 35%, transparent); transition: background .2s, border-color .2s; }
@@ -706,14 +704,14 @@ body.menu-open { overflow: hidden; }
 .mx-nav { display: flex; flex-direction: column; padding-top: 6px; }
 .mx-nav a, .mx-nav button { display: block; width: 100%; text-align: start; padding: 11px 6px; font: inherit; font-size: 1.12rem; color: inherit; background: none; border: 0; cursor: pointer; border-radius: 10px; }
 .mx-nav > * + * { border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); }
-.mx-nav a[aria-current="page"] { color: var(--accent); font-weight: 500; }
+.mx-nav a[aria-current="page"] { color: var(--accent); font-weight: var(--fw-strong); }
 .mx-nav a:hover, .mx-nav button:hover { color: var(--accent); }
 .mx-nav button { font-size: 1rem; color: var(--ink-soft, var(--ink)); }
 .mx-list { list-style: none; margin: 0; padding: 0; }
 .mx-list li + li { border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); }
 .mx-list a { display: block; padding: 11px 6px; color: inherit; }
 .mx-l { display: block; font-size: 1.05rem; line-height: 1.75; }
-.mx-l mark { background: none; color: var(--accent); font-weight: 600; }
+.mx-l mark { background: none; color: var(--accent); font-weight: var(--fw-strong); }
 .mx-list small { display: block; margin-top: 2px; font-size: .74rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mx-list a:hover .mx-l { color: var(--accent); }
 .mx-note { padding: 22px 8px; text-align: center; color: var(--muted); font-size: .9rem; line-height: 1.9; margin: 0; }
@@ -775,7 +773,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 
 /* Shelves: one titled group per divan, the other works under «آثار». */
 .shelf { margin-top: 30px; }
-.shelf-h { display: flex; align-items: center; gap: 14px; margin: 0 0 4px; font-size: .9rem; font-weight: 500; color: var(--muted); }
+.shelf-h { display: flex; align-items: center; gap: 14px; margin: 0 0 4px; font-size: .9rem; font-weight: var(--fw-strong); color: var(--muted); }
 .shelf-h::before, .shelf-h::after { content: ''; flex: 1; height: 1px; background: var(--hair); }
 .shelf .books { margin-top: 14px; }
 .wp-shelves .shelf-h { color: var(--w-paper-mid); }
@@ -785,3 +783,16 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .wp-shelves { margin-bottom: 30px; }
 .wall-root.solo .w-tile { box-shadow: none !important; outline: none; }
 .wall-root.solo .wall { cursor: default; }
+
+/* Dibaj weights per part of the site (Navid, 2026-11-13). */
+.brand, .w-title, .splash-box b { font-weight: var(--fw-brand); }
+.poet-head h1, .wp-name, .poet-list b, .w-name, .w-lb-list a { font-weight: var(--fw-name); }
+.poet-list b { font-weight: var(--fw-name); }
+.poet-head .meta, .wp-era { font-weight: var(--fw-meta); }
+.ptitle, .poem-head h1, .cat-title, .page-title h1, .w-lb-card h2 { font-weight: var(--fw-title); }
+.poem-head .who, .crumbs { font-weight: var(--fw-title); }
+.bio, .wp-intro, .poems, .poems .fl, .mx-nav a, .mx-nav button, .mx-list, .mx-search input, .search input, .w-lb-q, .w-lb-hint, .mx-note, .mx-ver, .site-ver, .about p { font-weight: var(--fw-text); }
+.mx-nav a[aria-current="page"] { font-weight: var(--fw-text); }
+.cover b { font-weight: var(--fw-cover); }
+.btn, .w-all, .wp-cta, .mx-pill, .lb-x, .sheet button, .share-opts button { font-weight: var(--fw-btn); }
+.wp-bayt, .mx-l { font-weight: var(--fw-verse); }

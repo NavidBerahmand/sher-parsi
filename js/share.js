@@ -71,8 +71,8 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
   const soft = dark ? '#b9bca6' : '#7a7e69';
 
   await Promise.all([
-    document.fonts.load('300 72px Lateef'),
-    document.fonts.load('300 40px Lateef'),
+    document.fonts.load('250 72px Dibaj'),
+    document.fonts.load('450 40px Dibaj'),
   ]).catch(() => {});
   const logo = await loadImg(dark ? 'icons/logo-2.svg' : 'icons/logo.svg');
 
@@ -97,7 +97,7 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
   const fading = shown.length > b - a + 1;
   // Leave room above and below the sharp couplets for the fade.
   let size = 58; // the same size as the single-couplet image
-  const font = () => { ctx.font = `300 ${size}px Lateef`; };
+  const font = () => { ctx.font = `250 ${size}px Dibaj`; };
   font();
   const widest = (ls) => Math.max(...ls.map((l) => ctx.measureText(l).width));
   while (size > 34 && widest(sharp) > maxW) { size -= 2; font(); }
@@ -146,9 +146,9 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
 
   // Poet name, and the poem title under it.
   ctx.textAlign = 'center';
-  ctx.fillStyle = ink; ctx.font = '300 48px Lateef';
+  ctx.fillStyle = ink; ctx.font = '450 48px Dibaj';
   ctx.fillText(poet || '', W / 2, H - 380);
-  if (title) { ctx.fillStyle = soft; ctx.font = '300 36px Lateef'; ctx.fillText(title, W / 2, H - 310); }
+  if (title) { ctx.fillStyle = soft; ctx.font = '300 36px Dibaj'; ctx.fillText(title, W / 2, H - 310); }
 
   return new Promise((res) => c.toBlob(res, 'image/png'));
 }
