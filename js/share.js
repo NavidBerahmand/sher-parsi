@@ -19,6 +19,12 @@ function loadImg(src) {
 }
 
 export async function baytImage({ lines, poet, title, dark }) {
+  return poemImage({ groups: [lines], focus: 0, poet, title, dark });
+}
+
+// groups: the poem's couplets (each an array of hemistichs). The three couplets around `focus` are sharp;
+// a few more above and below fade away towards the logo and the names.
+export async function poemImage({ groups, focus, poet, title, dark }) {
   const W = 1080, H = 1920;
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
@@ -40,22 +46,64 @@ export async function baytImage({ lines, poet, title, dark }) {
   // Logo, small, top centre.
   if (logo) { const lw = 120, lh = lw * 119.36 / 154.66; ctx.drawImage(logo, (W - lw) / 2, 250, lw, lh); }
 
-  // Verses: one font size so the widest hemistich fits; every hemistich justified to that width.
+  // Which couplets: the sharp three, plus up to three on each side to fade out.
+  groups = groups.map((g) => g.filter((l) => l && l.trim())).filter((g) => g.length);
+  focus = Math.max(0, Math.min(groups.length - 1, focus));
+  const a = Math.max(0, focus - 1), b = Math.min(groups.length - 1, a + 2);
+  const from = Math.max(0, a - 3), to = Math.min(groups.length - 1, b + 3);
+  const shown = groups.slice(from, to + 1);
+  const sharp = shown.slice(a - from, b - from + 1).flat();
+
+  // One font size so the widest sharp hemistich fits; every hemistich justified to that width.
   const maxW = W - 220;
-  let size = 60;
-  ctx.font = `300 ${size}px Lateef`;
-  const widest = () => Math.max(...lines.map((l) => ctx.measureText(l).width));
-  while (size > 40 && widest() > maxW) { size -= 2; ctx.font = `300 ${size}px Lateef`; }
-  const width = Math.min(maxW, widest());
-  const lh = size * 2.1;
-  const pairGap = size * 0.9;
-  const total = lines.length * lh + Math.floor((lines.length - 1) / 2) * pairGap;
-  let y = H / 2 - total / 2 + lh / 2 - 40;
-  ctx.fillStyle = ink;
-  lines.forEach((l, i) => {
-    justify(ctx, l, W / 2, y, width);
-    y += lh + (i % 2 && i < lines.length - 1 ? pairGap : 0);
+  const fading = shown.length > b - a + 1;
+  // Leave room above and below the sharp couplets for the fade.
+  let size = fading ? 44 : 60;
+  const font = () => { ctx.font = `300 ${size}px Lateef`; };
+  font();
+  const widest = (ls) => Math.max(...ls.map((l) => ctx.measureText(l).width));
+  while (size > 34 && widest(sharp) > maxW) { size -= 2; font(); }
+  const width = Math.min(maxW, widest(sharp));
+  const lh = size * 2;
+  const gap = size * 0.9;
+  const hOf = (g) => g.length * lh;
+
+  // Lay the couplets out on their own layer, centred on the sharp block.
+  const layer = document.createElement('canvas');
+  layer.width = W; layer.height = H;
+  const lc = layer.getContext('2d');
+  lc.direction = 'rtl'; lc.textBaseline = 'middle'; lc.font = ctx.font; lc.fillStyle = ink;
+  const sharpH = shown.slice(a - from, b - from + 1).reduce((t, g) => t + hOf(g), 0) + (b - a) * gap;
+  const fadeTop = 400, fadeBottom = H - 450;
+  const mid = fading ? (fadeTop + fadeBottom) / 2 : H / 2 - 40;
+  let y = mid - sharpH / 2;
+  for (let i = a - from - 1; i >= 0; i--) y -= hOf(shown[i]) + gap;
+  const top = mid - sharpH / 2, bottom = mid + sharpH / 2;
+  shown.forEach((g) => {
+    g.forEach((l) => {
+      const fit = lc.measureText(l).width > width ? Math.max(width, lc.measureText(l).width) : width;
+      if (fit > width) { lc.save(); lc.textAlign = 'center'; lc.fillText(l, W / 2, y + lh / 2, width); lc.restore(); }
+      else justify(lc, l, W / 2, y + lh / 2, width);
+      y += lh;
+    });
+    y += gap;
   });
+
+  // Fade: fully visible over the sharp block, gone by the logo above and the names below.
+  if (fading) {
+    lc.globalCompositeOperation = 'destination-in';
+    const gr = lc.createLinearGradient(0, fadeTop, 0, fadeBottom);
+    const t0 = Math.max(0.01, (top - 10 - fadeTop) / (fadeBottom - fadeTop));
+    const t1 = Math.min(0.99, (bottom + 10 - fadeTop) / (fadeBottom - fadeTop));
+    gr.addColorStop(0, 'rgba(0,0,0,0)');
+    gr.addColorStop(t0, 'rgba(0,0,0,1)');
+    gr.addColorStop(t1, 'rgba(0,0,0,1)');
+    gr.addColorStop(1, 'rgba(0,0,0,0)');
+    lc.fillStyle = gr;
+    lc.fillRect(0, 0, W, H);
+    lc.clearRect(0, 0, W, fadeTop); lc.clearRect(0, fadeBottom, W, H - fadeBottom);
+  }
+  ctx.drawImage(layer, 0, 0);
 
   // Poet name, and the poem title under it.
   ctx.textAlign = 'center';

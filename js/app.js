@@ -1,6 +1,6 @@
 import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP } from './data.js';
 import { settings, apply, saved, history } from './store.js';
-import { baytImage, shareBlob } from './share.js';
+import { baytImage, poemImage, shareBlob } from './share.js';
 import { mountWall, unmountWall } from './wall.js';
 import { attachSheetDrag } from './sheetdrag.js';
 
@@ -348,12 +348,7 @@ function mountCard(stack, path, poem, poetN, cat, opts) {
     e.currentTarget.setAttribute('aria-pressed', on);
     toast(on ? 'به نشان‌ها اضافه شد' : 'از نشان‌ها برداشته شد');
   });
-  card.querySelector('.share').addEventListener('click', async () => {
-    const url = `${location.origin}${location.pathname}#/p/${path}`;
-    const text = `${poem.Title} · ${poetN}\n${meta.line}`;
-    if (navigator.share) { try { await navigator.share({ title: poem.Title, text, url }); } catch { /* cancelled */ } }
-    else { await copy(`${text}\n${url}`); toast('نشانی کپی شد'); }
-  });
+  card.querySelector('.share').addEventListener('click', () => openPoemShare(card, ctx, path));
   stretchCard(card);
   stackRO?.observe(card);
   stackObs?.observe(card);
@@ -568,6 +563,46 @@ async function copy(t) {
   }
 }
 
+// Share a whole poem: send the link, copy the text, or make a story image around the part being read.
+function openPoemShare(card, ctx, path) {
+  const { poem, bs, meta } = ctx;
+  const strip = (m) => (settings.get().harakat ? m : m.replace(HARAKAT, ''));
+  const idx = bs.map((b, i) => (b.m ? i : -1)).filter((i) => i >= 0);
+  const groups = idx.map((i) => bs[i].m.map(strip));
+  const url = `${location.origin}${location.pathname}#/p/${path}`;
+  const full = `${groups.map((g) => g.filter(Boolean).join('\n')).join('\n\n')}\n\n${meta.poet} · ${poem.Title}`;
+  openSheet(`
+    <div class="actions">
+      <button id="pSend">${ICON.share}ارسال</button>
+      <button id="pCopy">${ICON.copy}کپی</button>
+      ${groups.length ? `<button id="pShot">${ICON.image}اسکرین‌شات</button>` : ''}
+    </div>`, (s) => {
+    s.querySelector('#pSend').addEventListener('click', async () => {
+      const text = `${poem.Title} · ${meta.poet}\n${meta.line}`;
+      if (navigator.share) { try { await navigator.share({ title: poem.Title, text, url }); } catch { /* cancelled */ } }
+      else { await copy(`${text}\n${url}`); toast('نشانی کپی شد'); }
+    });
+    s.querySelector('#pCopy').addEventListener('click', async () => { await copy(full); toast('شعر کپی شد'); closeSheet(); });
+    s.querySelector('#pShot')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget; btn.disabled = true;
+      // The couplet nearest the middle of the screen is the centre of the picture.
+      const mid = innerHeight / 2;
+      let best = 0, dist = Infinity;
+      card.querySelectorAll('.bayt[data-i]').forEach((el) => {
+        const r = el.getBoundingClientRect();
+        const d = Math.abs(r.top + r.height / 2 - mid);
+        if (d < dist) { dist = d; best = +el.dataset.i; }
+      });
+      const focus = Math.max(0, idx.indexOf(best));
+      const dark = getComputedStyle(document.documentElement).colorScheme === 'dark';
+      const blob = await poemImage({ groups, focus, poet: meta.poet, title: meta.title, dark });
+      const r = await shareBlob(blob, `poem-${meta.url.replace(/\//g, '-')}.png`, `${meta.poet} · ${poem.Title}`);
+      btn.disabled = false;
+      if (r === 'downloaded') toast('تصویر ذخیره شد');
+    });
+  });
+}
+
 function openBayt(ctx, i, el) {
   const { bs, meta } = ctx;
   const b = bs[i];
@@ -678,7 +713,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.9';
+export const VERSION = '0.9.10';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
