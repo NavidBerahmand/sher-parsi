@@ -35,14 +35,31 @@
     <button class="menu-btn menu-trigger" aria-label="منو" aria-haspopup="true"><img class="logo-on-light" src="icons/logo.svg" alt=""><img class="logo-on-dark" src="icons/logo-2.svg" alt=""></button>
   </header>
 
-  <div class="menu-veil" id="menuVeil"></div>
-  <nav class="menu" id="menu" aria-label="منو" aria-hidden="true">
-    <a href="#/" data-nav="home">خانه</a>
-    <a href="#/poets" data-nav="poets">شاعران</a>
-    <a href="#/fal" data-nav="fal">فال حافظ</a>
-    <a href="#/saved" data-nav="saved">نشان‌ها</a>
-    <button type="button" id="menuSettings">تنظیمات خواندن</button>
-  </nav>
+  <div class="mx" id="menu" aria-hidden="true">
+    <div class="mx-card" role="dialog" aria-modal="true" aria-label="منو">
+      <label class="mx-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+        <input type="search" id="mxQ" placeholder="جست‌وجو در همهٔ اشعار" autocomplete="off" enterkeyhint="search" aria-label="جست‌وجو در اشعار"><button type="button" class="mx-clr" id="mxClr" aria-label="پاک کردن" hidden><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8"/></svg></button></label>
+      <div class="mx-body" id="mxBody">
+        <nav class="mx-nav" id="mxNav" aria-label="بخش‌ها">
+          <a href="#/" data-nav="home">خانه</a>
+          <a href="#/poets" data-nav="poets">همهٔ شاعران</a>
+          <a href="#/fal" data-nav="fal">فال حافظ</a>
+          <a href="#/saved" data-nav="saved">نشان‌شده‌ها</a>
+          <button type="button" id="mxRandom">یک شعر تصادفی</button>
+          <button type="button" id="mxAbout">دربارهٔ شعر پارسی</button>
+        </nav>
+        <div class="mx-res" id="mxRes" hidden aria-live="polite"></div>
+      </div>
+      <div class="mx-foot">
+        <div class="mx-size"><button type="button" id="mxSm" aria-label="حروف کوچک‌تر">آ</button><input type="range" id="mxSz" min="0.8" max="1.6" step="0.05" aria-label="اندازهٔ حروف"><button type="button" id="mxLg" aria-label="حروف بزرگ‌تر">آ</button></div>
+        <div class="mx-toggles">
+          <button type="button" class="mx-pill" id="mxTheme" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg><span>حالت شب</span></button>
+          <button type="button" class="mx-pill" id="mxHk" aria-pressed="false"><span>اِعراب</span></button>
+        </div>
+        <p class="mx-ver" id="mxVer"></p>
+      </div>
+    </div>
+  </div>
 
   <main id="main" tabindex="-1"></main>
 

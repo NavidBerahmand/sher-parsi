@@ -1,6 +1,7 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES } from './data.js';
 import { settings, apply, saved, history } from './store.js';
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
+import { search, highlight, norm as searchNorm } from './search.js';
 import { mountWall, unmountWall } from './wall.js';
 import { attachSheetDrag } from './sheetdrag.js';
 
@@ -74,53 +75,136 @@ function toast(msg) {
   clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-/* ───────── Settings sheet ───────── */
-function openSettings() {
+/* ───────── Menu: a card in the middle of the screen with search, links and reading settings ───────── */
+const menu = $('#menu'), mxQ = $('#mxQ'), mxNav = $('#mxNav'), mxRes = $('#mxRes');
+let menuReturn = null;
+function syncMenuSettings() {
   const s = settings.get();
-  const seg = (key, opts) => `<div class="seg" role="group">${opts.map(([v, label, sw]) =>
-    `<button data-k="${key}" data-v="${v}" aria-pressed="${s[key] === v}">${sw ? `<i class="sw" style="background:${sw}"></i>` : ''}${label}</button>`).join('')}</div>`;
-  openSheet(`
-    <h3>تنظیمات خواندن</h3>
-    <div class="setting"><span>اندازهٔ متن</span>
-      <div class="size-row"><span class="a-sm">آ</span><input type="range" id="sz" min="0.8" max="1.6" step="0.05" value="${s.size}" aria-label="اندازهٔ متن"><span class="a-lg">آ</span></div>
-      <div class="preview">${txt('دلا بسوز که سوز تو کارها بکند')}</div>
-    </div>
-    <div class="setting toggle-row"><span style="margin:0">حالت تیره</span>
-      <button class="switch" role="switch" id="dk" aria-checked="${s.theme === 'dark'}" aria-label="حالت تیره"></button></div>
-    <div class="setting toggle-row"><span style="margin:0">نمایش اِعراب (زیر و زبر)</span>
-      <button class="switch" role="switch" id="hk" aria-checked="${s.harakat}" aria-label="نمایش اعراب"></button></div>
-  `, (el) => {
-    el.querySelector('#sz').addEventListener('input', (e) => { settings.set({ size: +e.target.value }); restretchSoon(); });
-    el.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
-      settings.set({ [b.dataset.k]: b.dataset.v });
-      el.querySelectorAll(`.seg button[data-k="${b.dataset.k}"]`).forEach((x) => x.setAttribute('aria-pressed', x === b));
-    }));
-    el.querySelector('#dk').addEventListener('click', (e) => {
-      const dark = settings.get().theme !== 'dark';
-      settings.set({ theme: dark ? 'dark' : 'light', themeChosen: true });
-      e.currentTarget.setAttribute('aria-checked', dark);
-    });
-    el.querySelector('#hk').addEventListener('click', (e) => {
-      const v = !settings.get().harakat;
-      settings.set({ harakat: v });
-      e.currentTarget.setAttribute('aria-checked', v);
-      el.querySelector('.preview').innerHTML = txt('دلا بسوز که سوز تو کارها بکند');
-      if (current.view === 'poem') rerender();
-    });
-  });
+  $('#mxSz').value = s.size;
+  $('#mxTheme').setAttribute('aria-pressed', String(s.theme === 'dark'));
+  $('#mxHk').setAttribute('aria-pressed', String(!!s.harakat));
 }
-/* ───────── Menu (hamburger, top left) ───────── */
-const menu = $('#menu'), menuVeil = $('#menuVeil');
 function setMenu(open) {
-  menu.classList.toggle('open', open); menuVeil.classList.toggle('show', open);
+  if (open === menu.classList.contains('open')) return;
+  menu.classList.toggle('open', open);
   menu.setAttribute('aria-hidden', String(!open));
+  document.body.classList.toggle('menu-open', open);
   document.querySelectorAll('.menu-trigger').forEach((b) => b.setAttribute('aria-expanded', String(open)));
+  if (open) {
+    menuReturn = document.activeElement;
+    syncMenuSettings();
+    // Only jump into the search box where there is a real keyboard; on phones it would cover the menu.
+    setTimeout(() => (matchMedia('(hover: hover) and (pointer: fine)').matches ? mxQ : menu.querySelector('.mx-card')).focus({ preventScroll: true }), 60);
+  } else {
+    mxQ.blur();
+    menuReturn?.focus?.({ preventScroll: true });
+  }
 }
+menu.querySelector('.mx-card').tabIndex = -1;
 document.addEventListener('click', (e) => { if (e.target.closest('.menu-trigger')) { e.preventDefault(); setMenu(!menu.classList.contains('open')); } });
-menuVeil.addEventListener('click', () => setMenu(false));
-menu.addEventListener('click', (e) => { if (e.target.closest('a')) setMenu(false); });
-$('#menuSettings').addEventListener('click', () => { setMenu(false); openSettings(); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) { e.stopImmediatePropagation(); setMenu(false); } }, true);
+menu.addEventListener('click', (e) => {
+  if (e.target === menu) return setMenu(false);
+  const a = e.target.closest('a');
+  if (!a) return;
+  if (a.dataset.line) pendingFind = { url: a.dataset.url, line: a.dataset.line };
+  setMenu(false);
+});
+document.addEventListener('keydown', (e) => {
+  const open = menu.classList.contains('open');
+  if (e.key === 'Escape' && open) { e.stopImmediatePropagation(); if (mxQ.value && document.activeElement === mxQ) { mxQ.value = ''; $('#mxClr').hidden = true; runSearch(); } else setMenu(false); return; }
+  // Ctrl/⌘+K or "/" opens search, as on most sites.
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+  if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') || (e.key === '/' && !typing && !open)) {
+    e.preventDefault(); setMenu(true); setTimeout(() => mxQ.focus(), 80);
+  }
+  // Keep Tab inside the card while it is open.
+  if (e.key === 'Tab' && open) {
+    const f = [...menu.querySelectorAll('input, button, a[href]')].filter((x) => x.offsetParent);
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+}, true);
+$('#mxRandom').addEventListener('click', () => { setMenu(false); randomPoem(); });
+$('#mxAbout').addEventListener('click', () => { setMenu(false); openAbout(); });
+$('#mxSz').addEventListener('input', (e) => { settings.set({ size: +e.target.value }); restretchSoon(); });
+const nudgeSize = (d) => { const v = Math.min(1.6, Math.max(0.8, Math.round((settings.get().size + d) * 20) / 20)); settings.set({ size: v }); $('#mxSz').value = v; restretchSoon(); };
+$('#mxSm').addEventListener('click', () => nudgeSize(-0.1));
+$('#mxLg').addEventListener('click', () => nudgeSize(0.1));
+$('#mxTheme').addEventListener('click', () => {
+  const dark = settings.get().theme !== 'dark';
+  settings.set({ theme: dark ? 'dark' : 'light', themeChosen: true }); syncMenuSettings();
+  if (current.view === 'cat' || current.view === 'poem') document.querySelectorAll('img.poet-pic').forEach((im) => { im.src = im.src.replace(/(-dark)?\.webp/, dark ? '-dark.webp' : '.webp'); });
+});
+$('#mxHk').addEventListener('click', () => {
+  settings.set({ harakat: !settings.get().harakat }); syncMenuSettings();
+  if (current.view === 'poem' || current.view === 'cat') rerender();
+});
+
+/* Search inside the menu */
+let searchSeq = 0, searchT, searchMore = null;
+mxQ.addEventListener('input', () => { $('#mxClr').hidden = !mxQ.value; clearTimeout(searchT); searchT = setTimeout(runSearch, 260); });
+$('#mxClr').addEventListener('click', (e) => { e.preventDefault(); mxQ.value = ''; $('#mxClr').hidden = true; runSearch(); mxQ.focus(); });
+mxQ.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchT); runSearch(); mxQ.blur(); } });
+$('#mxBody').addEventListener('scroll', (e) => {
+  const b = e.currentTarget;
+  if (searchMore && b.scrollTop + b.clientHeight > b.scrollHeight - 200) searchMore();
+});
+const POET_NAME = (slug) => NAMES[slug] || slug;
+async function runSearch() {
+  const raw = mxQ.value, seq = ++searchSeq;
+  searchMore = null;
+  if (!raw.trim()) { mxRes.hidden = true; mxNav.hidden = false; mxRes.innerHTML = ''; return; }
+  mxNav.hidden = true; mxRes.hidden = false;
+  mxRes.innerHTML = '<p class="mx-note">در حال جست‌وجو…</p>';
+  let r;
+  try { r = await search(raw); } catch { if (seq === searchSeq) mxRes.innerHTML = '<p class="mx-note">جست‌وجو نیاز به اینترنت دارد</p>'; return; }
+  if (seq !== searchSeq) return;
+  if (r.status === 'short') { mxRes.innerHTML = '<p class="mx-note">عبارت را کمی کامل‌تر بنویس؛ واژه‌های خیلی رایج مثل «دل» یا «که» به‌تنهایی جست‌وجو نمی‌شوند.</p>'; return; }
+  if (r.status === 'none') { mxRes.innerHTML = '<p class="mx-note">چیزی پیدا نشد</p>'; return; }
+  mxRes.innerHTML = '<ul class="mx-list"></ul><p class="mx-note mx-wait">…</p>';
+  const ul = mxRes.querySelector('ul'), wait = mxRes.querySelector('.mx-wait');
+  let busy = false, count = 0;
+  const page = async () => {
+    if (busy) return; busy = true;
+    try {
+      const { items, done } = await r.more(count ? 30 : 20);
+      if (seq !== searchSeq) return;
+      count += items.length;
+      ul.insertAdjacentHTML('beforeend', items.map((it) =>
+        `<li><a href="${poemHref(it.url)}" data-url="${esc(clean(it.url))}" data-line="${esc(it.text)}"><span class="mx-l">${highlight(it.text, r.words, r.typing, esc)}</span><small>${esc(POET_NAME(it.poet))} · ${esc(it.title)}</small></a></li>`).join(''));
+      if (done) { searchMore = null; wait.textContent = count ? '' : 'چیزی پیدا نشد'; wait.hidden = !!count; }
+      else { searchMore = page; wait.textContent = '…'; const b = $('#mxBody'); if (b.scrollHeight <= b.clientHeight + 200) setTimeout(page, 0); }
+    } catch { if (seq === searchSeq) wait.textContent = 'اتصال برقرار نشد'; }
+    finally { busy = false; }
+  };
+  page();
+}
+
+/* After opening a poem from a search result, bring that line into view and mark it briefly. */
+let pendingFind = null;
+function findLine(card, path) {
+  if (!pendingFind || pendingFind.url !== path) return;
+  const want = searchNorm(pendingFind.line).replace(/[\s‌]+/g, '');
+  pendingFind = null;
+  const el = [...card.querySelectorAll('.verses [data-i], .verses .m, .verses p')].find((x) => searchNorm(x.textContent).replace(/[\s‌]+/g, '').includes(want));
+  if (!el) return;
+  setTimeout(() => {
+    el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    el.classList.add('found'); setTimeout(() => el.classList.remove('found'), 2600);
+  }, 450);
+}
+
+function openAbout() {
+  openSheet(`
+    <h3>دربارهٔ شعر پارسی</h3>
+    <div class="about">
+      <p>شعر پارسی جایی ساده و آرام برای خواندن شعر فارسی است؛ بی‌آگهی و بی‌حواس‌پرتی.</p>
+      <p>متن همهٔ اشعار از <a href="https://ganjoor.net" target="_blank" rel="noopener">گنجور</a> گرفته شده است. سپاس از گنجور و همهٔ کسانی که این گنجینه را گرد آورده‌اند.</p>
+      <p>برای نصب روی گوشی: در سافاری دکمهٔ اشتراک‌گذاری و سپس «افزودن به صفحهٔ اصلی» را بزن؛ در کروم از منوی سه‌نقطه «نصب برنامه» را انتخاب کن.</p>
+      <p class="muted">نسخهٔ ${fa(VERSION)}</p>
+    </div>`);
+}
 
 /* ───────── Helpers ───────── */
 function loading() {
@@ -457,6 +541,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
 
   activeCard = mountCard(stack, path, poem, poetN, cat, opts);
   activeCard.classList.add('fadein'); syncTools();
+  findLine(activeCard, path);
   // Widths must be measured in the real font: stretch again once it has loaded.
   document.fonts?.load('300 20px Lateef', 'ـبـ').then(() => document.fonts.ready).then(restretchSoon);
   history.add(cardCtx.get(stack.firstElementChild).meta); refreshMarks(cardCtx.get(stack.firstElementChild).meta.url);
@@ -687,7 +772,7 @@ async function route(keepScroll = false) {
   document.body.classList.remove('immersive');
   document.title = 'شعر پارسی';
   const navKey = { home: 'home', poets: 'poets', cat: 'poets', fal: 'fal', saved: 'saved', poem: falNext === path ? 'fal' : '' }[view];
-  document.querySelectorAll('.menu a').forEach((a) => (a.dataset.nav === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
+  document.querySelectorAll('.mx-nav a').forEach((a) => (a.dataset.nav === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   setProgress(false);
   if (view !== 'poem') closePoemSheet(true);
   if (view !== 'poem') document.body.classList.remove('poet-bg');
@@ -706,12 +791,13 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.16';
+export const VERSION = '0.9.17';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
   v.textContent = 'نسخه ' + VERSION.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
   document.body.appendChild(v);
+  $('#mxVer').textContent = 'شعر پارسی · ' + v.textContent + ' · برگرفته از گنجور';
 }
 let navCount = 0; // in-app navigations this visit, so "close" can step back safely
 window.addEventListener('hashchange', () => {
