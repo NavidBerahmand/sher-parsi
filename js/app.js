@@ -81,8 +81,8 @@ let menuReturn = null;
 function syncMenuSettings() {
   const s = settings.get();
   $('#mxSz').value = s.size;
-  $('#mxTheme').setAttribute('aria-pressed', String(s.theme === 'dark'));
-  $('#mxHk').setAttribute('aria-pressed', String(!!s.harakat));
+  $('#mxTheme').setAttribute('aria-checked', String(s.theme === 'dark'));
+  $('#mxHk').setAttribute('aria-checked', String(!!s.harakat));
 }
 function setMenu(open) {
   if (open === menu.classList.contains('open')) return;
@@ -891,7 +891,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.33';
+export const VERSION = '0.9.34';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
