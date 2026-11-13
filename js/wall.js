@@ -112,7 +112,7 @@ export function mountWall() {
     <button class="w-all" type="button" aria-haspopup="dialog">همه شاعران</button>
     <div class="w-lb" id="wLb" aria-hidden="true">
       <div class="w-lb-card" role="dialog" aria-modal="true" aria-label="همه شاعران">
-        <button type="button" class="lb-x" id="wLbX" aria-label="بستن"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8"/></svg></button>
+        <button type="button" class="lb-x" id="wLbX" aria-label="بستن"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         <h2>همه شاعران</h2>
         <p class="w-lb-hint">با تیک زدن، شاعران منتخب خود را همیشه در صفحهٔ اصلی داشته باشید.</p>
         <input type="search" class="w-lb-q" placeholder="جست‌وجوی نام شاعر" autocomplete="off">

@@ -39,7 +39,8 @@ const sheet = $('#sheet'), backdrop = $('#sheetBackdrop'), sheetBody = $('#sheet
 let sheetReturn = null;
 function openSheet(html, onMount) {
   sheetReturn = document.activeElement;
-  sheetBody.innerHTML = html;
+  sheetBody.innerHTML = `<button type="button" class="sheet-x" aria-label="بستن">${ICON.x}</button>${html}`;
+  sheetBody.querySelector('.sheet-x').addEventListener('click', () => closeSheet());
   backdrop.hidden = false;
   requestAnimationFrame(() => { backdrop.classList.add('show'); sheet.classList.add('show'); sheet.setAttribute('aria-hidden', 'false'); sheet.focus(); });
   onMount?.(sheetBody);
@@ -211,17 +212,21 @@ function openAbout() {
 }
 
 /* ───────── Helpers ───────── */
+// The one close button every page uses: a black disc, top left. Back to wherever the reader came from, else home.
+const pageClose = (id = 'pageX') => `<button class="icon-btn page-x tip-l" id="${id}" aria-label="بستن" data-tip="بستن">${ICON.x}</button>`;
+function wireClose(id, up = '#/') { $('#' + id)?.addEventListener('click', () => { if (navCount > 1) window.history.back(); else location.hash = up; }); }
 function loading() {
   // The four verse strokes of the logo, twice, shimmering while the page loads.
   main.innerHTML = '<div class="wrap" aria-busy="true"><div class="skeleton sk-verses"></div></div>';
 }
 function failed(err, retry) {
   const offline = !navigator.onLine;
-  main.innerHTML = `<div class="wrap"><div class="error-box fadein">
+  main.innerHTML = `${pageClose('errX')}<div class="wrap"><div class="error-box fadein">
     <h2>${offline ? 'به اینترنت وصل نیستی' : 'این صفحه باز نشد'}</h2>
     <p>${offline ? 'این بخش هنوز روی دستگاه ذخیره نشده است. وقتی وصل شدی دوباره امتحان کن.' : 'شاید نشانی اشتباه است یا ارتباط قطع شد.'}</p>
     <button class="btn ghost" id="retry">دوباره</button></div></div>`;
   $('#retry').addEventListener('click', retry);
+  wireClose('errX');
   console.warn(err);
 }
 function mono(name, cls = '') { return `<span class="mono ${cls}" aria-hidden="true">${esc(initial(name))}</span>`; }
@@ -275,7 +280,7 @@ async function viewPoets() {
   const m = await getManifest();
   const poets = m.Poets;
   document.body.classList.add('poet-bg');
-  main.innerHTML = `<div class="wrap fadein">
+  main.innerHTML = `${pageClose()}<div class="wrap fadein">
     <div class="page-title"><h1>شاعران</h1><p>${fa(poets.length)} شاعر</p></div>
     <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام شاعر" autocomplete="off"></label></div>
     <ul class="poet-list" id="pl"></ul></div>`;
@@ -290,6 +295,7 @@ async function viewPoets() {
       : `<li class="empty-state"><b>شاعری با این نام پیدا نشد</b></li>`;
   };
   draw();
+  wireClose('pageX');
   $('#q').addEventListener('input', (e) => draw(e.target.value));
 }
 
@@ -741,13 +747,14 @@ function openBayt(ctx, i, el) {
 }
 
 function viewFal() {
-  main.innerHTML = `<div class="fal-page fadein">
+  main.innerHTML = `${pageClose()}<div class="fal-page fadein">
     <div class="fal-orb" id="orb">${ICON.lantern}</div>
     <h1>فال حافظ</h1>
     <p>چشم‌ها را ببند، نیتی در دل کن و وقتی آماده بودی دیوان را بگشا.</p>
     <button class="btn" id="open">بگشا</button>
     <blockquote>ای حافظ شیرازی، تو محرم هر رازی</blockquote>
   </div>`;
+  wireClose('pageX');
   $('#open').addEventListener('click', async (e) => {
     e.currentTarget.disabled = true;
     $('#orb').classList.add('opening');
@@ -796,11 +803,11 @@ function viewSaved() {
         `<li class="saved-group">${esc(k)}<small>${fa(groups.get(k).length)}</small></li>${groups.get(k).map(item).join('')}`).join('');
     } else html = list.map(item).join('');
     $('#sl').innerHTML = html;
-  $('#sX').addEventListener('click', () => { if (navCount > 1) window.history.back(); else location.hash = '#/'; });
+  wireClose('sX');
   document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
     document.querySelectorAll('#ssort button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.o === savedSort));
   };
-  main.innerHTML = `<button class="icon-btn page-x tip-l" id="sX" aria-label="بستن" data-tip="بستن">${ICON.x}</button><div class="wrap fadein"><div class="page-title"><h1>نشان‌ها</h1></div>
+  main.innerHTML = `${pageClose('sX')}<div class="wrap fadein"><div class="page-title"><h1>نشان‌ها</h1></div>
     <div class="tabs" id="stabs" role="tablist"><button role="tab" data-t="poems">شعرها</button><button role="tab" data-t="bayts">بیت‌ها</button><button role="tab" data-t="history">خوانده‌ها</button></div>
     <div class="sort-row" id="ssort"><span>ترتیب:</span><button data-o="time">زمان نشان کردن</button><button data-o="poet">شاعر</button></div>
     <ul class="saved-list" id="sl"></ul></div>`;
@@ -891,7 +898,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.34';
+export const VERSION = '0.9.35';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

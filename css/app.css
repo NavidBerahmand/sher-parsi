@@ -842,3 +842,18 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .mx-toggles { justify-content: space-between; row-gap: 10px; }
 .mx-sw .sw b { top: 4px; height: 22px; line-height: 26px; font-size: 16px; font-family: inherit; }
 .mx-sw[aria-checked="true"] .sw { box-shadow: inset 0 1px 3px rgb(0 0 0 / .5), inset 0 0 0 1px rgb(255 255 255 / .14); }
+
+/* One close button everywhere: a black disc with a white ×, the same as the page close button. */
+.page-x, .pclose, .psheet-tools .pt-x, .lb-x, .w-lb-card .lb-x, .wp-x, .sheet-x {
+  width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; cursor: pointer;
+  background: #000; color: #fff; }
+.page-x:hover, .pclose:hover, .lb-x:hover, .w-lb-card .lb-x:hover, .wp-x:hover, .sheet-x:hover { background: #000; color: #fff; }
+.page-x svg, .pclose svg, .lb-x svg, .wp-x svg, .sheet-x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.sheet-x { position: absolute; top: 14px; left: 16px; z-index: 2; }
+.sheet-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sheet-body { position: relative; }
+/* Switch knob: slide with transform (works the same in every browser, whatever the page direction). */
+.mx-sw .sw-k { left: 3px; right: auto; transform: translateX(24px); transition: transform .25s cubic-bezier(.3,.7,.3,1), background .25s; will-change: transform; }
+.mx-sw[aria-checked="true"] .sw-k { left: 3px; transform: translateX(0); }
+.sheet-body { padding-top: 44px; }
+.sheet-x { top: 0; left: 0; }
