@@ -296,7 +296,7 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 .poem-head { text-align: center; padding: 26px 0 8px; }
 .poem-head .who { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .88rem; }
 .poem-head .who a:hover { color: var(--accent); }
-.poem-head h1 { margin-top: 8px; font-size: 1.35rem; font-weight: var(--fw-strong); }
+.poem-head h1 { margin-top: 8px; font-size: 1.18rem; font-weight: var(--fw-strong); }
 .fal-badge { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; padding: 4px 12px; border-radius: 999px; font-size: .8rem; background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--gold); font-weight: var(--fw-strong); }
 .fal-badge svg { width: 15px; height: 15px; }
 
@@ -569,7 +569,7 @@ body.wall-mode .topbar, body.wall-mode main#main { display: none; }
 }
 .pcard .poem-bar { margin: 0 -6px; padding-top: 8px; }
 .pcard .poem-head { padding-top: 18px; }
-.pcard .ptitle { margin-top: 8px; font-size: 1.35rem; font-weight: var(--fw-strong); }
+.pcard .ptitle { margin-top: 8px; font-size: 1.18rem; font-weight: var(--fw-strong); }
 .pcard .verses { margin: 26px 0 8px; }
 .pcard .about { margin-top: 56px; padding: 20px 4px 112px; border-top: 0; }
 .pcard .about summary { justify-content: center; gap: 6px; font-size: .82rem; font-weight: 350; color: var(--muted); }
