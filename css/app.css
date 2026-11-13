@@ -83,7 +83,11 @@ p { margin: 0; }
 .icon-btn.on { color: var(--accent); }
 .icon-btn.on svg { fill: currentColor; }
 /* Close button on book pages: top left, level with the logo. */
-.page-x { position: fixed; z-index: 50; left: calc(var(--gutter) - 8px); top: calc(env(safe-area-inset-top, 0px) + 10px); background: color-mix(in srgb, var(--bg) 80%, transparent); }
+/* A black disc the same size as the logo's disc (logo circle = 77% of the logo's width), level with it. */
+.page-x { position: fixed; z-index: 50; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 16px);
+  width: 36px; height: 36px; background: #000; color: #fff; }
+.page-x:hover { background: #000; }
+.page-x svg { width: 18px; height: 18px; }
 .page-x svg, .pclose svg { stroke-width: 1.8; }
 /* While a poem sheet is open, only the sheet's own close button shows. */
 body.psheet-open .page-x { opacity: 0; pointer-events: none; }
@@ -105,7 +109,7 @@ body.psheet-open .page-x { opacity: 0; pointer-events: none; }
 /* Menu: the logo holds everything */
 .menu-btn, .w-menu { display: grid; place-items: center; padding: 6px; background: none; transition: transform .15s, opacity .2s; }
 .menu-btn:active, .w-menu:active { transform: scale(.94); }
-.menu-btn img, .w-menu img { display: block; width: 40px; height: auto; }
+.menu-btn img, .w-menu img { display: block; width: 46px; height: auto; }
 .logo-on-dark { display: none !important; }
 :root[data-theme="dark"] .logo-on-light { display: none !important; }
 :root[data-theme="dark"] .logo-on-dark { display: block !important; }
@@ -132,6 +136,7 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
   :root { --gutter: 32px; --bar-h: 68px; }
   .topbar { right: auto; left: 50%; translate: -50% 0; top: calc(env(safe-area-inset-top, 0px) + 14px); }
   .menu-btn img { width: 54px; }
+  .page-x { width: 42px; height: 42px; top: calc(env(safe-area-inset-top, 0px) + 20px); }
   .menu { right: auto; left: 50%; translate: -50% 0; transform-origin: top center; top: calc(env(safe-area-inset-top, 0px) + 80px); }
   main { padding-bottom: 80px; }
 }
