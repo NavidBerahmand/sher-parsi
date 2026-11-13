@@ -910,3 +910,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 /* Hint bubbles are fully rounded capsules (Navid, 2026-11-13). */
 .logo-hint, [data-tip]::after, .mx-sw[data-tip]::after { border-radius: 999px; }
 .logo-hint { padding-inline: 18px; }
+/* Logo is the same size on every page (the larger inner-page size). */
+@media (max-width: 859px) { .w-menu img { width: 46px; } }
+/* A solid band under the phone status bar, so scrolled text never shows there as a blurred smear. */
+body:not(.wall-mode)::before { content: ''; position: fixed; z-index: 49; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: var(--bg); pointer-events: none; }
