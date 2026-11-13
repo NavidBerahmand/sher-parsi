@@ -783,3 +783,5 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .books.wp-shelf { grid-template-columns: repeat(2, minmax(0, 150px)); justify-content: center; gap: 22px 22px; margin: 14px 0 6px; padding: 0; }
 .wp-shelf .cover b { font-size: 1rem; }
 .wp-shelves { margin-bottom: 30px; }
+.wall-root.solo .w-tile { box-shadow: none !important; outline: none; }
+.wall-root.solo .wall { cursor: default; }

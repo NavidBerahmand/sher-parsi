@@ -120,8 +120,12 @@ export function mountWall() {
   function render() {
     const vw = innerWidth, vh = innerHeight;
     grain.style.backgroundPosition = `${offX}px ${offY}px`;
-    const c0 = Math.floor(-offX / TILE) - 1, r0 = Math.floor(-offY / TILE) - 1;
-    const c1 = Math.ceil((vw - offX) / TILE) + 1, r1 = Math.ceil((vh - offY) / TILE) + 1;
+    // One poet chosen: just that portrait, still, in the middle of the screen.
+    const solo = POETS.length === 1;
+    root.classList.toggle('solo', solo);
+    if (solo) { offX = Math.round(vw / 2 - TILE / 2); offY = Math.round(vh / 2 - TILE / 2); }
+    const c0 = solo ? 0 : Math.floor(-offX / TILE) - 1, r0 = solo ? 0 : Math.floor(-offY / TILE) - 1;
+    const c1 = solo ? 0 : Math.ceil((vw - offX) / TILE) + 1, r1 = solo ? 0 : Math.ceil((vh - offY) / TILE) + 1;
     const needed = new Set();
     for (let r = r0; r <= r1; r++) {
       for (let c = c0; c <= c1; c++) {
@@ -146,6 +150,7 @@ export function mountWall() {
           // Phones: the portrait nearest the centre of the screen shows its name; it fades as it moves away.
           const dx = c * TILE + offX + TILE / 2 - vw / 2, dy = r * TILE + offY + TILE / 2 - vh / 2;
           const o = Math.max(0, 1 - Math.hypot(dx, dy) / (TILE * 0.7));
+          if (POETS.length === 1) { el.lastElementChild.style.opacity = '1'; continue; }
           el.lastElementChild.style.opacity = o.toFixed(3);
         }
       }
@@ -168,7 +173,9 @@ export function mountWall() {
     if (!dragging) return;
     const dx = e.clientX - sx, dy = e.clientY - sy;
     moved += Math.abs(dx) + Math.abs(dy);
-    offX += dx; offY += dy; sx = e.clientX; sy = e.clientY;
+    sx = e.clientX; sy = e.clientY;
+    if (POETS.length === 1) return;
+    offX += dx; offY += dy;
     render();
   });
   const end = (e) => {
@@ -191,6 +198,7 @@ export function mountWall() {
   });
   on(window, 'wheel', (e) => {
     if (panel.contains(e.target) || focusEl.classList.contains('show') || root.classList.contains('listing')) return;
+    if (POETS.length === 1) return;
     offX -= e.deltaX; offY -= e.deltaY;
     render();
   }, { passive: true });
@@ -238,6 +246,7 @@ export function mountWall() {
       if (document.getElementById('splash')) { calmSince = t; return; }
       if (dragging) { touch(); return; }
       if (root.classList.contains('focused') || root.classList.contains('listing') || document.hidden) { rest(1200); return; }
+      if (POETS.length === 1) return;
       const e = Math.min(1, Math.max(0, (t - calmSince) / 4000)); // ease back in over 4s
       const k = e * e * (3 - 2 * e);
       if (!k) return;
