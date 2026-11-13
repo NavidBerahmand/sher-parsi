@@ -18,7 +18,7 @@
   --ui: "Kahroba", system-ui, sans-serif;
   /* Weights chosen by Navid (2026-11-13) */
   --cntr: 50; /* Kahroba contrast axis (0 low – 100 high); width stays at the standard 100 */
-  --fw-brand: 500; --fw-name: 450; --fw-meta: 450; --fw-title: 450; --fw-text: 350; --fw-verse: 350; --fw-cover: 800; --fw-btn: 400; --fw-strong: 450;
+  --fw-brand: 500; --fw-name: 450; --fw-meta: 450; --fw-title: 450; --fw-text: 350; --fw-verse: 390; --fw-cover: 800; --fw-btn: 400; --fw-strong: 450;
   --poem: "Kahroba", serif;
   --verse: "Kahroba", serif;
   --poem-scale: 1;
@@ -890,3 +890,20 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 @media (min-width: 860px) { .w-bar { bottom: 36px; } }
 /* While a poem sheet is open, the page behind it fades away (no list text showing above the sheet). */
 .psheet-backdrop { background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+
+/* Weight and contrast per text style, chosen by Navid on the test page (2026-11-13). Set explicitly too, because "font: inherit" on some of these would otherwise reset it. */
+.brand, .w-title, .splash-box b { font-weight: 500; --cntr: 39; font-variation-settings: "CNTR" 39, "wdth" 100; }
+.poet-head h1, .wp-name, .poet-list b, .w-lb-list a, .saved-group { font-weight: 670; --cntr: 86; font-variation-settings: "CNTR" 86, "wdth" 100; }
+.w-name { font-weight: 360; --cntr: 46; font-variation-settings: "CNTR" 46, "wdth" 100; }
+.poet-head .meta, .wp-era { font-weight: 590; --cntr: 75; font-variation-settings: "CNTR" 75, "wdth" 100; }
+.ptitle, .poem-head h1, .cat-title, .page-title h1, .w-lb-card h2, .poem-head .who, .crumbs, .shelf-h { font-weight: 590; --cntr: 70; font-variation-settings: "CNTR" 70, "wdth" 100; }
+.verses { --cntr: 17; font-variation-settings: "CNTR" 17, "wdth" 100; }
+.wp-bayt, .mx-l, .saved-item .q, .sheet .q { font-weight: 450; --cntr: 50; font-variation-settings: "CNTR" 50, "wdth" 100; }
+.bio, .wp-intro, .about p, .sheet .meaning, .sheet .meaning p, .w-lb-hint, .mx-note { font-weight: 360; --cntr: 19; font-variation-settings: "CNTR" 19, "wdth" 100; }
+.poems, .poems .fl, .mx-list, .part b, .saved-item .t, .saved-item .s { font-weight: 440; --cntr: 50; font-variation-settings: "CNTR" 50, "wdth" 100; }
+.mx-nav a, .mx-nav button, .mx-nav a[aria-current="page"] { font-weight: 420; --cntr: 57; font-variation-settings: "CNTR" 57, "wdth" 100; }
+.mx-search input, .search input, .w-lb-q { font-weight: 330; --cntr: 50; font-variation-settings: "CNTR" 50, "wdth" 100; }
+.cover b { font-weight: 800; --cntr: 100; font-variation-settings: "CNTR" 100, "wdth" 100; }
+.btn, .w-all, .wp-cta, .mx-pill, .lb-x, .sheet button, .share-opts button, .seg button, .seg button[aria-pressed="true"] { font-weight: 400; --cntr: 50; font-variation-settings: "CNTR" 50, "wdth" 100; }
+.logo-hint { font-weight: 550; --cntr: 74; font-variation-settings: "CNTR" 74, "wdth" 100; }
+.mx-ver, .site-ver, .splash-box small, .toast, [data-tip]::after, .mx-sw[data-tip]::after { font-weight: 310; --cntr: 0; font-variation-settings: "CNTR" 0, "wdth" 100; }

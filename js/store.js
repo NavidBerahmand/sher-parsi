@@ -11,7 +11,7 @@ export const settings = {
   // Dark is the default; a theme saved before the reader chose one in settings is ignored.
   get() {
     const r = read('sp.settings', {});
-    return { font: 'naskh', size: 1, weight: 350, harakat: true, ...r, theme: r.themeChosen ? r.theme : 'dark' };
+    return { font: 'naskh', size: 1, weight: 390, harakat: true, ...r, theme: r.themeChosen ? r.theme : 'dark' };
   },
   set(patch) {
     const s = { ...this.get(), ...patch };
