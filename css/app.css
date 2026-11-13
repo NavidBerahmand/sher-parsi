@@ -805,3 +805,18 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .part b { font-weight: var(--fw-text); }
 .part .chev { color: var(--muted); width: 18px; height: 18px; }
 @media (hover: hover) { .part:hover { color: var(--accent); } }
+
+/* Bookmarks: poems / couplets / read, sorted by time or grouped by poet */
+.sort-row { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: .82rem; color: var(--muted); }
+.sort-row button { height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
+.sort-row button[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); }
+.saved-group { display: flex; align-items: baseline; gap: 8px; padding: 22px 2px 6px; font-weight: var(--fw-name); color: var(--ink); border-bottom: 1px solid var(--line); }
+.saved-group small { color: var(--muted); font-size: .75rem; }
+.bayt-item .q .m { display: block; }
+.sheet .actions.four { grid-template-columns: repeat(4, 1fr); }
+.sheet .actions.two { grid-template-columns: repeat(2, 1fr); }
+.sheet #bSave[aria-pressed="true"] { color: var(--accent); }
+.sheet #bSave[aria-pressed="true"] svg { fill: currentColor; }
+.mx-pill:not([aria-pressed]) svg { fill: none; }
+.mx-toggles { flex-wrap: wrap; }
+.mx-pill { white-space: nowrap; }

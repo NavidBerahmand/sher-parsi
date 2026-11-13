@@ -1,5 +1,5 @@
 import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, shelf, shelfHTML } from './data.js';
-import { settings, apply, saved, history } from './store.js';
+import { settings, apply, saved, history, bayts, exportData, importData } from './store.js';
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
 import { mountWall, unmountWall } from './wall.js';
@@ -129,6 +129,7 @@ document.addEventListener('keydown', (e) => {
 $('#mxX').addEventListener('click', () => setMenu(false));
 $('#mxRandom').addEventListener('click', () => { setMenu(false); randomPoem(); });
 $('#mxAbout').addEventListener('click', () => { setMenu(false); openAbout(); });
+$('#mxBackup').addEventListener('click', () => { setMenu(false); openBackup(); });
 $('#mxSz').addEventListener('input', (e) => { settings.set({ size: +e.target.value }); restretchSoon(); });
 const nudgeSize = (d) => { const v = Math.min(1.6, Math.max(0.8, Math.round((settings.get().size + d) * 20) / 20)); settings.set({ size: v }); $('#mxSz').value = v; restretchSoon(); };
 $('#mxSm').addEventListener('click', () => nudgeSize(-0.1));
@@ -711,12 +712,19 @@ function openBayt(ctx, i, el) {
   openSheet(`
     <div class="q">${plain.map((m) => `<span class="m">${esc(m)}</span>`).join('')}</div>
     ${b.sum ? `<div class="meaning"><b>معنی بیت</b><p>${esc(b.sum.trim())}</p></div>` : ''}
-    <div class="actions">
+    <div class="actions four">
+      <button id="bSave" aria-pressed="${bayts.has(meta.url, i)}">${ICON.bookmark}<span>${bayts.has(meta.url, i) ? 'نشان‌شده' : 'نشان کردن'}</span></button>
       <button id="bCopy">${ICON.copy}کپی</button>
       <button id="bImg">${ICON.image}تصویر برای استوری</button>
       <button id="bShare">${ICON.share}ارسال متن</button>
     </div>`, (s) => {
     const text = `${plain.join('\n')}\n— ${meta.poet}`;
+    s.querySelector('#bSave').addEventListener('click', (e) => {
+      const on = bayts.toggle({ url: meta.url, i, lines: b.m, title: meta.title, poet: meta.poet });
+      e.currentTarget.setAttribute('aria-pressed', on);
+      e.currentTarget.querySelector('span').textContent = on ? 'نشان‌شده' : 'نشان کردن';
+      toast(on ? 'بیت نشان شد' : 'نشان بیت برداشته شد');
+    });
     s.querySelector('#bCopy').addEventListener('click', async () => { await copy(text); toast('بیت کپی شد'); closeSheet(); });
     s.querySelector('#bShare').addEventListener('click', async () => {
       if (navigator.share) { try { await navigator.share({ text }); } catch { /* cancelled */ } } else { await copy(text); toast('بیت کپی شد'); }
@@ -756,27 +764,97 @@ function viewFal() {
 }
 let falNext = null;
 
-function viewSaved(tab = 'saved') {
-  const draw = (t) => {
-    const list = t === 'saved' ? saved.all() : history.all();
-    const items = list.map((x) => `<li class="saved-item"><a href="${poemHref(x.url)}">
-      ${x.line ? `<span class="q">${txt(x.line.split(' / ')[0])}</span>` : ''}
-      <span class="s">${esc(x.title)} · ${esc(x.poet)}</span></a>
-      ${t === 'saved' ? `<button class="icon-btn on" data-rm="${esc(x.url)}" aria-label="برداشتن">${ICON.bookmark}</button>` : ''}</li>`).join('');
-    $('#sl').innerHTML = items || `<li class="empty-state">${t === 'saved' ? ICON.bookmark : ICON.clock}
-      <b>${t === 'saved' ? 'هنوز شعری نشان نکرده‌ای' : 'هنوز شعری نخوانده‌ای'}</b>
-      ${t === 'saved' ? 'هر جا شعری به دلت نشست، نشانه‌ی بالای صفحه را بزن.' : 'شعرهایی که می‌خوانی اینجا می‌مانند.'}</li>`;
-    document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === t));
+let savedTab = 'poems', savedSort = 'time';
+function viewSaved() {
+  const EMPTY = {
+    poems: [ICON.bookmark, 'هنوز شعری نشان نکرده‌ای', 'هر جا شعری به دلت نشست، نشانه‌ی بالای صفحه را بزن.'],
+    bayts: [ICON.bookmark, 'هنوز بیتی نشان نکرده‌ای', 'روی هر بیت بزن و «نشان کردن» را انتخاب کن.'],
+    history: [ICON.clock, 'هنوز شعری نخوانده‌ای', 'شعرهایی که می‌خوانی اینجا می‌مانند.'],
   };
-  main.innerHTML = `<div class="wrap fadein"><div class="page-title"><h1>نشان‌ها</h1></div>
-    <div class="tabs" role="tablist"><button role="tab" data-t="saved">نشان‌شده</button><button role="tab" data-t="history">خوانده‌ها</button></div>
+  const item = (x) => {
+    if (savedTab === 'bayts') {
+      return `<li class="saved-item bayt-item"><a href="${poemHref(x.url)}" data-url="${esc(x.url)}" data-line="${esc(x.lines[0])}">
+        <span class="q">${x.lines.map((m) => `<span class="m">${txt(m)}</span>`).join('')}</span>
+        <span class="s">${esc(x.title)}${savedSort === 'poet' ? '' : ` · ${esc(x.poet)}`}</span></a>
+        <button class="icon-btn on" data-rmb="${esc(x.url)}" data-i="${x.i}" aria-label="برداشتن">${ICON.bookmark}</button></li>`;
+    }
+    return `<li class="saved-item"><a href="${poemHref(x.url)}">
+      ${x.line ? `<span class="q">${txt(x.line.split(' / ')[0])}</span>` : ''}
+      <span class="s">${esc(x.title)}${savedSort === 'poet' ? '' : ` · ${esc(x.poet)}`}</span></a>
+      ${savedTab === 'poems' ? `<button class="icon-btn on" data-rm="${esc(x.url)}" aria-label="برداشتن">${ICON.bookmark}</button>` : ''}</li>`;
+  };
+  const draw = () => {
+    const list = savedTab === 'poems' ? saved.all() : savedTab === 'bayts' ? bayts.all() : history.all();
+    let html;
+    if (!list.length) {
+      const [ic, t, d] = EMPTY[savedTab];
+      html = `<li class="empty-state">${ic}<b>${t}</b>${d}</li>`;
+    } else if (savedSort === 'poet') {
+      const groups = new Map();
+      list.forEach((x) => { const k = x.poet || ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(x); });
+      html = [...groups.keys()].sort((p, q) => p.localeCompare(q, 'fa')).map((k) =>
+        `<li class="saved-group">${esc(k)}<small>${fa(groups.get(k).length)}</small></li>${groups.get(k).map(item).join('')}`).join('');
+    } else html = list.map(item).join('');
+    $('#sl').innerHTML = html;
+  $('#sX').addEventListener('click', () => { if (navCount > 1) window.history.back(); else location.hash = '#/'; });
+  document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
+    document.querySelectorAll('#ssort button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.o === savedSort));
+  };
+  main.innerHTML = `<button class="icon-btn page-x tip-l" id="sX" aria-label="بستن" data-tip="بستن">${ICON.x}</button><div class="wrap fadein"><div class="page-title"><h1>نشان‌ها</h1></div>
+    <div class="tabs" id="stabs" role="tablist"><button role="tab" data-t="poems">شعرها</button><button role="tab" data-t="bayts">بیت‌ها</button><button role="tab" data-t="history">خوانده‌ها</button></div>
+    <div class="sort-row" id="ssort"><span>ترتیب:</span><button data-o="time">زمان نشان کردن</button><button data-o="poet">شاعر</button></div>
     <ul class="saved-list" id="sl"></ul></div>`;
-  document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => draw(b.dataset.t)));
+  document.querySelectorAll('#stabs button').forEach((b) => b.addEventListener('click', () => { savedTab = b.dataset.t; draw(); }));
+  document.querySelectorAll('#ssort button').forEach((b) => b.addEventListener('click', () => { savedSort = b.dataset.o; draw(); }));
   $('#sl').addEventListener('click', (e) => {
-    const rm = e.target.closest('[data-rm]');
-    if (rm) { e.preventDefault(); saved.remove(rm.dataset.rm); draw('saved'); toast('برداشته شد'); }
+    const rm = e.target.closest('[data-rm]'), rmb = e.target.closest('[data-rmb]');
+    if (rm) { e.preventDefault(); saved.remove(rm.dataset.rm); draw(); toast('برداشته شد'); return; }
+    if (rmb) { e.preventDefault(); bayts.remove(rmb.dataset.rmb, +rmb.dataset.i); draw(); toast('برداشته شد'); return; }
+    const a = e.target.closest('a[data-line]');
+    if (a) pendingFind = { url: a.dataset.url, line: a.dataset.line };
   });
-  draw(tab);
+  draw();
+}
+
+/* Backup: carry bookmarks, reading history, chosen poets and settings to another device as one file. */
+function openBackup() {
+  const n = (k) => fa(k.length);
+  openSheet(`
+    <h3>پشتیبان</h3>
+    <div class="about">
+      <p>همهٔ نشان‌ها (${n(saved.all())} شعر، ${n(bayts.all())} بیت)، خوانده‌ها، شاعران انتخابی و تنظیمات در یک فایل. این فایل را روی گوشی یا رایانهٔ دیگر بارگذاری کن تا همه‌چیز آنجا هم باشد.</p>
+    </div>
+    <div class="actions two">
+      <button id="bkOut">${ICON.down}گرفتن فایل</button>
+      <button id="bkIn">${ICON.cloud}بارگذاری فایل</button>
+    </div>
+    <input type="file" id="bkFile" accept=".json,application/json" hidden>`, (s) => {
+    s.querySelector('#bkOut').addEventListener('click', async () => {
+      const d = new Date(), name = `sher-parsi-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.json`;
+      const blob = new Blob([JSON.stringify(exportData())], { type: 'application/json' });
+      const file = new File([blob], name, { type: 'application/json' });
+      if (matchMedia('(pointer: coarse)').matches && navigator.canShare?.({ files: [file] })) {
+        try { await navigator.share({ files: [file] }); return; } catch (e) { if (e.name === 'AbortError') return; }
+      }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      toast('فایل پشتیبان ذخیره شد');
+    });
+    const inp = s.querySelector('#bkFile');
+    s.querySelector('#bkIn').addEventListener('click', () => inp.click());
+    inp.addEventListener('change', async () => {
+      const f = inp.files[0];
+      if (!f) return;
+      try {
+        importData(JSON.parse(await f.text()));
+        toast('بارگذاری شد');
+        setTimeout(() => location.reload(), 700);
+      } catch { toast('این فایل پشتیبان شعر پارسی نیست'); }
+      inp.value = '';
+    });
+  });
 }
 
 /* ───────── Router ───────── */
@@ -813,7 +891,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.32';
+export const VERSION = '0.9.33';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

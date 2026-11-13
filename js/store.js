@@ -55,3 +55,43 @@ export const history = {
   seen() { return new Set(this.all().map((x) => x.url)); },
   clear() { write('sp.history', []); },
 };
+
+// Saved couplets: newest first. Each: { url, i, lines: [m1, m2], title, poet, at }
+const bkey = (url, i) => `${url}#${i}`;
+export const bayts = {
+  all() { return read('sp.bayts', []); },
+  has(url, i) { return this.all().some((x) => bkey(x.url, x.i) === bkey(url, i)); },
+  toggle(item) {
+    const list = this.all();
+    const k = list.findIndex((x) => bkey(x.url, x.i) === bkey(item.url, item.i));
+    if (k >= 0) list.splice(k, 1); else list.unshift({ ...item, at: Date.now() });
+    write('sp.bayts', list);
+    return k < 0;
+  },
+  remove(url, i) { write('sp.bayts', this.all().filter((x) => bkey(x.url, x.i) !== bkey(url, i))); },
+};
+
+// Backup: everything the reader made on this device, as one JSON file to carry to another device.
+const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.bayts', 'sp.history', 'sp.wall'];
+export function exportData() {
+  const data = {};
+  BACKUP_KEYS.forEach((k) => { const v = read(k, null); if (v !== null) data[k] = v; });
+  return { app: 'sher-parsi', v: 1, at: new Date().toISOString(), data };
+}
+// Merges lists (nothing already here is lost); settings and chosen poets are taken from the file.
+export function importData(obj) {
+  if (!obj || obj.app !== 'sher-parsi' || typeof obj.data !== 'object') throw new Error('bad file');
+  const d = obj.data;
+  const merge = (key, id) => {
+    if (!Array.isArray(d[key])) return;
+    const mine = read(key, []), seen = new Set(mine.map(id));
+    const all = [...mine, ...d[key].filter((x) => x && !seen.has(id(x)))];
+    all.sort((a, b) => (b.at || 0) - (a.at || 0));
+    write(key, key === 'sp.history' ? all.slice(0, 60) : all);
+  };
+  merge('sp.saved', (x) => x.url);
+  merge('sp.bayts', (x) => bkey(x.url, x.i));
+  merge('sp.history', (x) => x.url);
+  if (d['sp.settings'] && typeof d['sp.settings'] === 'object') write('sp.settings', d['sp.settings']);
+  if (Array.isArray(d['sp.wall'])) write('sp.wall', d['sp.wall']);
+}
