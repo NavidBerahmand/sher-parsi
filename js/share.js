@@ -96,7 +96,7 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
   const maxW = W - 220 - 2 * off;
   const fading = shown.length > b - a + 1;
   // Leave room above and below the sharp couplets for the fade.
-  let size = fading ? 42 : 58;
+  let size = 58; // the same size as the single-couplet image
   const font = () => { ctx.font = `300 ${size}px Lateef`; };
   font();
   const widest = (ls) => Math.max(...ls.map((l) => ctx.measureText(l).width));
@@ -116,7 +116,9 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
   const mid = fading ? (fadeTop + fadeBottom) / 2 : H / 2 - 40;
   let y = mid - sharpH / 2;
   for (let i = a - from - 1; i >= 0; i--) y -= hOf(shown[i]) + gap;
-  const top = mid - sharpH / 2, bottom = mid + sharpH / 2;
+  // The clear band: the sharp couplets, but never more than ~55% of the room, so the fade always shows.
+  const clearH = Math.min(sharpH, 0.55 * (fadeBottom - fadeTop));
+  const top = mid - clearH / 2, bottom = mid + clearH / 2;
   shown.forEach((g) => {
     g.forEach((l, j) => {
       const cx = W / 2 + (g.length > 1 ? (j % 2 ? -off : off) : 0);
