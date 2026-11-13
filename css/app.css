@@ -706,7 +706,7 @@ body.menu-open { overflow: hidden; }
 .mx-nav > * + * { border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); }
 .mx-nav a[aria-current="page"] { color: var(--accent); font-weight: var(--fw-strong); }
 .mx-nav a:hover, .mx-nav button:hover { color: var(--accent); }
-.mx-nav button { font-size: 1rem; color: var(--ink-soft, var(--ink)); }
+.mx-nav button { font-size: 1.12rem; color: inherit; }
 .mx-list { list-style: none; margin: 0; padding: 0; }
 .mx-list li + li { border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); }
 .mx-list a { display: block; padding: 11px 6px; color: inherit; }
