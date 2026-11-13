@@ -919,6 +919,6 @@ body:not(.wall-mode)::before { content: ''; position: fixed; z-index: 49; top: 0
 .wp-dl svg { width: 18px; height: 18px; }
 .wp-dl.saved, .wp-dl.saved:hover { background: #000; border-color: #000; color: #fff; }
 /* Couplet number: small and faint at the right, between the two halves; poem card only, drawn by CSS so it is never copied or exported (Navid, 2026-11-13). */
-.pcard .bayt[data-n] { padding-right: 24px; }
+.pcard .bayt[data-n] { padding-inline: 24px; } /* equal on both sides so the poem stays centred */
 .pcard .bayt[data-n]::before { content: attr(data-n); position: absolute; right: 0; top: 50%; translate: 0 -50%; width: 20px; text-align: center;
   font-family: var(--ui); font-size: .62rem; font-weight: 350; line-height: 1; color: var(--muted); opacity: .55; pointer-events: none; user-select: none; -webkit-user-select: none; }
