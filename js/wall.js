@@ -112,10 +112,10 @@ export function mountWall() {
   let offX = Math.round(innerWidth / 2 - TILE * (centre + 0.5));
   let offY = Math.round(innerHeight / 2 - TILE * 0.5);
   const pool = new Map();
-  // 4 columns per row-step and 6 poets: horizontal and vertical neighbours never repeat.
   const touchNames = !matchMedia('(hover: hover)').matches;
-  // Row step: 4 for most counts; 1 when 4 would line the same poet up vertically.
-  const poetAt = (r, c) => { const n = POETS.length, k = 4 % n ? 4 : 1; return ((r * k + c) % n + n) % n; };
+  // Poets run in order along the rows, W to a row, so any W × floor(n/W) patch of the wall shows each poet
+  // at most once: everyone appears side by side before anyone repeats.
+  const poetAt = (r, c) => { const n = POETS.length, W = Math.max(1, Math.round(Math.sqrt(n))); return ((r * W + c) % n + n) % n; };
 
   function render() {
     const vw = innerWidth, vh = innerHeight;
