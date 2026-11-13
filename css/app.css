@@ -857,3 +857,9 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 .mx-sw[aria-checked="true"] .sw-k { left: 3px; transform: translateX(0); }
 .sheet-body { padding-top: 44px; }
 .sheet-x { top: 0; left: 0; }
+/* Switches carry no label: the name shows as a hint on hover, or for a moment after a tap on touch screens. */
+.mx-toggles { justify-content: flex-start; gap: 14px; }
+.mx-sw[data-tip]::after { content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 50%; translate: -50% -3px; z-index: 60;
+  padding: 3px 10px 5px; border-radius: 8px; background: var(--ink); color: var(--bg);
+  font-size: .72rem; font-weight: 300; line-height: 1.4; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s, translate .15s; }
+.mx-sw[data-tip]:hover::after, .mx-sw.tip-show::after { opacity: 1; translate: -50% 0; }

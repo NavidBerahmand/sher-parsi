@@ -135,6 +135,11 @@ $('#mxSz').addEventListener('input', (e) => { settings.set({ size: +e.target.val
 const nudgeSize = (d) => { const v = Math.min(1.6, Math.max(0.8, Math.round((settings.get().size + d) * 20) / 20)); settings.set({ size: v }); $('#mxSz').value = v; restretchSoon(); };
 $('#mxSm').addEventListener('click', () => nudgeSize(-0.1));
 $('#mxLg').addEventListener('click', () => nudgeSize(0.1));
+// On touch screens the switches have no hover: show their name for a moment after a tap.
+document.querySelectorAll('.mx-sw').forEach((b) => b.addEventListener('click', () => {
+  if (matchMedia('(hover: hover)').matches) return;
+  b.classList.add('tip-show'); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove('tip-show'), 1400);
+}));
 $('#mxTheme').addEventListener('click', () => {
   const dark = settings.get().theme !== 'dark';
   settings.set({ theme: dark ? 'dark' : 'light', themeChosen: true }); syncMenuSettings();
@@ -898,7 +903,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.36';
+export const VERSION = '0.9.37';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
