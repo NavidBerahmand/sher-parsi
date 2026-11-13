@@ -53,6 +53,14 @@ const INFO = [
 // Every poet has a portrait. The reader picks which of them show on the wall (ticks in the all-poets list).
 const ALL = TOP.map((slug) => ({ slug, full: NAMES[slug], ...INFO.find((q) => q.slug === slug) }));
 const WALL_KEY = 'sp.wall';
+// «ادامه خواندن»: back to the poem (and couplet) the reader was last on. Hidden until something has been read.
+function resumeLink() {
+  let r = null;
+  try { r = JSON.parse(localStorage.getItem('sp.resume')); } catch { /* storage blocked */ }
+  if (!r || !r.url) return '';
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  return `<a class="w-all w-resume" href="#/p/${esc(r.url)}" data-url="${esc(r.url)}" data-line="${esc(r.line || '')}">ادامه خواندن</a>`;
+}
 const chosen = () => {
   let v = null;
   try { v = JSON.parse(localStorage.getItem(WALL_KEY)); } catch { /* storage blocked */ }
@@ -109,7 +117,7 @@ export function mountWall() {
       <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><img src="icons/logo-2.svg" alt=""></button>
     </header>
     <main class="wall" id="wall" aria-label="دیوار شاعران"></main>
-    <button class="w-all" type="button" aria-haspopup="dialog">همه شاعران</button>
+    <div class="w-bar">${resumeLink()}<button class="w-all" type="button" aria-haspopup="dialog">همه شاعران</button></div>
     <div class="w-lb" id="wLb" aria-hidden="true">
       <div class="w-lb-card" role="dialog" aria-modal="true" aria-label="همه شاعران">
         <button type="button" class="lb-x" id="wLbX" aria-label="بستن"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -453,7 +461,7 @@ export function mountWall() {
     if (!lbPoets) { try { lbPoets = (await getManifest()).Poets; } catch { lbPoets = []; } drawList(); }
   };
   const closeList = () => { root.classList.remove('listing'); lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); };
-  on(root.querySelector('.w-all'), 'click', openList);
+  on(root.querySelector('.w-all:not(.w-resume)'), 'click', openList);
   on(lb, 'click', (e) => { if (e.target === lb) closeList(); });
   on(root.querySelector('#wLbX'), 'click', closeList);
   on(lbQ, 'input', drawList);

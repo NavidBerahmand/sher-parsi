@@ -103,6 +103,10 @@ function setMenu(open) {
   }
 }
 menu.querySelector('.mx-card').tabIndex = -1;
+document.addEventListener('click', (e) => {
+  const r = e.target.closest('.w-resume');
+  if (r && r.dataset.line) pendingFind = { url: r.dataset.url, line: r.dataset.line };
+});
 document.addEventListener('click', (e) => { if (e.target.closest('.menu-trigger')) { e.preventDefault(); setMenu(!menu.classList.contains('open')); } });
 menu.addEventListener('click', (e) => {
   if (e.target === menu) return setMenu(false);
@@ -577,8 +581,21 @@ async function viewPoem(path, opts = {}, fromList = false) {
     }
   }, { root: sh, rootMargin: '-45% 0px -50% 0px' });
 
+  // Remember where the reader is (poem and the first couplet in view) for «ادامه خواندن» on the home page.
+  let resumeT;
+  const saveSpot = () => {
+    const c = activeCard && cardCtx.get(activeCard);
+    if (!c || current.view !== 'poem') return;
+    const top = sh.getBoundingClientRect().top + 60;
+    const el = [...activeCard.querySelectorAll('.verses [data-i]')].find((x) => x.getBoundingClientRect().bottom > top);
+    const line = el ? (el.querySelector('.m') || el).textContent.trim() : '';
+    try { localStorage.setItem('sp.resume', JSON.stringify({ url: c.meta.url, line, at: Date.now() })); } catch { /* ignore */ }
+  };
+  sh.onscroll = () => { clearTimeout(resumeT); resumeT = setTimeout(saveSpot, 400); };
+
   activeCard = mountCard(stack, path, poem, poetN, cat, opts);
   activeCard.classList.add('fadein'); syncTools();
+  if (!pendingFind) setTimeout(saveSpot, 600);
   findLine(activeCard, path);
   // Widths must be measured in the real font: stretch again once it has loaded.
   document.fonts?.load('350 20px Dibaj', 'ـبـ').then(() => document.fonts.ready).then(restretchSoon);
@@ -908,7 +925,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.51';
+export const VERSION = '0.9.52';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
