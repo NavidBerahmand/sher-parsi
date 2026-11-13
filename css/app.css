@@ -863,3 +863,10 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
   padding: 3px 10px 5px; border-radius: 8px; background: var(--ink); color: var(--bg);
   font-size: .72rem; font-weight: 300; line-height: 1.4; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s, translate .15s; }
 .mx-sw[data-tip]:hover::after, .mx-sw.tip-show::after { opacity: 1; translate: -50% 0; }
+
+/* First-load hint under the logo: black bubble, white text, an arrow pointing up at the logo. */
+.logo-hint { position: fixed; z-index: 80; padding: 7px 14px 9px; border-radius: 10px; background: #000; color: #fff;
+  font-size: .85rem; font-weight: var(--fw-btn); line-height: 1.4; white-space: nowrap; pointer-events: none;
+  box-shadow: 0 6px 20px rgb(0 0 0 / .25); opacity: 0; translate: 0 6px; transition: opacity .35s, translate .35s; }
+.logo-hint::before { content: ''; position: absolute; top: -6px; left: var(--ax, 50%); translate: -50% 0; width: 12px; height: 12px; background: #000; rotate: 45deg; border-radius: 2px; }
+.logo-hint.show { opacity: 1; translate: 0 0; }

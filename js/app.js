@@ -903,7 +903,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner. Bump it with each release.
-export const VERSION = '0.9.37';
+export const VERSION = '0.9.38';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -984,6 +984,24 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:' && !document.q
       }
     };
     fit(); document.fonts?.ready.then(fit);
-    setTimeout(() => { sp.classList.add('out'); setTimeout(() => sp.remove(), 800); }, 1500);
+    setTimeout(() => { sp.classList.add('out'); setTimeout(() => { sp.remove(); logoHint(); }, 800); }, 1500);
   }
+}
+
+/* On the home page, once per load: a black bubble under the logo pointing at it, then gone. */
+function logoHint() {
+  const logo = [...document.querySelectorAll('.menu-trigger')].find((b) => b.getBoundingClientRect().width > 0);
+  if (!logo || current.view !== 'home' || menu.classList.contains('open')) return;
+  const r = logo.getBoundingClientRect();
+  const tip = document.createElement('div');
+  tip.className = 'logo-hint'; tip.setAttribute('role', 'status'); tip.textContent = 'پیکربندی از اینجاست';
+  document.body.appendChild(tip);
+  const w = tip.offsetWidth, cx = r.left + r.width / 2;
+  const left = Math.max(12, Math.min(innerWidth - w - 12, cx - w / 2));
+  tip.style.left = `${left}px`; tip.style.top = `${r.bottom + 12}px`;
+  tip.style.setProperty('--ax', `${cx - left}px`);
+  requestAnimationFrame(() => tip.classList.add('show'));
+  const bye = () => { tip.classList.remove('show'); setTimeout(() => tip.remove(), 400); };
+  const t = setTimeout(bye, 4500);
+  logo.addEventListener('click', () => { clearTimeout(t); bye(); }, { once: true });
 }
