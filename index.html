@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>شعر پارسی</title>
   <meta name="description" content="خواندن شعر فارسی، ساده و آرام">
-  <meta name="theme-color" content="#f5f2e8">
+  <meta name="theme-color" content="#2f3526">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="شعر پارسی">
@@ -24,7 +24,10 @@
       if (!s.themeChosen || s.theme === 'dark') document.documentElement.dataset.theme = 'dark'; // dark by default
     } catch (e) {}
     // The opening card belongs to the home page only.
-    if (!/^#?\/?$/.test(location.hash)) document.documentElement.classList.add('no-splash');
+    // …and only the first time someone opens the site on this device.
+    var seen = false;
+    try { seen = !!localStorage.getItem('sp.seen'); localStorage.setItem('sp.seen', '1'); } catch (e) {}
+    if (seen || !/^#?\/?$/.test(location.hash)) document.documentElement.classList.add('no-splash');
   </script>
 </head>
 <body>

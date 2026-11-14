@@ -4,6 +4,7 @@ import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
 import { mountWall, unmountWall } from './wall.js';
 import { attachSheetDrag } from './sheetdrag.js';
+import { overlayOpened, overlayClosed, overlayNavigate, overlayIsOpen, overlaySwap, overlayForget } from './overlay.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const main = $('#main');
@@ -44,13 +45,17 @@ function openSheet(html, onMount) {
   backdrop.hidden = false;
   requestAnimationFrame(() => { backdrop.classList.add('show'); sheet.classList.add('show'); sheet.setAttribute('aria-hidden', 'false'); sheet.focus(); });
   onMount?.(sheetBody);
+  if (!overlayIsOpen(sheetBack)) overlayOpened(sheetBack);
 }
-function closeSheet() {
+const sheetBack = () => closeSheet(true);
+function closeSheet(fromBack) {
+  if (!sheet.classList.contains('show') && backdrop.hidden) return;
+  if (fromBack !== true) overlayClosed(sheetBack);
   backdrop.classList.remove('show'); sheet.classList.remove('show'); sheet.setAttribute('aria-hidden', 'true');
   setTimeout(() => { backdrop.hidden = true; document.querySelectorAll('.bayt.lit').forEach((b) => b.classList.remove('lit')); }, 280);
   sheetReturn?.focus?.({ preventScroll: true });
 }
-backdrop.addEventListener('click', closeSheet);
+backdrop.addEventListener('click', () => closeSheet());
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheet.classList.contains('show')) closeSheet(); });
 // Drag the sheet down to close it.
 (() => {
@@ -86,8 +91,10 @@ function syncMenuSettings() {
   $('#mxTheme').setAttribute('aria-checked', String(s.theme === 'dark'));
   $('#mxHk').setAttribute('aria-checked', String(!!s.harakat));
 }
-function setMenu(open) {
+const menuBack = () => setMenu(false, true);
+function setMenu(open, fromBack) {
   if (open === menu.classList.contains('open')) return;
+  if (open) overlayOpened(menuBack); else if (!fromBack) overlayClosed(menuBack);
   menu.classList.toggle('open', open);
   menu.setAttribute('aria-hidden', String(!open));
   document.body.classList.toggle('menu-open', open);
@@ -114,7 +121,10 @@ menu.addEventListener('click', (e) => {
   if (!a) return;
   // A search result: remember the line to show, and that closing the poem should come back here.
   if (a.dataset.line) { pendingFind = { url: a.dataset.url, line: a.dataset.line }; searchBack = true; }
-  setMenu(false);
+  // The page the link opens takes the menu's place in the history.
+  e.preventDefault();
+  setMenu(false, true);
+  overlayNavigate(menuBack, a.getAttribute('href'));
 });
 document.addEventListener('keydown', (e) => {
   const open = menu.classList.contains('open');
@@ -133,9 +143,9 @@ document.addEventListener('keydown', (e) => {
   }
 }, true);
 $('#mxX').addEventListener('click', () => setMenu(false));
-$('#mxRandom').addEventListener('click', () => { setMenu(false); randomPoem(); });
-$('#mxAbout').addEventListener('click', () => { setMenu(false); openAbout(); });
-$('#mxBackup').addEventListener('click', () => { setMenu(false); openBackup(); });
+$('#mxRandom').addEventListener('click', () => { setMenu(false, true); randomPoem((h) => overlayNavigate(menuBack, h)); });
+$('#mxAbout').addEventListener('click', () => { setMenu(false, true); overlaySwap(menuBack, sheetBack); openAbout(); });
+$('#mxBackup').addEventListener('click', () => { setMenu(false, true); overlaySwap(menuBack, sheetBack); openBackup(); });
 $('#mxSz').addEventListener('input', (e) => { settings.set({ size: +e.target.value }); restretchSoon(); });
 const nudgeSize = (d) => { const v = Math.min(1.6, Math.max(0.8, Math.round((settings.get().size + d) * 20) / 20)); settings.set({ size: v }); $('#mxSz').value = v; restretchSoon(); };
 $('#mxSm').addEventListener('click', () => nudgeSize(-0.1));
@@ -282,11 +292,11 @@ async function viewHome() {
   $('#rnd').addEventListener('click', randomPoem);
 }
 
-async function randomPoem() {
+async function randomPoem(go = (h) => { location.hash = h; }) {
   try {
     const pick = await randomFrom(DAILY_POOL[Math.floor(Math.random() * DAILY_POOL.length)]);
-    location.hash = poemHref(pick.FullUrl);
-  } catch (e) { toast('اتصال برقرار نشد'); }
+    go(poemHref(pick.FullUrl));
+  } catch (e) { go(location.hash); toast('اتصال برقرار نشد'); }
 }
 
 async function viewPoets() {
@@ -326,7 +336,7 @@ async function viewCat(path) {
   const looseAsBook = isPoet && (cat.ChildCats || []).length > 0 && (cat.Poems || []).length > 0;
   const poems = looseAsBook ? [] : cat.Poems || [];
   const PAGE = 120;
-  let shown = Math.min(poems.length, PAGE);
+  let shown = Math.min(poems.length, Math.max(PAGE, restoreShown)); restoreShown = 0;
 
   let head;
   if (isPoet && poet) {
@@ -493,6 +503,7 @@ function placeCard(card) {
 let sheetEl = null, sheetPushed = false, sheetCat = '';
 function closePoemSheet(instant) {
   if (!sheetEl) return;
+  if (sheet.classList.contains('show')) { overlayForget(sheetBack); closeSheet(true); }
   stackCleanup?.();
   const el = sheetEl; sheetEl = null;
   document.body.classList.remove('psheet-open');
@@ -896,6 +907,11 @@ function openBackup() {
 /* ───────── Router ───────── */
 const current = { view: '', path: '' };
 function rerender() { route(true); }
+// Each history entry remembers how far its page was scrolled (and how long its list had grown),
+// so coming back with the back button lands on the same row instead of the top.
+try { window.history.scrollRestoration = 'manual'; } catch { /* old browser */ }
+const scrollMemo = new Map();
+let pageId = '', pageSeq = 0, restoreShown = 0;
 
 async function route(keepScroll = false) {
   const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
@@ -903,6 +919,11 @@ async function route(keepScroll = false) {
   const path = clean(rest.join('/'));
   const view = head === 'p' ? 'poem' : head === 'c' ? 'cat' : head || 'home';
   const y = window.scrollY;
+  if (!keepScroll && pageId) scrollMemo.set(pageId, { y, shown: document.querySelectorAll('#pm > li').length });
+  let st = window.history.state;
+  if (!st || !st.pg) { st = { ...(st || {}), pg: `${Date.now()}-${++pageSeq}` }; window.history.replaceState(st, ''); }
+  const memo = keepScroll ? null : scrollMemo.get(st.pg);
+  pageId = st.pg; restoreShown = memo?.shown || 0;
   current.view = view; current.path = path;
   document.body.classList.remove('immersive');
   document.title = 'شعر پارسی';
@@ -923,18 +944,12 @@ async function route(keepScroll = false) {
     else location.hash = '#/';
   } catch (e) { failed(e, () => route()); }
   if (view === 'poem' && falNext !== path) falNext = null;
-  window.scrollTo(0, keepScroll ? y : 0);
+  window.scrollTo(0, keepScroll ? y : memo?.y || 0);
   if (!keepScroll) main.focus({ preventScroll: true });
 }
-// Site version, shown very small in the bottom-right corner. Bump it with each release.
+// Site version, shown in the menu and in «درباره». Bump it with each release.
 export const VERSION = '0.9.62';
-{
-  const v = document.createElement('div');
-  v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
-  v.textContent = 'نسخه ' + VERSION.replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
-  document.body.appendChild(v);
-  $('#mxVer').textContent = 'شعر پارسی · ' + v.textContent + ' · برگرفته از گنجور';
-}
+$('#mxVer').textContent = 'شعر پارسی · نسخه ' + fa(VERSION) + ' · برگرفته از گنجور';
 let navCount = 0; // in-app navigations this visit, so "close" can step back safely
 window.addEventListener('hashchange', () => {
   navCount++;

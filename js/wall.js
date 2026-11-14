@@ -2,6 +2,7 @@
 // Drag (or scroll) in any direction; tap a portrait to bring it forward with its story.
 import { getPoet, getCat, getManifest, NAMES, TOP, savePoet, isPoetSaved, shelf, shelfHTML } from './data.js';
 import { attachSheetDrag } from './sheetdrag.js';
+import { overlayOpened, overlayClosed, overlayNavigate, overlayForget } from './overlay.js';
 
 // Hand-written era and a famous bayt for some poets; the rest take their years from the data.
 const INFO = [
@@ -330,8 +331,10 @@ export function mountWall() {
   const loadInfo = (slug) => Promise.all([getPoet(slug), getCat(slug)]).then(([poet, cat]) => { const d = { poet, cat }; info.set(slug, d); return d; });
   POETS.forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
 
+  const focusBack = () => closeFocus(true);
   async function openFocus(pi, tile) {
     const p = POETS[pi];
+    overlayOpened(focusBack);
     fromTile = tile; returnFocus = document.activeElement;
     const b = tile.getBoundingClientRect();
     focusImg.src = img(p);
@@ -360,8 +363,9 @@ export function mountWall() {
     } catch { /* offline: the short panel is still useful */ }
   }
 
-  function closeFocus() {
+  function closeFocus(fromBack) {
     if (!focusEl.classList.contains('show')) return;
+    if (fromBack !== true) overlayClosed(focusBack);
     drag?.reset(); panel.classList.remove('full'); root.classList.remove('panel-full');
     panel.classList.remove('open');
     panel.setAttribute('aria-hidden', 'true');
@@ -455,15 +459,24 @@ export function mountWall() {
       }).join('')
       : '<li class="w-lb-empty">شاعری با این نام پیدا نشد</li>';
   };
+  const listBack = () => closeList(true);
   const openList = async () => {
+    overlayOpened(listBack);
     root.classList.add('listing'); lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false');
     drawList();
     if (!lbPoets) { try { lbPoets = (await getManifest()).Poets; } catch { lbPoets = []; } drawList(); }
   };
-  const closeList = () => { root.classList.remove('listing'); lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); };
+  const closeList = (fromBack) => {
+    if (!lb.classList.contains('open')) return;
+    if (fromBack !== true) overlayClosed(listBack);
+    root.classList.remove('listing'); lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); };
   on(root.querySelector('.w-all:not(.w-resume)'), 'click', openList);
-  on(lb, 'click', (e) => { if (e.target === lb) closeList(); });
-  on(root.querySelector('#wLbX'), 'click', closeList);
+  on(lb, 'click', (e) => {
+    if (e.target === lb) return closeList();
+    const a = e.target.closest('a[href^="#/"]');
+    if (a) { e.preventDefault(); overlayNavigate(listBack, a.getAttribute('href')); }
+  });
+  on(root.querySelector('#wLbX'), 'click', () => closeList());
   on(lbQ, 'input', drawList);
   // Ticks choose which portraits make up the wall; at least one always stays.
   on(lbList, 'change', (e) => {
@@ -489,11 +502,14 @@ export function mountWall() {
     POETS.forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
   }
   on(document, 'keydown', (e) => { if (e.key === 'Escape') closeList(); });
+  cleanup.push(() => { overlayForget(listBack); overlayForget(focusBack); });
 
-  on(veil, 'click', closeFocus);
-  on(focusEl, 'click', closeFocus);
+  on(veil, 'click', () => closeFocus());
+  on(focusEl, 'click', () => closeFocus());
   on(panel, 'click', (e) => {
     if (e.target.closest('#wpClose, #wpX')) closeFocus();
+    const a = e.target.closest('a[href^="#/"]');
+    if (a) { e.preventDefault(); overlayNavigate(focusBack, a.getAttribute('href')); }
     const dl = e.target.closest('.wp-dl'); if (dl) startSave(dl);
   });
   on(document, 'keydown', (e) => { if (e.key === 'Escape') closeFocus(); });
