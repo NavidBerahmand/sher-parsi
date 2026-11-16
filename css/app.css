@@ -607,6 +607,8 @@ body.psheet-open { overflow: hidden; }
 .pcard .m { margin-inline: auto; }
 .pcard.two-col .bayt:not(.center-pair):not(.single) { display: grid; grid-template-columns: var(--mw) var(--mw); justify-content: center; column-gap: 48px; }
 .pcard.two-col .bayt .m { margin: 0; }
+/* Band couplets (tarji'/tarkib refrains) and lone misras stay centred under the two columns. */
+.pcard.two-col .center-pair .m, .pcard.two-col .single .m { margin-inline: auto; }
 .kmeter { position: absolute; visibility: hidden; white-space: nowrap; pointer-events: none; }
 
 /* Opening card: the name in a small white box in the middle, then it fades away */
