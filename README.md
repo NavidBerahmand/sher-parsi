@@ -31,4 +31,4 @@ See `TODO.md` (Ganjoor public API for full search and audio once hosted).
 
 ## License
 
-Code: MIT. Poem data: Ganjoor's terms. Font: Kahroba (fontiran), under its publisher's license, not MIT. Portraits: all rights reserved. See `LICENSE`.
+Code: MIT. Poem data: Ganjoor's terms. Font: Kahroba (fontiran), proprietary, used under license [YVO2HC8R](https://fontiran.com/license/YVO2HC8R); not MIT and not for reuse. Portraits: all rights reserved. See `LICENSE`.

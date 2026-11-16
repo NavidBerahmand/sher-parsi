@@ -934,3 +934,5 @@ body:not(.wall-mode)::before { content: ''; position: fixed; z-index: 49; top: 0
 .psheet.scrolled .psheet-grip i { opacity: 0; }
 /* Searching on a phone: the reading settings step aside so the results have room. */
 @media (max-width: 700px), (max-height: 700px) { .mx.searching .mx-foot { display: none; } }
+.about .font-badge { display: inline-block; margin: 2px 0 6px; }
+.about .font-badge img { display: block; width: 72px; height: 72px; }

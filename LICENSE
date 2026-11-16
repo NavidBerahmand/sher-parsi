@@ -12,8 +12,9 @@ This repository contains material under different terms:
    their arrangement are Ganjoor's work.
 
 3. Font files in `fonts/`:
-   Kahroba (`fonts/kahroba-vf.woff2`, by fontiran) is under its publisher's
-   license and is not covered by the MIT License.
+   Kahroba (`fonts/kahroba-vf.woff2`, by fontiran) is proprietary software,
+   used under fontiran license YVO2HC8R (https://fontiran.com/license/YVO2HC8R).
+   It is not covered by the MIT License and may not be reused outside this site.
 
 4. Poet portraits in `img/poets/`:
    Copyright (c) 2026 Navid Berahmand. All rights reserved.
