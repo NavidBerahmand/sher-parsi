@@ -60,7 +60,11 @@ export async function search(raw) {
   const last = words.length - 1;
   // Words we can look up: not too common; the last one (still being typed) as a prefix.
   const look = words.map((w, i) => ({ w, prefix: typing && i === last && w.length >= 2 }))
-    .filter(({ w, prefix }) => (prefix ? true : !m.stopSet.has(w)) && w.length >= 1);
+    // Very common words are not in the index at all, so they can only be checked in the line text,
+    // also while the last one is still being typed («ما قلم در»): a prefix lookup would miss «در» itself.
+    .filter(({ w }) => !m.stopSet.has(w) && w.length >= 1);
+  // Only a common word, still being typed («دل»): look it up as a prefix (دلبر، دلدار…).
+  if (!look.length && typing && words.length === 1 && words[0].length >= 2) look.push({ w: words[0], prefix: true });
   const strong = look.filter((x) => !(x.prefix && x.w.length < 2));
   if (!strong.length || (strong.length === 1 && strong[0].prefix && strong[0].w.length < 2)) return { status: 'short' };
 
