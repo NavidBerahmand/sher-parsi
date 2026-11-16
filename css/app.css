@@ -1,4 +1,3 @@
-@font-face { font-family: "Azar"; src: url(../fonts/azar.woff2) format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Kahroba"; src: url(../fonts/kahroba-vf.woff2) format("woff2"); font-weight: 100 900; font-display: swap; }
 /* ───────── Fonts ───────── */
 
@@ -937,5 +936,3 @@ body:not(.wall-mode)::before { content: ''; position: fixed; z-index: 49; top: 0
 @media (max-width: 700px), (max-height: 700px) { .mx.searching .mx-foot { display: none; } }
 .about .font-badge { display: inline-block; margin: 2px 0 6px; }
 .about .font-badge img { display: block; width: 72px; height: 72px; }
-/* Book-cover titles in Azar (fontiran, static 400); Kahroba stays everywhere else. */
-.cover b { font-family: "Azar", "Kahroba", sans-serif; font-weight: 400; font-variation-settings: normal; font-synthesis: none; }
