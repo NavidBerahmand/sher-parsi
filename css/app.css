@@ -293,8 +293,6 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 .more-btn { display: block; width: 100%; margin-top: 16px; }
 
 /* ───────── Poem ───────── */
-.progress { position: fixed; top: 0; inset-inline: 0; height: 2px; z-index: 30; pointer-events: none; }
-.progress i { display: block; height: 100%; width: 100%; background: var(--accent); transform-origin: right; transform: scaleX(0); }
 
 .poem-head { text-align: center; padding: 26px 0 8px; }
 .poem-head .who { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .88rem; }
@@ -922,3 +920,15 @@ body:not(.wall-mode)::before { content: ''; position: fixed; z-index: 49; top: 0
 /* The number sits in the card's side margin, so the poem keeps its full width and stays centred. */
 .pcard .bayt[data-n]::before { content: attr(data-n); position: absolute; right: -14px; top: 50%; translate: 0 -50%; width: 16px; text-align: center;
   font-family: var(--ui); font-size: .62rem; font-weight: 350; line-height: 1; color: var(--muted); opacity: .55; pointer-events: none; user-select: none; -webkit-user-select: none; }
+
+/* 0.9.63 — UX review fixes */
+/* Book lists: a row keeps the height it will have once its first line arrives, so nothing jumps under the finger. */
+.poems a[data-u]:not(.has-fl) .tt { min-height: 3.416rem; justify-content: center; }
+/* Poem buttons keep their look but take a 44px touch. */
+.psheet-tools .icon-btn { position: relative; }
+.psheet-tools .icon-btn::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
+/* The pull handle fades once the poem scrolls, so it never sits over the verses. */
+.psheet-grip i { transition: opacity .2s; }
+.psheet.scrolled .psheet-grip i { opacity: 0; }
+/* Searching on a phone: the reading settings step aside so the results have room. */
+@media (max-width: 700px), (max-height: 700px) { .mx.searching .mx-foot { display: none; } }

@@ -56,7 +56,18 @@ function closeSheet(fromBack) {
   sheetReturn?.focus?.({ preventScroll: true });
 }
 backdrop.addEventListener('click', () => closeSheet());
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheet.classList.contains('show')) closeSheet(); });
+document.addEventListener('keydown', (e) => {
+  if (!sheet.classList.contains('show')) return;
+  if (e.key === 'Escape') closeSheet();
+  if (e.key === 'Tab') {
+    const f = [...sheet.querySelectorAll('button, a[href], input')].filter((x) => x.offsetParent && !x.disabled);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (!sheet.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
 // Drag the sheet down to close it.
 (() => {
   let y0 = null, dy = 0;
@@ -167,7 +178,8 @@ $('#mxTheme').addEventListener('click', () => {
 });
 $('#mxHk').addEventListener('click', () => {
   settings.set({ harakat: !settings.get().harakat }); syncMenuSettings();
-  if (current.view === 'poem' || current.view === 'cat') rerender();
+  if (current.view === 'poem' && sheetEl) redrawVerses();
+  else if (current.view === 'cat') rerender();
 });
 
 /* Search inside the menu */
@@ -183,8 +195,8 @@ const POET_NAME = (slug) => NAMES[slug] || slug;
 async function runSearch() {
   const raw = mxQ.value, seq = ++searchSeq;
   searchMore = null;
-  if (!raw.trim()) { mxRes.hidden = true; mxNav.hidden = false; mxRes.innerHTML = ''; return; }
-  mxNav.hidden = true; mxRes.hidden = false;
+  if (!raw.trim()) { mxRes.hidden = true; mxNav.hidden = false; mxRes.innerHTML = ''; menu.classList.remove('searching'); return; }
+  mxNav.hidden = true; mxRes.hidden = false; menu.classList.add('searching');
   mxRes.innerHTML = '<p class="mx-note">در حال جست‌وجو…</p>';
   let r;
   try { r = await search(raw); } catch { if (seq === searchSeq) mxRes.innerHTML = '<p class="mx-note">جست‌وجو نیاز به اینترنت دارد</p>'; return; }
@@ -392,9 +404,16 @@ async function viewCat(path) {
     $('#pm').insertAdjacentHTML('beforeend', next.map((p, i) => poemItem(p, shown + i)).join(''));
     shown += next.length;
     observeFirstLines();
-    if (shown >= poems.length) e.currentTarget.remove();
+    if (shown >= poems.length) { e.currentTarget.remove(); moreObs?.disconnect(); }
   });
+  moreObs?.disconnect(); moreObs = null;
+  const moreBtn = $('#more');
+  if (moreBtn) {
+    moreObs = new IntersectionObserver((es) => { if (es[0].isIntersecting && moreBtn.isConnected) moreBtn.click(); }, { rootMargin: '600px 0px' });
+    moreObs.observe(moreBtn);
+  }
 }
+let moreObs = null;
 
 // Show each poem's opening line in book lists, fetched lazily as rows scroll into view.
 let flObserver;
@@ -424,7 +443,8 @@ function renderBlocks(bs, { tappable = true } = {}) {
     const ms = b.m.map((m, j) => `<span class="m m${j + 1}">${vtxt(m)}</span>`).join('');
     const tag = tappable ? 'button' : 'div';
     const num = b.kind === 'bayt' && b.m.length === 2 ? ` data-n="${String(++n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d])}"` : '';
-    return `<${tag} class="${cls}" data-i="${i}"${num}${tappable ? ' type="button"' : ''}>${ms}</${tag}>`;
+    const label = tappable ? ` aria-label="${b.m.map(vtxt).join('، ')}"` : '';
+    return `<${tag} class="${cls}" data-i="${i}"${num}${label}${tappable ? ' type="button"' : ''}>${ms}</${tag}>`;
   }).join('');
 }
 
@@ -524,7 +544,7 @@ function requestCloseSheet() {
     return;
   }
   if (sheetPushed) { sheetPushed = false; window.history.back(); return; }
-  window.history.replaceState(null, '', catHref(sheetCat));
+  window.history.replaceState(window.history.state, '', catHref(sheetCat));
   current.view = 'cat'; current.path = sheetCat;
   closePoemSheet();
 }
@@ -588,7 +608,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
       if (!c || current.view !== 'poem') continue;
       activeCard = en.target; syncTools();
       const want = poemHref(c.meta.url);
-      if (location.hash !== want) { window.history.replaceState(null, '', want); current.path = c.meta.url; }
+      if (location.hash !== want) { window.history.replaceState(window.history.state, '', want); current.path = c.meta.url; }
       document.title = `${c.meta.title} · ${c.meta.poet} · شعر پارسی`;
       history.add(c.meta); refreshMarks(c.meta.url);
     }
@@ -604,7 +624,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
     const line = el ? (el.querySelector('.m') || el).textContent.trim() : '';
     try { localStorage.setItem('sp.resume', JSON.stringify({ url: c.meta.url, line, at: Date.now() })); } catch { /* ignore */ }
   };
-  sh.onscroll = () => { clearTimeout(resumeT); resumeT = setTimeout(saveSpot, 400); };
+  sh.onscroll = () => { sh.classList.toggle('scrolled', sh.scrollTop > 8); clearTimeout(resumeT); resumeT = setTimeout(saveSpot, 400); };
 
   activeCard = mountCard(stack, path, poem, poetN, cat, opts);
   activeCard.classList.add('fadein'); syncTools();
@@ -658,6 +678,16 @@ document.addEventListener('click', (e) => {
   const a = p.animate(opening ? [shut, full] : [full, shut], { duration: opening ? 420 : 300, easing: 'cubic-bezier(.22,1,.36,1)' });
   a.onfinish = a.oncancel = () => { if (!opening) d.open = false; p.style.overflow = ''; delete d.dataset.anim; };
 });
+// Vowel marks switched while a poem is open: redraw the verses where they are, without reopening the sheet.
+function redrawVerses() {
+  document.querySelectorAll('.pcard').forEach((card) => {
+    const c = cardCtx.get(card);
+    if (c) card.querySelector('.verses').innerHTML = renderBlocks(c.bs);
+  });
+  restretchSoon();
+  main.querySelectorAll('.poems a.has-fl').forEach((a) => { a.classList.remove('has-fl'); a.querySelector('.fl').textContent = ''; });
+  observeFirstLines();
+}
 let meter, restretchT;
 // Text size changed: work the kashida out again for every poem card on screen.
 function restretchSoon() {
@@ -764,6 +794,7 @@ function openBayt(ctx, i, el) {
       <button id="bImg">${ICON.image}تصویر برای استوری</button>
       <button id="bShare">${ICON.share}ارسال متن</button>
     </div>`, (s) => {
+    fitQuote(s.querySelector('.q'));
     const text = `${plain.join('\n')}\n— ${meta.poet}`;
     s.querySelector('#bSave').addEventListener('click', (e) => {
       const on = bayts.toggle({ url: meta.url, i, lines: b.m, title: meta.title, poet: meta.poet });
@@ -784,6 +815,20 @@ function openBayt(ctx, i, el) {
       if (r === 'downloaded') toast('تصویر ذخیره شد');
     });
   });
+}
+
+// The couplet in its sheet: a long misra shrinks the type (down to 75%) instead of breaking onto two lines.
+function fitQuote(q) {
+  if (!q) return;
+  const ms = [...q.querySelectorAll('.m')];
+  ms.forEach((m) => { m.style.whiteSpace = 'nowrap'; });
+  const room = q.clientWidth - 16;
+  const widest = Math.max(...ms.map((m) => { m.style.display = 'inline-block'; const w = m.scrollWidth; m.style.display = ''; return w; }));
+  if (widest > room && room > 0) {
+    const k = Math.max(0.75, room / widest - 0.01);
+    q.style.fontSize = `calc(var(--poem-size) * ${(1.02 * k).toFixed(3)})`;
+    if (k === 0.75) ms.forEach((m) => { m.style.whiteSpace = ''; });
+  }
 }
 
 function viewFal() {
@@ -843,14 +888,15 @@ function viewSaved() {
         `<li class="saved-group">${esc(k)}<small>${fa(groups.get(k).length)}</small></li>${groups.get(k).map(item).join('')}`).join('');
     } else html = list.map(item).join('');
     $('#sl').innerHTML = html;
-  wireClose('sX');
-  document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
+    document.querySelector('#ssort [data-o="time"]').textContent = savedTab === 'history' ? 'زمان خواندن' : 'زمان نشان کردن';
+    document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
     document.querySelectorAll('#ssort button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.o === savedSort));
   };
   main.innerHTML = `${pageClose('sX')}<div class="wrap fadein"><div class="page-title"><h1>نشان‌ها</h1></div>
     <div class="tabs" id="stabs" role="tablist"><button role="tab" data-t="poems">شعرها</button><button role="tab" data-t="bayts">بیت‌ها</button><button role="tab" data-t="history">خوانده‌ها</button></div>
     <div class="sort-row" id="ssort"><span>ترتیب:</span><button data-o="time">زمان نشان کردن</button><button data-o="poet">شاعر</button></div>
     <ul class="saved-list" id="sl"></ul></div>`;
+  wireClose('sX');
   document.querySelectorAll('#stabs button').forEach((b) => b.addEventListener('click', () => { savedTab = b.dataset.t; draw(); }));
   document.querySelectorAll('#ssort button').forEach((b) => b.addEventListener('click', () => { savedSort = b.dataset.o; draw(); }));
   $('#sl').addEventListener('click', (e) => {
@@ -923,13 +969,12 @@ async function route(keepScroll = false) {
   let st = window.history.state;
   if (!st || !st.pg) { st = { ...(st || {}), pg: `${Date.now()}-${++pageSeq}` }; window.history.replaceState(st, ''); }
   const memo = keepScroll ? null : scrollMemo.get(st.pg);
-  pageId = st.pg; restoreShown = memo?.shown || 0;
+  pageId = st.pg; restoreShown = keepScroll ? document.querySelectorAll('#pm > li').length : memo?.shown || 0;
+  const listBefore = main.dataset.cat;
   current.view = view; current.path = path;
-  document.body.classList.remove('immersive');
   document.title = 'شعر پارسی';
   const navKey = { home: 'home', poets: 'poets', cat: 'poets', fal: 'fal', saved: 'saved', poem: falNext === path ? 'fal' : '' }[view];
   document.querySelectorAll('.mx-nav a').forEach((a) => (a.dataset.nav === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
-  setProgress(false);
   if (view !== 'poem') closePoemSheet(true);
   if (view !== 'poem' && view !== 'poets') document.body.classList.remove('poet-bg');
   if (view !== 'poem') searchBack = false;
@@ -944,18 +989,27 @@ async function route(keepScroll = false) {
     else location.hash = '#/';
   } catch (e) { failed(e, () => route()); }
   if (view === 'poem' && falNext !== path) falNext = null;
-  window.scrollTo(0, keepScroll ? y : memo?.y || 0);
+  // A poem opened over the very list that was on screen (e.g. from search): leave the list where it was.
+  const sameList = view === 'poem' && listBefore && main.dataset.cat === listBefore;
+  window.scrollTo(0, keepScroll || (sameList && !memo) ? y : memo?.y || 0);
   if (!keepScroll) main.focus({ preventScroll: true });
 }
-// Site version, shown in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.62';
-$('#mxVer').textContent = 'شعر پارسی · نسخه ' + fa(VERSION) + ' · برگرفته از گنجور';
+// Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
+export const VERSION = '0.9.63';
+{
+  const v = document.createElement('div');
+  v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
+  v.textContent = 'نسخه ' + fa(VERSION);
+  document.body.appendChild(v);
+  $('#mxVer').textContent = 'شعر پارسی · ' + v.textContent + ' · برگرفته از گنجور';
+}
 let navCount = 0; // in-app navigations this visit, so "close" can step back safely
 window.addEventListener('hashchange', () => {
   navCount++;
   // Back from an open poem to its own list: just lower the sheet, keep the list where it was.
   if (sheetEl && location.hash === catHref(sheetCat)) {
     sheetPushed = false; current.view = 'cat'; current.path = sheetCat;
+    if (window.history.state?.pg) pageId = window.history.state.pg;
     closePoemSheet();
     return;
   }
@@ -974,27 +1028,6 @@ main.addEventListener('click', (e) => {
   viewPoem(path, {}, true).catch(() => { toast('شعر باز نشد'); requestCloseSheet(); });
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheetEl && !sheet.classList.contains('show')) requestCloseSheet(); }, true);
-
-/* ───────── Reading chrome: progress bar, immersive scroll, swipe & keys ───────── */
-let bar;
-function setProgress(on) {
-  if (on && !bar) {
-    bar = document.createElement('div'); bar.className = 'progress'; bar.innerHTML = '<i></i>';
-    document.body.appendChild(bar);
-  }
-  if (bar) bar.hidden = !on;
-}
-let lastY = 0;
-window.addEventListener('scroll', () => {
-  const y = window.scrollY;
-  if (current.view === 'poem') {
-    const max = document.documentElement.scrollHeight - innerHeight;
-    if (bar) bar.firstChild.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 1})`;
-    if (y > lastY + 6 && y > 120) document.body.classList.add('immersive');
-    else if (y < lastY - 6 || y + innerHeight >= document.documentElement.scrollHeight - 40) document.body.classList.remove('immersive');
-  }
-  lastY = y;
-}, { passive: true });
 
 document.fonts?.addEventListener?.('loadingdone', restretchSoon);
 

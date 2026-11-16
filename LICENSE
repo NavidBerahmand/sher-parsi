@@ -11,8 +11,9 @@ This repository contains material under different terms:
    The classical poems themselves are in the public domain; the edited texts and
    their arrangement are Ganjoor's work.
 
-3. Font files in `fonts/` (Lateef, SIL Global):
-   SIL Open Font License 1.1, see `fonts/OFL.txt`.
+3. Font files in `fonts/`:
+   Kahroba (`fonts/kahroba-vf.woff2`, by fontiran) is under its publisher's
+   license and is not covered by the MIT License.
 
 4. Poet portraits in `img/poets/`:
    Copyright (c) 2026 Navid Berahmand. All rights reserved.

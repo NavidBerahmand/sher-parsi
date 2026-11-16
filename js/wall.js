@@ -117,7 +117,7 @@ export function mountWall() {
     <header class="w-header">
       <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><img src="icons/logo-2.svg" alt=""></button>
     </header>
-    <main class="wall" id="wall" aria-label="دیوار شاعران"></main>
+    <div class="wall" id="wall" role="region" aria-label="دیوار شاعران"></div>
     <div class="w-bar"><button class="w-all" type="button" aria-haspopup="dialog">همه شاعران</button>${resumeLink()}</div>
     <div class="w-lb" id="wLb" aria-hidden="true">
       <div class="w-lb-card" role="dialog" aria-modal="true" aria-label="همه شاعران">
@@ -279,6 +279,7 @@ export function mountWall() {
   // wall it stops for 30 seconds, then eases back in; it also rests while a poet is open.
   {
     const SPEED = 9; // px per second
+    const still = matchMedia('(prefers-reduced-motion: reduce)'); // the device asks for less motion: no drift
     const vx = Math.cos(Math.PI / 6) * SPEED, vy = -Math.sin(Math.PI / 6) * SPEED;
     let last = 0, calmSince = 0, raf = 0;
     const rest = (ms) => { calmSince = Math.max(calmSince, performance.now() + ms); };
@@ -292,7 +293,7 @@ export function mountWall() {
       if (document.getElementById('splash')) { calmSince = t; return; }
       if (dragging) { touch(); return; }
       if (root.classList.contains('focused') || root.classList.contains('listing') || document.hidden) { rest(1200); return; }
-      if (POETS.length === 1) return;
+      if (POETS.length === 1 || still.matches) return;
       const e = Math.min(1, Math.max(0, (t - calmSince) / 4000)); // ease back in over 4s
       const k = e * e * (3 - 2 * e);
       if (!k) return;
@@ -329,7 +330,9 @@ export function mountWall() {
   // Each poet's story and works, fetched quietly as soon as the wall shows,
   // so the panel opens complete and nothing appears or shifts afterwards.
   const loadInfo = (slug) => Promise.all([getPoet(slug), getCat(slug)]).then(([poet, cat]) => { const d = { poet, cat }; info.set(slug, d); return d; });
-  POETS.forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
+  // Fetched once the wall has painted and the browser is idle, so it never slows the first view.
+  const prefetch = () => POETS.forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
+  { const t = setTimeout(() => (window.requestIdleCallback ? requestIdleCallback(prefetch, { timeout: 3000 }) : prefetch()), 1200); cleanup.push(() => clearTimeout(t)); }
 
   const focusBack = () => closeFocus(true);
   async function openFocus(pi, tile) {
