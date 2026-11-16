@@ -466,7 +466,9 @@ function refreshMarks(u) {
 
 function cardHTML(path, poem, poetN, cat, opts = {}) {
   const slug = path.split('/')[0], parent = parentOf(path);
-  const bookLink = cat && parent.includes('/') ? ` · <a href="${catHref(parent)}">${esc(cat.Title)}</a>` : '';
+  // Books inside books (سعدی › مواعظ › غزلیات): name the outer book too, or two «غزلیات» look the same.
+  const outer = cat?._outer ? ` · <a href="${catHref(parentOf(parent))}">${esc(cat._outer)}</a>` : '';
+  const bookLink = cat && parent.includes('/') ? `${outer} · <a href="${catHref(parent)}">${esc(cat.Title)}</a>` : '';
   const on = saved.has(path);
   return `<article class="pcard" data-path="${esc(path)}">
     <div class="poem-bar">
@@ -592,6 +594,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
   const listPath = parent || slug;
   if (!fromList && main.dataset.cat !== listPath && main.dataset.cat !== `${listPath}/~other`) { await viewCat(listPath).catch(() => {}); current.view = 'poem'; current.path = path; }
   const [poem, poet, cat] = await Promise.all([getPoem(path), getPoet(slug).catch(() => null), getCat(parent).catch(() => null)]);
+  if (cat && !cat._outer && parentOf(parent).includes('/')) cat._outer = await getCat(parentOf(parent)).then((c) => c.Title).catch(() => '');
   const poetN = poet?.Nickname || '';
   const list = cat?.Poems || [];
   let idx = list.findIndex((p) => clean(p.FullUrl) === path);
@@ -995,7 +998,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.64';
+export const VERSION = '0.9.65';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
