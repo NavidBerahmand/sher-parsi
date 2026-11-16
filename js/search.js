@@ -36,12 +36,17 @@ function intersect(a, b) {
   while (i < a.length && j < b.length) { if (a[i] === b[j]) { out.push(a[i]); i++; j++; } else if (a[i] < b[j]) i++; else j++; }
   return out;
 }
-async function postings(m, word, prefix) {
+const hexOf = (w) => [...w].map((c) => c.charCodeAt(0).toString(16).padStart(4, '0')).join('-');
+// Lines holding one of the very common words (data/s/c), which the main index leaves out.
+const commonList = async (w) => undelta(await getJSON(`c/${hexOf(w)}.json`).catch(() => []));
+async function postings(m, word, prefix, withCommon = false) {
   const k = keyOf(word);
-  if (!m.keySet.has(k)) return [];
-  const shard = await getJSON(`i/${k}.json`);
+  const shard = m.keySet.has(k) ? await getJSON(`i/${k}.json`) : {};
   if (!prefix) return shard[word] ? undelta(shard[word]) : [];
   const lists = Object.keys(shard).filter((w) => w.startsWith(word)).map((w) => undelta(shard[w]));
+  // A prefix that common words start with («هم» → «همه»): add their lines too, so none are missed.
+  if (withCommon) lists.push(...await Promise.all(m.stop.filter((c) => c.startsWith(word)).map(commonList)));
+  if (!lists.length) return [];
   if (lists.length === 1) return lists[0];
   const set = new Set(); lists.forEach((l) => l.forEach((x) => set.add(x)));
   return [...set].sort((a, b) => a - b);
@@ -58,18 +63,22 @@ export async function search(raw) {
   const words = q.split(/\s+/).filter(Boolean).map((w) => w.replace(ZW, '')).filter(Boolean);
   if (!words.length) return { status: 'short' };
   const last = words.length - 1;
-  // Words we can look up: not too common; the last one (still being typed) as a prefix.
-  const look = words.map((w, i) => ({ w, prefix: typing && i === last && w.length >= 2 }))
-    // Very common words are not in the index at all, so they can only be checked in the line text,
-    // also while the last one is still being typed («ما قلم در»): a prefix lookup would miss «در» itself.
-    .filter(({ w }) => !m.stopSet.has(w) && w.length >= 1);
-  // Only a common word, still being typed («دل»): look it up as a prefix (دلبر، دلدار…).
-  if (!look.length && typing && words.length === 1 && words[0].length >= 2) look.push({ w: words[0], prefix: true });
-  const strong = look.filter((x) => !(x.prefix && x.w.length < 2));
-  if (!strong.length || (strong.length === 1 && strong[0].prefix && strong[0].w.length < 2)) return { status: 'short' };
+  // Whole words are looked up exactly, the word still being typed as a prefix. Very common words are not
+  // in the main index, so they are only checked against the line text; so is a typed prefix that a common
+  // word starts with («در» → «در», «هم» → «همه»): its list would leave those lines out. Same for one letter.
+  const partial = typing ? words[last] : '';
+  const whole = typing ? words.slice(0, last) : words;
+  let strong = whole.filter((w) => !m.stopSet.has(w)).map((w) => ({ w, prefix: false }));
+  if (partial.length >= 2 && !m.stop.some((c) => c.startsWith(partial))) strong.push({ w: partial, prefix: true });
+  // Only common words («از آن», «او را همه»): their own lists, kept apart because they are large.
+  if (!strong.length) {
+    strong = whole.map((w) => ({ w, common: true }));
+    if (partial.length >= 2 || (partial && !whole.length)) strong.push({ w: partial, prefix: true, withCommon: true });
+    if (!strong.length) return { status: 'short' };
+  }
 
   // Exact words first (shorter lists), the typed prefix last.
-  const lists = await Promise.all(strong.map((x) => postings(m, x.w, x.prefix)));
+  const lists = await Promise.all(strong.map((x) => (x.common ? commonList(x.w) : postings(m, x.w, x.prefix, x.withCommon))));
   lists.sort((a, b) => a.length - b.length);
   let ids = lists[0];
   for (let i = 1; i < lists.length && ids.length; i++) ids = intersect(ids, lists[i]);

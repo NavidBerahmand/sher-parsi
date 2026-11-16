@@ -122,6 +122,17 @@ def main():
         with open(os.path.join(OUT, 'i', k + '.json'), 'w', encoding='utf-8') as f:
             json.dump(words, f, ensure_ascii=False, separators=(',', ':'))
 
+    # The very common words get files of their own (data/s/c/<hex>.json), fetched only when a query has
+    # nothing rarer to go on («از آن», «او را همه»).
+    os.makedirs(os.path.join(OUT, 'c'), exist_ok=True)
+    for f in os.listdir(os.path.join(OUT, 'c')): os.remove(os.path.join(OUT, 'c', f))
+    for w in stop:
+        prev, d = 0, []
+        for x in post[w]:
+            d.append(x - prev); prev = x
+        with open(os.path.join(OUT, 'c', '-'.join('%04x' % ord(c) for c in w) + '.json'), 'w', encoding='utf-8') as f:
+            json.dump(d, f, separators=(',', ':'))
+
     meta = {'lines': len(lines), 'poems': len(poems), 'per': LINES_PER_SHARD, 'stop': stop, 'keys': sorted(shards)}
     with open(os.path.join(OUT, 'meta.json'), 'w', encoding='utf-8') as f:
         json.dump(meta, f, ensure_ascii=False, separators=(',', ':'))
