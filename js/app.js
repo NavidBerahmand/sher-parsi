@@ -708,10 +708,10 @@ function stretchCard(card) {
   const measure = () => { for (const m of ms) { if (m.dataset.o == null) m.dataset.o = m.textContent; m.dataset.w = wOf(m.dataset.o); } return Math.max(...ms.map((m) => +m.dataset.w)); };
   let natural = measure();
   const avail = verses.clientWidth - 12;
-  if (natural > avail) {
-    // A misra wider than the screen: shrink this poem a little rather than break the line.
-    const k = Math.max(0.8, avail / natural - 0.005);
-    verses.style.fontSize = `calc(var(--poem-size) * ${(1.1 * k).toFixed(3)})`;
+  // A misra wider than the screen: shrink this poem until every misra fits on one line (Navid: never break).
+  for (let k = 1, guard = 6; natural > avail && guard--;) {
+    k *= Math.max(0.3, avail / natural - 0.005);
+    verses.style.fontSize = `calc(var(--poem-size) * ${(1.1 * k).toFixed(4)})`;
     natural = measure();
   }
   const tw = wOf('ـ'.repeat(10)) / 10;
@@ -820,7 +820,7 @@ function openBayt(ctx, i, el) {
   });
 }
 
-// The couplet in its sheet: a long misra shrinks the type (down to 75%) instead of breaking onto two lines.
+// The couplet in its sheet: a long misra shrinks the type instead of breaking onto two lines.
 function fitQuote(q) {
   if (!q) return;
   const ms = [...q.querySelectorAll('.m')];
@@ -828,9 +828,8 @@ function fitQuote(q) {
   const room = q.clientWidth - 16;
   const widest = Math.max(...ms.map((m) => { m.style.display = 'inline-block'; const w = m.scrollWidth; m.style.display = ''; return w; }));
   if (widest > room && room > 0) {
-    const k = Math.max(0.75, room / widest - 0.01);
+    const k = room / widest - 0.01;
     q.style.fontSize = `calc(var(--poem-size) * ${(1.02 * k).toFixed(3)})`;
-    if (k === 0.75) ms.forEach((m) => { m.style.whiteSpace = ''; });
   }
 }
 
@@ -998,7 +997,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.67';
+export const VERSION = '0.9.68';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
