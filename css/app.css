@@ -687,11 +687,11 @@ body.wall-mode .site-ver { color: rgb(255 255 255 / .5); }
 @media (min-width: 860px) { .psheet-tools { top: calc(env(safe-area-inset-top, 0px) + 20px); } .psheet-tools .icon-btn { width: 42px; height: 42px; } }
 
 /* Menu: one card in the middle of the screen, the same size as «همه شاعران». */
-.mx { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 20px;
+.mx { position: fixed; inset: 0; z-index: 70; display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: 20px; overflow: hidden;
   background: rgb(38 43 31 / .55); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
   opacity: 0; pointer-events: none; transition: opacity .3s ease; }
 .mx.open { opacity: 1; pointer-events: auto; }
-.mx-card { width: min(400px, 100%); height: min(72dvh, 640px); display: flex; flex-direction: column; outline: none;
+.mx-card { width: min(400px, 100%); min-width: 0; max-width: 100%; height: min(72dvh, 640px); display: flex; flex-direction: column; outline: none;
   background: var(--bg); color: var(--ink); border-radius: 22px; box-shadow: 0 24px 70px rgb(15 18 10 / .35);
   padding: 20px 20px 12px; transform: translateY(14px) scale(.97); transition: transform .45s cubic-bezier(.22,1,.36,1); }
 :root[data-theme="dark"] .mx-card { background: var(--surface); }
@@ -703,7 +703,7 @@ body.menu-open { overflow: hidden; }
   background: color-mix(in srgb, var(--ink) 4%, transparent); color: inherit; font: inherit; font-size: 1rem; outline: none; transition: border-color .2s, background .2s; }
 .mx-search input:focus { border-color: var(--accent); background: transparent; }
 .mx-search input::placeholder { color: var(--muted); }
-.mx-body { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; margin: 10px -8px 0; padding: 0 8px; }
+.mx-body { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; margin: 10px -8px 0; padding: 0 8px; }
 .mx-nav { display: flex; flex-direction: column; padding-top: 6px; }
 .mx-nav a, .mx-nav button { display: block; width: 100%; text-align: start; padding: 11px 6px; font: inherit; font-size: 1.12rem; color: inherit; background: none; border: 0; cursor: pointer; border-radius: 10px; }
 .mx-nav > * + * { border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); }
@@ -713,7 +713,7 @@ body.menu-open { overflow: hidden; }
 .mx-list { list-style: none; margin: 0; padding: 0; }
 .mx-list li + li { border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); }
 .mx-list a { display: block; padding: 11px 6px; color: inherit; }
-.mx-l { display: block; font-size: 1.05rem; line-height: 1.75; }
+.mx-l { display: block; overflow-wrap: anywhere; font-size: 1.05rem; line-height: 1.75; }
 .mx-l mark { background: none; color: var(--accent); font-weight: var(--fw-strong); }
 .mx-list small { display: block; margin-top: 2px; font-size: .74rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mx-list a:hover .mx-l { color: var(--accent); }
