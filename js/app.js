@@ -27,6 +27,7 @@ const ICON = {
   down: '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
   cloud: '<svg viewBox="0 0 24 24"><path d="M12 11v7M9 15l3 3 3-3"/><path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9"/></svg>',
   x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  home: '<svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6.5 9.5V20h11V9.5"/></svg>',
   check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg>',
   star: '<svg viewBox="0 0 24 24"><path d="M12 3l2.2 5.6L20 9.3l-4.5 3.8 1.4 5.9L12 15.9 7.1 19l1.4-5.9L4 9.3l5.8-.7z"/></svg>',
@@ -570,6 +571,7 @@ function openSheetShell() {
     </section>
     <div class="psheet-tools">
       <button class="icon-btn pt-x tip-l" aria-label="بستن" data-tip="بستن">${ICON.x}</button>
+      <button class="icon-btn pt-home" aria-label="خانه" data-tip="خانه">${ICON.home}</button>
       <button class="icon-btn pt-share" aria-label="اشتراک‌گذاری" data-tip="اشتراک‌گذاری">${ICON.share}</button>
       <button class="icon-btn pt-save" aria-label="نشان کردن" data-tip="نشان کردن">${ICON.bookmark}</button>
     </div>`;
@@ -583,6 +585,7 @@ function openSheetShell() {
   sh.addEventListener('click', (e) => { if (e.target.closest('.pclose')) requestCloseSheet(); });
   // The three buttons above the sheet act on the poem being read.
   el.querySelector('.pt-x').addEventListener('click', requestCloseSheet);
+  el.querySelector('.pt-home').addEventListener('click', () => { searchBack = false; sheetPushed = false; closePoemSheet(); location.hash = '#/'; });
   el.querySelector('.pt-share').addEventListener('click', () => activeCard?.querySelector('.share').click());
   el.querySelector('.pt-save').addEventListener('click', () => { activeCard?.querySelector('.save').click(); syncTools(); });
   // Pull down from the top of the sheet to close it; it follows the finger.
