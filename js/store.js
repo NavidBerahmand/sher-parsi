@@ -73,7 +73,7 @@ export const bayts = {
 };
 
 // Backup: everything the reader made on this device, as one JSON file to carry to another device.
-const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.bayts', 'sp.history', 'sp.wall'];
+const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.bayts', 'sp.history', 'sp.wall', 'sp.resume'];
 export function exportData() {
   const data = {};
   BACKUP_KEYS.forEach((k) => { const v = read(k, null); if (v !== null) data[k] = v; });
@@ -95,4 +95,7 @@ export function importData(obj) {
   merge('sp.history', (x) => x.url);
   if (d['sp.settings'] && typeof d['sp.settings'] === 'object') write('sp.settings', d['sp.settings']);
   if (Array.isArray(d['sp.wall'])) write('sp.wall', d['sp.wall']);
+  // Reading position («ادامه خواندن»): keep whichever is newer, this device's or the file's.
+  const r = d['sp.resume'];
+  if (r && typeof r === 'object' && r.url && (r.at || 0) > (read('sp.resume', {})?.at || 0)) write('sp.resume', r);
 }
