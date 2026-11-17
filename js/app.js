@@ -712,7 +712,12 @@ function stretchCard(card) {
   const wOf = (t) => { meter.textContent = t; return meter.getBoundingClientRect().width; };
   const measure = () => { for (const m of ms) { if (m.dataset.o == null) m.dataset.o = m.textContent; m.dataset.w = wOf(m.dataset.o); } return Math.max(...ms.map((m) => +m.dataset.w)); };
   let natural = measure();
-  const avail = verses.clientWidth - 12;
+  // Couplet numbers sit centred between the card edge and the start of the verses. When the verses are
+  // long, they give way so the number keeps the same space on both sides (NUM_EDGE from the edge, NUM_EDGE to the text).
+  const numbered = !!verses.querySelector('.bayt[data-n]');
+  const pad = parseFloat(getComputedStyle(card).paddingRight) || 0;
+  const NUM_W = 16, NUM_EDGE = 8, minGap = NUM_EDGE * 2 + NUM_W;
+  const avail = Math.min(verses.clientWidth - 12, numbered ? verses.clientWidth - 2 * Math.max(0, minGap - pad) : Infinity);
   // A misra wider than the screen: shrink this poem until every misra fits on one line (Navid: never break).
   for (let k = 1, guard = 6; natural > avail && guard--;) {
     k *= Math.max(0.3, avail / natural - 0.005);
@@ -726,6 +731,10 @@ function stretchCard(card) {
   card.classList.toggle('two-col', twoCol);
   // The notes under the poem are exactly as wide as the verses above them.
   card.style.setProperty('--vw', (twoCol ? W * 2 + pairGap : W) + 'px');
+  if (numbered) {
+    const gap = pad + (verses.clientWidth - (twoCol ? W * 2 + pairGap : W)) / 2; // card edge to where the verses start
+    card.style.setProperty('--nr', (gap / 2 - pad - NUM_W / 2).toFixed(1) + 'px');
+  }
   // In em, so the line width follows the text if its size changes before the next pass.
   verses.style.setProperty('--mw', (W / parseFloat(getComputedStyle(verses).fontSize)).toFixed(4) + 'em');
   for (const m of ms) {
@@ -1002,7 +1011,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.73';
+export const VERSION = '0.9.74';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
