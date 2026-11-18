@@ -126,6 +126,8 @@ document.addEventListener('click', (e) => {
   const r = e.target.closest('.w-resume');
   if (r && r.dataset.line) pendingFind = { url: r.dataset.url, line: r.dataset.line };
 });
+// Home search button: opens the menu with the cursor already in the search box.
+document.addEventListener('click', (e) => { if (e.target.closest('.w-search')) { e.preventDefault(); location.hash = '#/search'; } });
 document.addEventListener('click', (e) => { if (e.target.closest('.menu-trigger')) { e.preventDefault(); setMenu(!menu.classList.contains('open')); } });
 menu.addEventListener('click', (e) => {
   if (e.target === menu) return setMenu(false);
@@ -222,6 +224,56 @@ async function runSearch() {
     finally { busy = false; }
   };
   page();
+}
+
+/* Search page (from the home search button): the same search as the menu, on its own page.
+   The query and results are kept, so closing a poem opened from here comes back to them. */
+let pageQuery = '', pageSeq2 = 0;
+function viewSearch() {
+  main.innerHTML = `${pageClose()}<div class="wrap fadein">
+    <div class="page-title"><h1>جست‌وجو</h1></div>
+    <div class="search"><label>${ICON.search}<input type="search" id="sq" placeholder="جست‌وجو در همهٔ اشعار" autocomplete="off" enterkeyhint="search" aria-label="جست‌وجو در اشعار"></label></div>
+    <div id="sRes" class="s-res"></div></div>`;
+  wireClose('pageX');
+  const q = $('#sq'), res = $('#sRes');
+  q.value = pageQuery;
+  let t, more = null;
+  const onScroll = () => { if (more && innerHeight + scrollY > document.body.scrollHeight - 300) more(); };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  const stop = new MutationObserver(() => { if (!res.isConnected) { window.removeEventListener('scroll', onScroll); stop.disconnect(); } });
+  stop.observe(main, { childList: true });
+  const run = async () => {
+    const raw = q.value, seq = ++pageSeq2; pageQuery = raw; more = null;
+    if (!raw.trim()) { res.innerHTML = ''; return; }
+    res.innerHTML = '<p class="mx-note">در حال جست‌وجو…</p>';
+    let r;
+    getManifest().catch(() => {});
+    try { r = await search(raw); } catch { if (seq === pageSeq2) res.innerHTML = '<p class="mx-note">جست‌وجو نیاز به اینترنت دارد</p>'; return; }
+    if (seq !== pageSeq2) return;
+    if (r.status === 'short') { res.innerHTML = '<p class="mx-note">عبارت را کمی کامل‌تر بنویس؛ واژه‌های خیلی رایج مثل «دل» یا «که» به‌تنهایی جست‌وجو نمی‌شوند.</p>'; return; }
+    if (r.status === 'none') { res.innerHTML = '<p class="mx-note">چیزی پیدا نشد</p>'; return; }
+    res.innerHTML = '<ul class="mx-list"></ul><p class="mx-note mx-wait">…</p>';
+    const ul = res.querySelector('ul'), wait = res.querySelector('.mx-wait');
+    let busy = false, count = 0;
+    const page = async () => {
+      if (busy) return; busy = true;
+      try {
+        const { items, done } = await r.more(count ? 30 : 20);
+        if (seq !== pageSeq2) return;
+        count += items.length;
+        ul.insertAdjacentHTML('beforeend', items.map((it) =>
+          `<li><a href="${poemHref(it.url)}" data-url="${esc(clean(it.url))}" data-line="${esc(it.text)}"><span class="mx-l">${highlight(it.text, r.words, r.typing, esc)}</span><small>${esc(POET_NAME(it.poet))} · ${esc(it.title)}</small></a></li>`).join(''));
+        if (done) { more = null; wait.textContent = count ? '' : 'چیزی پیدا نشد'; wait.hidden = !!count; }
+        else { more = page; wait.textContent = '…'; if (document.body.scrollHeight <= innerHeight + 300) setTimeout(page, 0); }
+      } catch { if (seq === pageSeq2) wait.textContent = 'اتصال برقرار نشد'; }
+      finally { busy = false; }
+    };
+    page();
+  };
+  q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 260); });
+  q.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(t); run(); q.blur(); } });
+  res.addEventListener('click', (e) => { const a = e.target.closest('a[data-line]'); if (a) pendingFind = { url: a.dataset.url, line: a.dataset.line }; });
+  if (pageQuery) run(); else setTimeout(() => q.focus({ preventScroll: true }), 60);
 }
 
 /* After opening a poem from a search result, bring that line into view and mark it briefly. */
@@ -1091,6 +1143,7 @@ async function route(keepScroll = false) {
     if (view === 'home') { main.innerHTML = ''; mountWall(); } else unmountWall();
     if (view === 'home') { /* the wall is the home page */ }
     else if (view === 'poets') await viewPoets();
+    else if (view === 'search') viewSearch();
     else if (view === 'fal') viewFal();
     else if (view === 'saved') viewSaved();
     else if (view === 'cat' && path) await viewCat(path);
@@ -1104,7 +1157,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.97';
+export const VERSION = '0.9.98';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -1116,6 +1169,13 @@ let navCount = 0; // in-app navigations this visit, so "close" can step back saf
 window.addEventListener('hashchange', () => {
   navCount++;
   // Back from an open poem to its own list: just lower the sheet, keep the list where it was.
+  // Back from a poem opened on the search page: lower the sheet, keep the results.
+  if (sheetEl && location.hash === '#/search' && $('#sRes')) {
+    sheetPushed = false; current.view = 'search'; current.path = '';
+    if (window.history.state?.pg) pageId = window.history.state.pg;
+    closePoemSheet();
+    return;
+  }
   if (sheetEl && location.hash === catHref(sheetCat)) {
     sheetPushed = false; current.view = 'cat'; current.path = sheetCat;
     if (window.history.state?.pg) pageId = window.history.state.pg;
@@ -1127,7 +1187,7 @@ window.addEventListener('hashchange', () => {
 // Tapping a poem in a list opens it over the list instead of on a new page.
 main.addEventListener('click', (e) => {
   const a = e.target.closest('a[href^="#/p/"]');
-  if (!a || current.view !== 'cat' || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  if (!a || (current.view !== 'cat' && current.view !== 'search') || e.metaKey || e.ctrlKey || e.shiftKey) return;
   e.preventDefault();
   const href = a.getAttribute('href');
   const path = clean(decodeURIComponent(href.slice(4)));

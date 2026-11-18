@@ -1022,3 +1022,11 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .poet-list .pl-face { width: 56px; height: 56px; margin: -6px 0; }
 .poet-list .mono { flex: none; width: 48px; height: 48px; margin-inline: 4px; }
 .pl-tick-sp { visibility: hidden; }
+/* Home: black round search button between «همه شاعران» and «ادامه خواندن». */
+.w-search { flex: none; align-self: center; width: var(--wb-h, 36px); height: var(--wb-h, 36px); display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%;
+  background: #000; color: #fff; cursor: pointer; box-shadow: 0 8px 28px rgb(20 24 14 / .28); transition: transform .15s; }
+.w-search:active { transform: scale(.94); }
+.w-search svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; }
+.s-res { margin-top: 10px; }
+.w-bar { --wb-h: 39px; }
+@media (min-width: 860px) { .w-bar { --wb-h: 43px; } }
