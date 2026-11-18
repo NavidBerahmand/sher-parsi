@@ -250,7 +250,7 @@ export async function shelf(poetCat) {
 // Whether a book is bookmarked; set by the app (store lives there), so covers draw their ribbon filled.
 let bookSaved = () => false;
 export function setBookSaved(fn) { bookSaved = fn; }
-const RIBBON = '<svg viewBox="0 0 14 22" aria-hidden="true"><path d="M1 0h12v20.5l-6-4.6-6 4.6z"/></svg>';
+const RIBBON = '<svg viewBox="0 0 14 22" aria-hidden="true"><path d="M1 0v20.5l6-4.6 6 4.6V0"/></svg>';
 export function coverHTML(b, author, i) {
   const h = [...b.title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
   const e = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
