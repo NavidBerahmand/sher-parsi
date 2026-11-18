@@ -1069,3 +1069,7 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .sheet .meaning .m-src { display: block; margin-top: 10px; font-size: .76rem; color: var(--muted); }
 /* Sheet buttons always fill the width, however many there are (two for prose, three or four for poems). */
 .sheet .actions, .sheet .actions.two, .sheet .actions.four { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 1fr; }
+
+/* Poets list: «به ترتیب الفبا» and «بر اساس قرن» side by side (0.9.117). */
+.pl-sorts { display: inline-flex; align-items: center; gap: 14px; }
+.pl-sort, .pl-allrow b { white-space: nowrap; }

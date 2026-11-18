@@ -1,4 +1,4 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, shelf, shelfHTML, savePoet, isPoetSaved, setBookSaved, coverHTML } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, shelf, shelfHTML, savePoet, isPoetSaved, setBookSaved, coverHTML, CENTURIES } from './data.js';
 import { settings, apply, saved, history, bayts, books, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
@@ -422,38 +422,46 @@ async function viewPoets() {
     <div class="page-title"><h1>همه سخنوران</h1><p>${fa(poets.length)} شاعر</p></div>
     <p class="pl-hint">با انتخاب شاعران، آنها را همیشه در صفحهٔ خانه خود داشته باشید.</p>
     <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام شاعر" autocomplete="off"></label></div>
-    <div class="pl-tools"><button type="button" class="pl-sort" id="plSort"></button>
+    <div class="pl-tools"><span class="pl-sorts"><button type="button" class="pl-sort" id="plSort"></button><button type="button" class="pl-sort" id="plCent"></button></span>
       <label class="pl-allrow"><b id="plAllTxt">انتخاب همه</b><span class="pl-tick"><input type="checkbox" id="plAll"><i></i></span></label></div>
     <ul class="poet-list" id="pl"></ul></div>`;
   const pl = $('#pl');
-  // Order: by readership (default) or alphabetical; remembered on this device.
-  let alpha = false;
-  try { alpha = localStorage.getItem('sp.poetsAlpha') === '1'; } catch { /* storage blocked */ }
-  const sortBtn = $('#plSort');
-  const syncSort = () => { sortBtn.innerHTML = `<span>${alpha ? 'به ترتیب شهرت' : 'به ترتیب الفبا'}</span>${ICON.chev}`; };
+  // Order: by readership (default), alphabetical, or by century as on Ganjoor's home page; remembered on this device.
+  let mode = 'fame';
+  try { const v = localStorage.getItem('sp.poetsAlpha'); mode = v === '1' ? 'alpha' : v === 'c' ? 'cent' : 'fame'; } catch { /* storage blocked */ }
+  const sortBtn = $('#plSort'), centBtn = $('#plCent');
+  const syncSort = () => {
+    sortBtn.innerHTML = `<span>${mode === 'alpha' ? 'به ترتیب شهرت' : 'به ترتیب الفبا'}</span>${ICON.chev}`;
+    centBtn.innerHTML = `<span>${mode === 'cent' ? 'به ترتیب شهرت' : 'بر اساس قرن'}</span>${ICON.chev}`;
+  };
   syncSort();
-  sortBtn.addEventListener('click', () => {
-    alpha = !alpha; syncSort();
-    try { localStorage.setItem('sp.poetsAlpha', alpha ? '1' : '0'); } catch { /* storage blocked */ }
+  const setMode = (m) => {
+    mode = mode === m ? 'fame' : m; syncSort();
+    try { localStorage.setItem('sp.poetsAlpha', mode === 'alpha' ? '1' : mode === 'cent' ? 'c' : '0'); } catch { /* storage blocked */ }
     draw($('#q').value);
-  });
+  };
+  sortBtn.addEventListener('click', () => setMode('alpha'));
+  centBtn.addEventListener('click', () => setMode('cent'));
+  const centOf = new Map(), centPos = new Map();
+  CENTURIES.forEach(([title, slugs], ci) => slugs.forEach((s, i) => { centOf.set(s, title); centPos.set(s, ci * 1000 + i); }));
   const norm = (s) => s.replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/‌/g, ' ').trim();
   const draw = (q = '') => {
     const nq = norm(q);
     let list = nq ? poets.filter((p) => norm(p.Nickname).includes(nq)) : poets;
-    if (alpha) list = [...list].sort((a, b) => norm(a.Nickname).localeCompare(norm(b.Nickname), 'fa'));
+    if (mode === 'alpha') list = [...list].sort((a, b) => norm(a.Nickname).localeCompare(norm(b.Nickname), 'fa'));
+    if (mode === 'cent') list = [...list].sort((a, b) => (centPos.get(clean(a.FullUrl)) ?? 1e9) - (centPos.get(clean(b.FullUrl)) ?? 1e9));
     const dark = settings.get().theme === 'dark';
     const face = (p) => { const s = clean(p.FullUrl); return TOP.includes(s) ? `<img class="pl-face" src="img/poets/${esc(s)}${dark ? '-dark' : ''}.webp" alt="" width="1024" height="1024" loading="lazy" decoding="async">` : mono(p.Nickname); };
     const wall = new Set(wallChoice());
     // A tick puts the poet on the home wall; only poets with a portrait have one.
     const tick = (p) => { const s = clean(p.FullUrl); return WALL_ALL.includes(s) ? `<label class="pl-tick" title="نمایش در خانه"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></label>` : '<span class="pl-tick pl-tick-sp" aria-hidden="true"></span>'; };
-    // Alphabetical: a letter heading over each group (آ goes with ا).
+    // Alphabetical: a letter heading over each group (آ goes with ا); by century: the century's name.
     let last = '';
     const head = (p) => {
-      if (!alpha) return '';
-      const L = norm(p.Nickname).charAt(0).replace('آ', 'ا');
+      if (mode === 'fame') return '';
+      const L = mode === 'alpha' ? norm(p.Nickname).charAt(0).replace('آ', 'ا') : (centOf.get(clean(p.FullUrl)) || '');
       if (L === last) return '';
-      last = L; return `<li class="pl-letter">${esc(L)}</li>`;
+      last = L; return `<li class="pl-letter${mode === 'cent' ? ' pl-cent' : ''}">${esc(L)}</li>`;
     };
     pl.innerHTML = list.length ? list.map((p) => `${head(p)}<li><a href="${catHref(p.FullUrl)}">${face(p)}<b>${esc(p.Nickname)}</b>${ICON.chev}</a>${tick(p)}</li>`).join('')
       : `<li class="empty-state"><b>شاعری با این نام پیدا نشد</b></li>`;
@@ -1217,7 +1225,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.116';
+export const VERSION = '0.9.117';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

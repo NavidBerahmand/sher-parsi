@@ -95,6 +95,21 @@ export const NAMES = {
   farrokhi: 'فرخی سیستانی',
   manoochehri: 'منوچهری دامغانی',
 };
+// Ganjoor's home page «دسته‌بندی بر اساس قرن»: each century and its poets in Ganjoor's order (ganjoor.net, 2026-11-18).
+export const CENTURIES = [
+  ['قرن سوم', 'soghdi,gorgani,bassam,hanzale,roodaki,firooz,mokhallad,vasif,varragh'],
+  ['قرن چهارم', 'abueshagh,abolhoseyn,abolala,abolmoayyed,bolmasal,abusaeed,mosabi,barmaki,balami,kashi,jollab,daghighi,rownaghi,sepehri,shaker,shahid,sane,tokhari,onsori,ayyooghi,faralavi,ferdousi,kesayee,moradi,masoudi'],
+  ['قرن پنجم', 'rooni,beyhaghi,osmani,azraghi,asadi,amir,iranshan,babataher,abdullah,khayyam,nashenas,sanaee,asjadi,amagh,keikavus,ghazzali,asad,farrokhi,ghatran,labibi,masood,manoochehri,naserkhosro,hojviri'],
+  ['قرن ششم', 'akhsikati,saber,afzal,anvari,ouhad,babaafzal,baha,jamal,hamid,khaghani,rn,ghomri,soozani,hasan,zahir,zahiri,ayeshe,abbadi,gilani,jabali,mokhtari,attar,emadi,eynolghozat,falaki,ghavami,beylaghani,mmon,mahsati,meybodi,monshi,nezami,aroozi,vatvat'],
+  ['قرن هفتم', 'emami,hoseyni,khosro,nezari,khajenasir,varavini,saadi,valad,eraghi,kamal,hamgar,moulavi,bajeyee,daye,homam'],
+  ['قرن هشتم', 'ebneemad,ebneyamin,ouhadi,jalal,joneyd,jahan,hafez,heydar,khajoo,rooh,salman,seyf,shahnematollah,maghrebi,shabestari,obeyd,ghasem,khojandi,koosaj,naser,nasimi'],
+  ['قرن نهم', 'ebnehesam,asiri,shahi,fani,jami,hoseyn,khiali,jarooni,soofi,koohi,ghari'],
+  ['قرن دهم', 'ahli,faghani,razi,sam,shahedi,bahaee,orfi,fozooli,mohtasham,meyli,naziri,vahshi,helali'],
+  ['قرن یازدهم', 'abolhasan,shahrestani,pazevari,bidel,jooya,bahoo,salim,nasafi,saeb,taleb,toghra,ghani,fasihi,fayyaz,feyz,ghodsi,kalim,majzoob,masih,mir,nowras,nouee,vaez,vahid'],
+  ['قرن دوازدهم', 'azar,hazin,rafigh,saeeda,tabib,ghassab,moshtagh,noorali,waqif,hatef'],
+  ['قرن سیزدهم', 'ashofte,eshraghb,kermani,elhami,bolandeghbal,torki,jeyhoon,asrar,khaled,rashhe,rhedayat,saaghar,sahab,shater,samet,safa,safayee,safi,omman,ghaleb,ghobar,fayez,fathalishah,forooghi,ghaani,ghaemmagham,mohit,naraghi,aghakhan,habib,neshat,frasheri,nayyer,vahdat,shooshtari,mahabadi,yaghma'],
+  ['قرن چهاردهم', 'ayatib,adib,afsar,iqbal,iraj,parvin,hajeb,khalili,rahi,shahriar,hamedani,saghir,toghrol,aref,fosooli,ashtari,emad,moftagher,yazdi,fanoodi,bahar,eshghi,khusfi'],
+].map(([title, s]) => [title, s.split(',')]);
 // The poets on the site, ranked by readership (Ganjoor recitations and comments + Persian Wikipedia views); lists follow this order.
 export const TOP = Object.keys(NAMES);
 // Ganjoor's short name for every poet in the manifest (filled when it loads); NAMES wins where it has one.
