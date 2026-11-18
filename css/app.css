@@ -1033,3 +1033,9 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 /* Wall names: cream, no shadow, a little larger; always shown (opacity set from the distance to the screen centre). */
 .w-name { color: #f5f2e8; text-shadow: none; opacity: .5; font-size: 1.02rem; transition: none; }
 @media (max-width: 767px) { .w-name { font-size: .84rem; } }
+/* Every text field: a full capsule, 48px tall, 16px type, 18px search icon 16px from the right (Navid 2026-11-18). */
+.search label { height: 48px; padding: 0 15px; border-radius: 999px; gap: 10px; }
+.search label svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.search input { font: inherit; font-size: 1rem; color: inherit; }
+.mx-search input { height: 48px; padding: 0 44px 0 42px; border-radius: 999px; font-size: 1rem; }
+.mx-search > svg, .mx-search label > svg { right: 16px; width: 18px; height: 18px; }
