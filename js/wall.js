@@ -454,11 +454,12 @@ export function mountWall() {
     const list = q ? lbPoets.filter((p) => norm(p.Nickname).includes(q)) : lbPoets;
     lbList.innerHTML = list.length
       ? list.map((p) => {
+        // Only poets with a portrait can go on the wall, so only they get a tick; the rest are listed to read.
         const slug = p.FullUrl.replace(/^\//, ''), has = ALL.some((q) => q.slug === slug);
         const on = POETS.some((q) => q.slug === slug);
         // The opposite portrait reads best on the card: dark portrait on the light card, light on the dark.
         const face = has ? `<img class="w-lb-face" src="img/poets/${esc(slug)}${document.documentElement.dataset.theme === 'dark' ? '' : '-dark'}.webp" alt="" loading="lazy" decoding="async">` : '<i class="w-lb-face"></i>';
-        return `<li><a href="#/c/${esc(slug)}">${face}<span>${esc(p.Nickname)}</span></a><label class="w-lb-tick${has ? '' : ' off'}" title="${has ? 'نمایش در خانه' : 'هنوز تصویری ندارد'}"><input type="checkbox" data-slug="${esc(slug)}"${on ? ' checked' : ''}${has ? '' : ' disabled'}><i></i></label></li>`;
+        return `<li><a href="#/c/${esc(slug)}">${face}<span>${esc(p.Nickname)}</span></a>${has ? `<label class="w-lb-tick" title="نمایش در خانه"><input type="checkbox" data-slug="${esc(slug)}"${on ? ' checked' : ''}><i></i></label>` : ''}</li>`;
       }).join('')
       : '<li class="w-lb-empty">شاعری با این نام پیدا نشد</li>';
   };

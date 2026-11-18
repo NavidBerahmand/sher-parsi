@@ -1,4 +1,4 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, shelf, shelfHTML } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, shelf, shelfHTML } from './data.js';
 import { settings, apply, saved, history, bayts, exportData, importData } from './store.js';
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
@@ -192,7 +192,7 @@ $('#mxBody').addEventListener('scroll', (e) => {
   const b = e.currentTarget;
   if (searchMore && b.scrollTop + b.clientHeight > b.scrollHeight - 200) searchMore();
 });
-const POET_NAME = (slug) => NAMES[slug] || slug;
+const POET_NAME = (slug) => NAMES[slug] || NICK.get(slug) || slug;
 async function runSearch() {
   const raw = mxQ.value, seq = ++searchSeq;
   searchMore = null;
@@ -200,6 +200,7 @@ async function runSearch() {
   mxNav.hidden = true; mxRes.hidden = false; menu.classList.add('searching');
   mxRes.innerHTML = '<p class="mx-note">در حال جست‌وجو…</p>';
   let r;
+  getManifest().catch(() => {}); // fills NICK, the names of poets outside NAMES
   try { r = await search(raw); } catch { if (seq === searchSeq) mxRes.innerHTML = '<p class="mx-note">جست‌وجو نیاز به اینترنت دارد</p>'; return; }
   if (seq !== searchSeq) return;
   if (r.status === 'short') { mxRes.innerHTML = '<p class="mx-note">عبارت را کمی کامل‌تر بنویس؛ واژه‌های خیلی رایج مثل «دل» یا «که» به‌تنهایی جست‌وجو نمی‌شوند.</p>'; return; }
@@ -1011,7 +1012,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.74';
+export const VERSION = '0.9.75';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

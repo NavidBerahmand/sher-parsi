@@ -32,7 +32,14 @@ function getLocal(path) {
   }
   return local.get(path);
 }
-const bundleName = (url) => `data/b/${clean(url).replace(/\//g, '~')}`;
+// Each poet's files live under a data root: 'data/' here, or another folder named in the manifest ("R"),
+// e.g. a second GitHub Pages site on the same host that holds the poets that don't fit in this one.
+let roots = null;
+const rootOf = async (slug) => {
+  if (!roots) roots = getLocal('data/manifest.json').then((m) => new Map((m.Poets || []).map((p) => [clean(p.FullUrl), p.R || 'data/'])));
+  return (await roots).get(slug) || 'data/';
+};
+const bundleName = async (url) => `${await rootOf(clean(url).split('/')[0])}b/${clean(url).replace(/\//g, '~')}`;
 const POS = { R: 'Right', L: 'Left', C1: 'CenteredVerse1', C2: 'CenteredVerse2', S: 'Single', P: 'Paragraph', N: 'Comment' };
 function expand(p) {
   if (!p || p.Verses) return p;
@@ -90,18 +97,22 @@ export const NAMES = {
 };
 // The poets on the site, ranked by readership (Ganjoor recitations and comments + Persian Wikipedia views); lists follow this order.
 export const TOP = Object.keys(NAMES);
+// Ganjoor's short name for every poet in the manifest (filled when it loads); NAMES wins where it has one.
+export const NICK = new Map();
 const named = (slug, o) => { if (o && NAMES[slug]) o.Nickname = o.Name = NAMES[slug]; return o; };
 export const getManifest = () => (BUNDLED ? getLocal('data/manifest.json') : getJSON('manifest.json'))
   .then((m) => {
     const by = new Map((m.Poets || []).map((p) => [clean(p.FullUrl), p]));
-    m.Poets = TOP.filter((s) => by.has(s)).map((s) => named(s, by.get(s)));
+    by.forEach((p, s) => NICK.set(s, p.Nickname));
+    // The named poets first, in readership order; then everyone else, in the order the manifest lists them.
+    m.Poets = [...TOP.filter((s) => by.has(s)).map((s) => named(s, by.get(s))), ...(m.Poets || []).filter((p) => !NAMES[clean(p.FullUrl)])];
     return m;
   });
-export const getPoet = (slug) => (BUNDLED ? getLocal(`data/p/${slug}.json`) : getJSON(`poets/${slug}/poet.json`))
+export const getPoet = (slug) => (BUNDLED ? rootOf(slug).then((r) => getLocal(`${r}p/${slug}.json`)) : getJSON(`poets/${slug}/poet.json`))
   .then((p) => named(slug, p));
 export async function getCat(url) {
   if (!BUNDLED) return getJSON(`poets/${clean(url)}/_cat.json`);
-  return (await getLocal(`${bundleName(url)}.json`)).cat;
+  return (await getLocal(`${await bundleName(url)}.json`)).cat;
 }
 export async function getPoem(url) {
   if (!BUNDLED) return getJSON(`poets/${clean(url)}.json`);
@@ -110,7 +121,7 @@ export async function getPoem(url) {
   const i = cat.Poems.findIndex((p) => clean(p.FullUrl) === clean(url));
   if (i < 0) throw new Error('not found');
   const n = Math.floor(i / cat._chunk);
-  const body = await getLocal(`${bundleName(parent)}${n ? '.' + n : ''}.json`);
+  const body = await getLocal(`${await bundleName(parent)}${n ? '.' + n : ''}.json`);
   return expand(body.poems[key]);
 }
 
@@ -126,7 +137,7 @@ async function poetFiles(slug) {
   const walk = async (url) => {
     const cat = await getCat(url);
     if (BUNDLED) {
-      const base = bundleName(url);
+      const base = await bundleName(url);
       for (let i = 0; i < (cat._chunks || 1); i++) urls.push(`${base}${i ? '.' + i : ''}.json`);
     } else {
       urls.push(`${DATA_BASE}poets/${clean(url)}/_cat.json`);
@@ -135,7 +146,7 @@ async function poetFiles(slug) {
     for (const c of cat.ChildCats || []) await walk(c.FullUrl);
   };
   await walk(slug);
-  urls.push(BUNDLED ? `data/p/${slug}.json` : `${DATA_BASE}poets/${slug}/poet.json`);
+  urls.push(BUNDLED ? `${await rootOf(slug)}p/${slug}.json` : `${DATA_BASE}poets/${slug}/poet.json`);
   return urls;
 }
 

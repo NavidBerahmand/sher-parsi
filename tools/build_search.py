@@ -50,9 +50,17 @@ def main():
     sys.path.insert(0, ROOT)
     order = [line.split(':')[0].strip() for line in open(os.path.join(ROOT, 'js', 'data.js'), encoding='utf-8').read().split('export const NAMES = {')[1].split('};')[0].strip().splitlines() if ':' in line]
     order = [o.strip("' ") for o in order]
-    files = sorted(os.listdir(os.path.join(DATA, 'b')))
+    # Then every other poet in the manifest, in its order. A poet whose files live in another site ("R",
+    # e.g. ../sher-parsi-data/data/) is read from that folder, resolved next to this repository.
+    manifest = json.load(open(os.path.join(DATA, 'manifest.json'), encoding='utf-8'))['Poets']
+    roots = {}
+    for p in manifest:
+        slug = p['FullUrl'].strip('/')
+        roots[slug] = os.path.normpath(os.path.join(ROOT, p['R'])) if p.get('R') else DATA
+        if slug not in order:
+            order.append(slug)
 
-    def walk(cat_url):
+    def walk(cat_url, DATA):
         """Yield (poem url, poem title, verses) for a category and everything under it, in site order."""
         base = cat_url.strip('/').replace('/', '~')
         cat = json.load(open(os.path.join(DATA, 'b', base + '.json'), encoding='utf-8'))['cat']
@@ -67,13 +75,15 @@ def main():
             if body:
                 yield p['FullUrl'].strip('/'), p['Title'], body['V']
         for c in cat.get('ChildCats') or []:
-            yield from walk(c['FullUrl'])
+            yield from walk(c['FullUrl'], DATA)
 
     poems, lines = [], []          # poems: [url, title, poet]; lines: [poemIdx, original text, normalised]
     for slug in order:
-        if not os.path.exists(os.path.join(DATA, 'b', slug + '.json')):
+        src = roots.get(slug, DATA)
+        if not os.path.exists(os.path.join(src, 'b', slug + '.json')):
+            print('missing', slug, file=sys.stderr)
             continue
-        for url, title, verses in walk('/' + slug):
+        for url, title, verses in walk('/' + slug, src):
             pi = len(poems)
             had = False
             for v in verses:
