@@ -936,3 +936,11 @@ body:not(.wall-mode)::before { content: ''; position: fixed; z-index: 49; top: 0
 @media (max-width: 700px), (max-height: 700px) { .mx.searching .mx-foot { display: none; } }
 .about .font-badge { display: inline-block; margin: 2px 0 6px; }
 .about .font-badge img { display: block; width: 72px; height: 72px; }
+
+/* Version tag: only on the home wall (Navid, 2026-11-18). */
+body:not(.wall-mode) .site-ver { display: none; }
+/* End of a section: on to the next one, set apart from the list. */
+.next-sec { display: flex; width: 100%; height: auto; min-height: 56px; justify-content: flex-start; margin: 40px 0 8px; padding: 12px 24px; background: var(--surface-2); color: var(--ink); text-decoration: none; }
+.next-sec small { color: var(--muted); flex: none; }
+.next-sec b { flex: 1; font-weight: var(--fw-title); }
+.next-sec svg { flex: none; width: 18px; height: 18px; }

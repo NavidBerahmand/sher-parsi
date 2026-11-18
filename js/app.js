@@ -391,7 +391,13 @@ async function viewCat(path) {
     ${poems.length ? `<div class="list-tools"><span class="count">${fa(poems.length)} شعر</span></div>
       <ul class="poems" id="pm">${poems.slice(0, shown).map(poemItem).join('')}</ul>
       ${poems.length > shown ? `<button class="btn ghost more-btn" id="more">نمایش بیشتر</button>` : ''}` : ''}
+    <div id="nextSec"></div>
   </div>`;
+  // End of a section: a button on to the next one in the poet's works (the next sibling, or the parent's next).
+  if (!isPoet && !other) nextSection(path).then((n) => {
+    const box = $('#nextSec');
+    if (n && box && main.dataset.cat === path) box.outerHTML = `<a class="btn next-sec" href="${catHref(n.FullUrl)}"><small>بخش بعد</small><b>${esc(n.Title)}</b>${ICON.chev}</a>`;
+  }).catch(() => {});
 
   observeFirstLines();
   // Close: back to wherever the reader came from in the app; otherwise up one level.
@@ -418,6 +424,17 @@ async function viewCat(path) {
   }
 }
 let moreObs = null;
+async function nextSection(path) {
+  let p = clean(path);
+  while (p.includes('/')) {
+    const parent = parentOf(p);
+    const kids = (await getCat(parent)).ChildCats || [];
+    const i = kids.findIndex((c) => clean(c.FullUrl) === p);
+    if (i >= 0 && i < kids.length - 1) return kids[i + 1];
+    p = parent;
+  }
+  return null;
+}
 
 // Show each poem's opening line in book lists, fetched lazily as rows scroll into view.
 let flObserver;
@@ -1012,7 +1029,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.75';
+export const VERSION = '0.9.76';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
