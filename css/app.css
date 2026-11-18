@@ -916,11 +916,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 /* The strip under the phone status bar is solid site green on every page, as it looks after coming from the home
    wall (Navid, 2026-11-18). A real fixed element touching the top edge, so iPhone Safari paints its top edge with
    this colour instead of blurring the page there (which smeared the logo and close button on the book lists). */
-/* iPhone Safari picks the top edge's colour by hit-testing a line along the top of the page: an element that ignores
-   taps (pointer-events: none) is skipped, and a strip that ends exactly at the status bar can miss the line. So the
-   strip takes taps and reaches 4px below the status bar; otherwise Safari found nothing there and blurred the top
-   (or took the poem sheet's cream backdrop). */
-.top-edge { position: fixed; z-index: 49; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top, 0px) + 4px); background: #585e4a; pointer-events: auto; }
+.top-edge { position: fixed; z-index: 49; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: #585e4a; pointer-events: none; }
 :root[data-theme="dark"] .top-edge { background: #2f3526; }
 /* Poet download button: same size as the close button; black with a white icon once downloaded (Navid, 2026-11-13). */
 .wp-dl { width: 36px; height: 36px; }
