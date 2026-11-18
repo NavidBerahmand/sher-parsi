@@ -37,6 +37,31 @@ document.addEventListener('keydown', (e) => {
 
 // Story images: the poet's dark portrait when there is one.
 const storyPic = (url) => { const s = clean(url).split('/')[0]; return TOP.includes(s) ? `img/poets/${s}-dark.webp` : null; };
+// «معنی بیت» from the commentaries comes with editor marks: a second explanation in { }, word glosses in [ a = b / c = d ],
+// and «- منبع: …» at the end. Shown as plain paragraphs, a word list and a small source line (Navid 2026-11-18).
+function meaningHTML(raw) {
+  let t = String(raw).replace(/ /g, ' ').trim();
+  let src = '';
+  const sm = t.match(/[\s\-–—]*منبع\s*:\s*([^{}\[\]]+?)\s*\}?\s*$/);
+  if (sm) { src = sm[1].trim(); t = t.slice(0, sm.index).trim(); }
+  const gloss = [];
+  const takeGloss = (inner) => inner.split(/\s\/\s/).forEach((part) => {
+    const m = part.match(/^\s*(.+?)\s*=\s*(.+?)\s*$/);
+    if (m) gloss.push([m[1], m[2]]); else if (part.trim()) gloss.push(['', part.trim()]);
+  });
+  // [ … = … ] blocks are glossaries; other [ … ] (editor insertions) stay in the text.
+  t = t.replace(/\[([^\[\]]*=[^\[\]]*)\]/g, (_, inner) => { takeGloss(inner); return ' '; });
+  // { … } (closed or running to the end) is a second explanation.
+  const paras = [];
+  t.split(/[{}]/).map((x) => x.trim()).filter(Boolean).forEach((p) => {
+    // A part made only of «a = b / c = d» items is a glossary too.
+    if (/=/.test(p) && p.split(/\s\/\s/).every((q) => /=/.test(q))) takeGloss(p);
+    else paras.push(p.replace(/\s{2,}/g, ' ').replace(/\s+([.،؟!])/g, '$1'));
+  });
+  return paras.map((p) => `<p>${esc(p)}</p>`).join('')
+    + (gloss.length ? `<ul class="gloss">${gloss.map(([w, m]) => `<li>${w ? `<b>${esc(w)}</b>: ` : ''}${esc(m)}</li>`).join('')}</ul>` : '')
+    + (src ? `<small class="m-src">منبع: ${esc(src)}</small>` : '');
+}
 const ICON = {
   chev: '<svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
   back: '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
@@ -969,7 +994,7 @@ function openBayt(ctx, i, el) {
   const plain = b.m.map((m) => (settings.get().harakat ? m : m.replace(HARAKAT, '')));
   openSheet(`
     <div class="q">${plain.map((m) => `<span class="m">${esc(m)}</span>`).join('')}</div>
-    ${b.sum ? `<div class="meaning"><b>معنی بیت</b><p>${esc(b.sum.trim())}</p></div>` : ''}
+    ${b.sum ? `<div class="meaning"><b>معنی بیت</b>${meaningHTML(b.sum)}</div>` : ''}
     <div class="actions four">
       <button id="bSave" aria-pressed="${bayts.has(meta.url, i)}">${ICON.bookmark}<span>${bayts.has(meta.url, i) ? 'نشان‌شده' : 'نشان کردن'}</span></button>
       <button id="bCopy">${ICON.copy}کپی</button>
@@ -1192,7 +1217,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.112';
+export const VERSION = '0.9.113';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

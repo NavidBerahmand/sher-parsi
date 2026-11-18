@@ -1062,3 +1062,8 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 /* Ribbon fully opaque, so nothing of the frame line shows under it; only its outline is softened. */
 .bk-mark svg { opacity: 1; }
 .bk-mark:not(.on) svg { stroke: color-mix(in srgb, var(--ink-c) 80%, var(--cloth)); }
+/* Couplet meaning: paragraphs, a word list, and the source small at the end. */
+.sheet .meaning p + p { margin-top: 10px; }
+.sheet .meaning .gloss { list-style: none; margin: 12px 0 0; padding: 10px 0 0; border-top: 1px solid var(--line); font-size: .9rem; color: var(--ink-soft); line-height: 1.9; }
+.sheet .meaning .gloss b { display: inline; font-size: inherit; color: var(--ink); margin: 0; font-weight: 600; }
+.sheet .meaning .m-src { display: block; margin-top: 10px; font-size: .76rem; color: var(--muted); }
