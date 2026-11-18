@@ -809,6 +809,8 @@ function stretchCard(card) {
   verses.style.setProperty('--mw', (W / parseFloat(getComputedStyle(verses).fontSize)).toFixed(4) + 'em');
   for (const m of ms) {
     const w = +m.dataset.w;
+    // Centred lines (the green ones, a lone *) are never stretched: they stay centred at their own width (Navid).
+    if (m.closest('.center-pair')) { m.textContent = m.dataset.o; m.classList.remove('wraps'); continue; }
     if (w > W) { m.textContent = m.dataset.o; m.classList.add('wraps'); continue; }
     m.classList.remove('wraps');
     let n = Math.floor((W - w) / tw);
@@ -1081,7 +1083,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.89';
+export const VERSION = '0.9.90';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
