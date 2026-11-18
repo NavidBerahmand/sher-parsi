@@ -35,6 +35,8 @@ document.addEventListener('keydown', (e) => {
   if (m && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); toggleBook(m); }
 }, true);
 
+// Story images: the poet's dark portrait when there is one.
+const storyPic = (url) => { const s = clean(url).split('/')[0]; return TOP.includes(s) ? `img/poets/${s}-dark.webp` : null; };
 const ICON = {
   chev: '<svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
   back: '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
@@ -951,8 +953,7 @@ function openPoemShare(card, ctx, path) {
         if (d < dist) { dist = d; best = +el.dataset.i; }
       });
       const focus = Math.max(0, idx.indexOf(best));
-      const dark = getComputedStyle(document.documentElement).colorScheme === 'dark';
-      const blob = await poemImage({ groups, focus, poet: meta.poet, title: meta.title, dark });
+      const blob = await poemImage({ groups, focus, poet: meta.poet, title: meta.title, pic: storyPic(meta.url) });
       const r = await shareBlob(blob, `poem-${meta.url.replace(/\//g, '-')}.png`, `${meta.poet} · ${poem.Title}`);
       btn.disabled = false;
       if (r === 'downloaded') toast('تصویر ذخیره شد');
@@ -989,8 +990,7 @@ function openBayt(ctx, i, el) {
     });
     s.querySelector('#bImg').addEventListener('click', async (e) => {
       const btn = e.currentTarget; btn.disabled = true;
-      const dark = getComputedStyle(document.documentElement).colorScheme === 'dark';
-      const blob = await baytImage({ lines: plain, poet: meta.poet, title: meta.title, dark });
+      const blob = await baytImage({ lines: plain, poet: meta.poet, title: meta.title, pic: storyPic(meta.url) });
       const r = await shareBlob(blob, `bayt-${meta.url.replace(/\//g, '-')}.png`, text);
       btn.disabled = false;
       if (r === 'downloaded') toast('تصویر ذخیره شد');
@@ -1192,7 +1192,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.109';
+export const VERSION = '0.9.110';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

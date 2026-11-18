@@ -1,4 +1,4 @@
-// Render a couplet as a 1080×1920 story image: portrait green in dark mode, light cream in light mode, the site logo small at the top,
+// Render a couplet as a 1080×1920 story image, always dark: the poet's portrait (or the logo) at the top,
 // the hemistichs justified to one width in the middle, poet name and poem title at the bottom. Nothing else.
 /* Kashida (shared with the poem page): stretch letter joins with tatweel. */
 const NONJOIN = new Set([...'اآأإٱدذرزژوؤةءى']);
@@ -55,18 +55,23 @@ function loadImg(src) {
   return new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
 }
 
-export async function baytImage({ lines, poet, title, dark }) {
-  return poemImage({ groups: [lines], focus: 0, poet, title, dark });
+export async function baytImage({ lines, poet, title, pic }) {
+  return poemImage({ groups: [lines], focus: 0, poet, title, pic });
 }
+// Placeholder site address until the domain is bought (Navid 2026-11-18).
+export const SITE_ADDR = 'sherparsi.com';
 
 // groups: the poem's couplets (each an array of hemistichs). The three couplets around `focus` are sharp;
 // a few more above and below fade away towards the logo and the names.
-export async function poemImage({ groups, focus, poet, title, dark }) {
+// Always the dark look (Navid 2026-11-18). `pic`: the poet's dark portrait, drawn at the top instead of the logo;
+// the background then takes the portrait's own wall colour, so the two are one surface.
+export async function poemImage({ groups, focus, poet, title, pic }) {
+  const dark = true;
   const W = 1080, H = 1920;
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const ctx = c.getContext('2d');
-  const bg = dark ? '#2f3526' : '#f5f2e8';
+  let bg = '#303526';
   const ink = dark ? '#f3f1e7' : '#2b2e22';
   const soft = dark ? '#b9bca6' : '#7a7e69';
 
@@ -74,14 +79,23 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
     document.fonts.load('350 72px Kahroba'),
     document.fonts.load('450 40px Kahroba'),
   ]).catch(() => {});
-  const logo = await loadImg(dark ? 'icons/logo-2.svg' : 'icons/logo.svg');
+  const portrait = pic ? await loadImg(pic) : null;
+  const logo = portrait ? null : await loadImg('icons/logo-2.svg');
+  if (portrait) {
+    // Take the wall colour from the portrait's corner.
+    const t = document.createElement('canvas'); t.width = t.height = 4;
+    const tc = t.getContext('2d'); tc.drawImage(portrait, 0, 0, 40, 40, 0, 0, 4, 4);
+    const [r, g, b2] = tc.getImageData(1, 1, 1, 1).data;
+    bg = `rgb(${r},${g},${b2})`;
+  }
 
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
   ctx.direction = 'rtl';
   ctx.textBaseline = 'middle';
 
   // Logo, small, top centre.
-  if (logo) { const lw = 120, lh = lw * 119.36 / 154.66; ctx.drawImage(logo, (W - lw) / 2, 250, lw, lh); }
+  if (portrait) { const ps = 360; ctx.drawImage(portrait, (W - ps) / 2, 50, ps, ps); }
+  else if (logo) { const lw = 120, lh = lw * 119.36 / 154.66; ctx.drawImage(logo, (W - lw) / 2, 250, lw, lh); }
 
   // Which couplets: the sharp three, plus up to three on each side to fade out.
   groups = groups.map((g) => g.filter((l) => l && l.trim())).filter((g) => g.length);
@@ -149,6 +163,9 @@ export async function poemImage({ groups, focus, poet, title, dark }) {
   ctx.fillStyle = ink; ctx.font = '450 42px Kahroba';
   ctx.fillText(poet || '', W / 2, H - 380);
   if (title) { ctx.fillStyle = soft; ctx.font = '350 32px Kahroba'; ctx.fillText(title, W / 2, H - 310); }
+  // Small at the bottom: the site's name and address.
+  ctx.fillStyle = soft; ctx.font = '450 30px Kahroba'; ctx.fillText('شعر پارسی', W / 2, H - 200);
+  ctx.direction = 'ltr'; ctx.font = '350 24px Kahroba, sans-serif'; ctx.fillText(SITE_ADDR, W / 2, H - 158);
 
   return new Promise((res) => c.toBlob(res, 'image/png'));
 }
