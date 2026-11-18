@@ -191,11 +191,11 @@ export function mountWall() {
         }
         el.style.transform = `translate(${c * TILE + offX}px, ${r * TILE + offY}px)`;
         {
-          // Every portrait shows its name at half strength; near the centre of the screen it rises to full (Navid 2026-11-18).
+          // Every portrait shows its name at 30%; near the centre of the screen it rises to full (Navid 2026-11-18).
           const dx = c * TILE + offX + TILE / 2 - vw / 2, dy = r * TILE + offY + TILE / 2 - vh / 2;
           const k = Math.max(0, 1 - Math.hypot(dx, dy) / (TILE * 0.9));
           if (POETS.length === 1) { el.lastElementChild.style.opacity = '1'; continue; }
-          el.lastElementChild.style.opacity = (0.5 + 0.5 * k * k * (3 - 2 * k)).toFixed(3);
+          el.lastElementChild.style.opacity = (0.3 + 0.7 * k * k * (3 - 2 * k)).toFixed(3);
         }
       }
     }
