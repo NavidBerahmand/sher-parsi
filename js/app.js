@@ -1,4 +1,4 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, shelf, shelfHTML } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, shelf, shelfHTML, savePoet, isPoetSaved } from './data.js';
 import { settings, apply, saved, history, bayts, exportData, importData } from './store.js';
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
@@ -360,6 +360,26 @@ async function viewPoets() {
   all.addEventListener('change', () => { setWallChoice(all.checked ? WALL_ALL : WALL_ALL.slice(0, 1)); draw($('#q').value); syncAll(); });
 }
 
+// Whole-poet download for offline reading, beside the close button on the poet's page.
+const poetSaving = new Map(); // slug -> progress 0..1
+const DL_ICON = '<svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg>';
+const OK_ICON = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function dlButton(slug) {
+  const ok = isPoetSaved(slug), prog = poetSaving.get(slug);
+  const tip = ok ? 'ذخیره شده برای آفلاین' : 'دانلود برای آفلاین';
+  return `<button class="icon-btn page-dl tip-l${ok ? ' saved' : ''}${prog != null ? ' busy' : ''}" id="pageDl" data-slug="${esc(slug)}" aria-label="${tip}" data-tip="${tip}" style="--p:${prog ?? 0}">${ok ? OK_ICON : DL_ICON}</button>`;
+}
+async function startPoetSave(slug) {
+  if (isPoetSaved(slug) || poetSaving.has(slug)) return;
+  const cur = () => document.querySelector(`#pageDl[data-slug="${slug}"]`);
+  poetSaving.set(slug, 0); cur()?.classList.add('busy');
+  const ok = await savePoet(slug, (f) => { poetSaving.set(slug, f); cur()?.style.setProperty('--p', f.toFixed(3)); }).catch(() => false);
+  poetSaving.delete(slug);
+  const b = cur(); if (b) b.outerHTML = dlButton(slug);
+  const nb = cur(); nb?.addEventListener('click', () => startPoetSave(slug));
+  toast(ok ? 'آثار برای خواندن آفلاین ذخیره شد' : 'دانلود کامل نشد، دوباره امتحان کن');
+}
+
 async function viewCat(path) {
   loading(8);
   const slug = path.split('/')[0];
@@ -407,7 +427,8 @@ async function viewCat(path) {
 
   main.dataset.cat = path;
   document.body.classList.toggle('poet-bg', isPoet && !!poet && TOP.includes(slug));
-  main.innerHTML = `<button class="icon-btn page-x tip-l" id="pageX" aria-label="بستن" data-tip="بستن">${ICON.x}</button><div class="wrap fadein">${head}
+  const dl = isPoet && poet ? dlButton(slug) : '';
+  main.innerHTML = `<button class="icon-btn page-x tip-l" id="pageX" aria-label="بستن" data-tip="بستن">${ICON.x}</button>${dl}<div class="wrap fadein">${head}
     ${groups ? shelfHTML(groups, author) : books ? `<div class="parts">${books}</div>` : ''}
     ${poems.length ? `<div class="list-tools"><span class="count">${fa(poems.length)} شعر</span></div>
       <ul class="poems" id="pm">${poems.slice(0, shown).map(poemItem).join('')}</ul>
@@ -426,6 +447,7 @@ async function viewCat(path) {
     if (navCount > 1) window.history.back();
     else location.hash = isPoet ? '#/' : catHref(parentOf(path));
   });
+  $('#pageDl')?.addEventListener('click', () => startPoetSave(slug));
   $('#bioT')?.addEventListener('click', (e) => {
     const b = $('#bio'); b.classList.toggle('clamp');
     e.currentTarget.textContent = b.classList.contains('clamp') ? 'بیشتر' : 'کمتر';
@@ -1058,7 +1080,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.87';
+export const VERSION = '0.9.88';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

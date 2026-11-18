@@ -982,3 +982,15 @@ body:not(.wall-mode) .site-ver { display: none; }
 .sheet { z-index: 56; }
 /* Divider lines (***) sit in the middle of the card. */
 .sep-line { text-align: center; color: var(--muted); font-family: var(--ui); letter-spacing: .3em; padding: 4px 0; margin: 0; text-indent: .3em; }
+/* Poet page: whole-poet download beside the close button, same black disc; a ring fills while saving, a tick once saved. */
+.page-dl { position: fixed; z-index: 50; left: calc(var(--gutter) + 46px); top: calc(env(safe-area-inset-top, 0px) + 16px);
+  width: 36px; height: 36px; background: #000; color: #fff; transition: opacity .3s; }
+.page-dl:hover { background: #000; }
+.page-dl svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.page-dl.busy { cursor: progress; }
+.page-dl.busy::before { content: ''; position: absolute; inset: -3px; border-radius: 50%;
+  background: conic-gradient(#fff calc(var(--p) * 360deg), rgb(255 255 255 / .25) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); }
+.page-dl.saved { cursor: default; }
+body.psheet-open .page-dl { opacity: 0; pointer-events: none; }

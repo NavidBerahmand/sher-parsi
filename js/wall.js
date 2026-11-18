@@ -229,7 +229,7 @@ export function mountWall() {
     wall.classList.remove('dragging');
     if (e.type === 'pointerup' && moved < 6) {
       const tile = document.elementFromPoint(e.clientX, e.clientY)?.closest('.w-tile');
-      if (tile) openFocus(+tile.dataset.pi, tile);
+      if (tile) openPoet(+tile.dataset.pi);
     }
   };
   on(wall, 'pointerup', end);
@@ -239,7 +239,7 @@ export function mountWall() {
     const tile = e.target.closest('.w-tile');
     if (!tile) return;
     e.preventDefault();
-    openFocus(+tile.dataset.pi, tile);
+    openPoet(+tile.dataset.pi);
   });
   on(window, 'wheel', (e) => {
     if (panel.contains(e.target) || focusEl.classList.contains('show')) return;
@@ -333,6 +333,8 @@ export function mountWall() {
   const prefetch = () => POETS.forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
   { const t = setTimeout(() => (window.requestIdleCallback ? requestIdleCallback(prefetch, { timeout: 3000 }) : prefetch()), 1200); cleanup.push(() => clearTimeout(t)); }
 
+  // A tap on a portrait opens the poet's own page (the half card is gone, Navid 2026-11-18).
+  function openPoet(pi) { location.hash = `#/c/${POETS[pi].slug}`; }
   const focusBack = () => closeFocus(true);
   async function openFocus(pi, tile) {
     const p = POETS[pi];
