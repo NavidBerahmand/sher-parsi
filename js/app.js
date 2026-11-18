@@ -1,5 +1,6 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, shelf, shelfHTML, savePoet, isPoetSaved } from './data.js';
-import { settings, apply, saved, history, bayts, exportData, importData } from './store.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, shelf, shelfHTML, savePoet, isPoetSaved, setBookSaved, coverHTML } from './data.js';
+import { settings, apply, saved, history, bayts, books, exportData, importData } from './store.js';
+
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
 import { mountWall, unmountWall, wallChoice, setWallChoice, WALL_ALL } from './wall.js';
@@ -15,6 +16,24 @@ const HARAKAT = /[ً-ْٰ]/g;
 const txt = (s) => esc(settings.get().harakat ? s : String(s).replace(HARAKAT, ''));
 const vtxt = txt;
 const initial = (name) => (String(name).replace(/^(شیخ|خواجه|ملک‌الشعرا|حکیم|امیر|میرزا|ملا)\s+/, '').trim()[0] || '؟');
+
+// Book bookmarks: the ribbon on every cover toggles it; saved books show under «نشان‌ها» › «کتاب‌ها».
+setBookSaved((href) => books.has(href));
+function toggleBook(el) {
+  const on = books.toggle({ href: el.dataset.href, title: el.dataset.title, author: el.dataset.author });
+  document.querySelectorAll('.bk-mark').forEach((m) => { if (m.dataset.href === el.dataset.href) { m.classList.toggle('on', on); m.setAttribute('aria-pressed', on); } });
+  toast(on ? 'کتاب نشان شد' : 'نشان کتاب برداشته شد');
+  if (!on && current.view === 'saved' && savedTab === 'books') viewSaved();
+}
+document.addEventListener('click', (e) => {
+  const m = e.target.closest('.bk-mark');
+  if (!m) return;
+  e.preventDefault(); e.stopPropagation(); toggleBook(m);
+}, true);
+document.addEventListener('keydown', (e) => {
+  const m = e.target.closest?.('.bk-mark');
+  if (m && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); toggleBook(m); }
+}, true);
 
 const ICON = {
   chev: '<svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
@@ -1023,6 +1042,7 @@ function viewSaved() {
     poems: [ICON.bookmark, 'هنوز شعری نشان نکرده‌ای', 'هر جا شعری به دلت نشست، نشانه‌ی بالای صفحه را بزن.'],
     bayts: [ICON.bookmark, 'هنوز بیتی نشان نکرده‌ای', 'روی هر بیت بزن و «نشان کردن» را انتخاب کن.'],
     history: [ICON.clock, 'هنوز شعری نخوانده‌ای', 'شعرهایی که می‌خوانی اینجا می‌مانند.'],
+    books: [ICON.bookmark, 'هنوز کتابی نشان نکرده‌ای', 'نوار نشانِ گوشهٔ جلد هر کتاب را بزن.'],
   };
   const item = (x) => {
     if (savedTab === 'bayts') {
@@ -1037,6 +1057,21 @@ function viewSaved() {
       ${savedTab === 'poems' ? `<button class="icon-btn on" data-rm="${esc(x.url)}" aria-label="برداشتن">${ICON.bookmark}</button>` : ''}</li>`;
   };
   const draw = () => {
+    const isBooks = savedTab === 'books';
+    $('#ssort').style.display = isBooks ? 'none' : '';
+    if (isBooks) {
+      const bl = books.all();
+      let html;
+      if (!bl.length) { const [ic, t, d] = EMPTY.books; html = `<ul class="saved-list"><li class="empty-state">${ic}<b>${t}</b>${d}</li></ul>`; }
+      else {
+        const list2 = savedSort === 'poet' ? [...bl].sort((p, q) => (p.author || '').localeCompare(q.author || '', 'fa')) : bl;
+        html = `<div class="books">${list2.map((b, i) => coverHTML(b, b.author, i)).join('')}</div>`;
+      }
+      $('#sl').hidden = true; $('#sbooks').hidden = false; $('#sbooks').innerHTML = html;
+      document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
+      return;
+    }
+    $('#sl').hidden = false; $('#sbooks').hidden = true;
     const list = savedTab === 'poems' ? saved.all() : savedTab === 'bayts' ? bayts.all() : history.all();
     let html;
     if (!list.length) {
@@ -1054,9 +1089,9 @@ function viewSaved() {
     document.querySelectorAll('#ssort button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.o === savedSort));
   };
   main.innerHTML = `${pageClose('sX')}<div class="wrap fadein"><div class="page-title"><h1>نشان‌ها</h1></div>
-    <div class="tabs" id="stabs" role="tablist"><button role="tab" data-t="poems">شعرها</button><button role="tab" data-t="bayts">بیت‌ها</button><button role="tab" data-t="history">خوانده‌ها</button></div>
+    <div class="tabs" id="stabs" role="tablist"><button role="tab" data-t="poems">شعرها</button><button role="tab" data-t="bayts">بیت‌ها</button><button role="tab" data-t="books">کتاب‌ها</button><button role="tab" data-t="history">خوانده‌ها</button></div>
     <div class="sort-row" id="ssort"><span>ترتیب:</span><button data-o="time">زمان نشان کردن</button><button data-o="poet">شاعر</button></div>
-    <ul class="saved-list" id="sl"></ul></div>`;
+    <ul class="saved-list" id="sl"></ul><div id="sbooks" hidden></div></div>`;
   wireClose('sX');
   document.querySelectorAll('#stabs button').forEach((b) => b.addEventListener('click', () => { savedTab = b.dataset.t; draw(); }));
   document.querySelectorAll('#ssort button').forEach((b) => b.addEventListener('click', () => { savedSort = b.dataset.o; draw(); }));
@@ -1157,7 +1192,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.103';
+export const VERSION = '0.9.104';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

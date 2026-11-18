@@ -1041,3 +1041,10 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .mx-search > svg, .mx-search label > svg { right: 16px; width: 18px; height: 18px; }
 /* Menu: the close button sits to the left of the search field (Navid 2026-11-18). */
 .mx-top #mxX { order: 2; }
+/* Book bookmark: a ribbon hanging from the top left of each cover; outline, red when saved. */
+.bk-mark { position: absolute; z-index: 3; top: 0; left: 3%; width: 30px; height: 40px; display: flex; justify-content: center; align-items: flex-start; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.bk-mark svg { width: 14px; height: 22px; fill: none; stroke: var(--ink-c); stroke-width: 1.3; stroke-linejoin: round; opacity: .8; transition: fill .2s, stroke .2s, opacity .2s; overflow: visible; }
+.bk-mark:hover svg { opacity: 1; }
+.bk-mark.on svg { fill: #c0392b; stroke: #c0392b; opacity: 1; }
+.bk-mark:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px; }
+#sbooks .books { margin-top: 18px; }

@@ -247,10 +247,17 @@ export async function shelf(poetCat) {
   if (kids.length && (poetCat.Poems || []).length) books.push({ href: `#/c/${catUrl(poetCat.FullUrl || '')}/~other`, title: 'سایر اشعار' });
   return books.length ? [{ title: 'آثار', books }] : [];
 }
+// Whether a book is bookmarked; set by the app (store lives there), so covers draw their ribbon filled.
+let bookSaved = () => false;
+export function setBookSaved(fn) { bookSaved = fn; }
+const RIBBON = '<svg viewBox="0 0 14 22" aria-hidden="true"><path d="M1 0h12v20.5l-6-4.6-6 4.6z"/></svg>';
 export function coverHTML(b, author, i) {
   const h = [...b.title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
   const e = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  return `<a class="book" href="${e(b.href)}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover c${h % 4}"><span class="frame"><b>${e(b.title)}</b><small>${e(author)}</small></span></span></a>`;
+  const on = bookSaved(b.href);
+  // A bookmark ribbon at the top left: outline, red once the book is saved.
+  const mark = `<span class="bk-mark${on ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${on}" aria-label="نشان کردن کتاب" data-href="${e(b.href)}" data-title="${e(b.title)}" data-author="${e(author)}">${RIBBON}</span>`;
+  return `<a class="book" href="${e(b.href)}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover c${h % 4}">${mark}<span class="frame"><b>${e(b.title)}</b><small>${e(author)}</small></span></span></a>`;
 }
 export function shelfHTML(groups, author, extra = '') {
   let n = 0;

@@ -75,8 +75,21 @@ export const bayts = {
   remove(url, i) { write('sp.bayts', this.all().filter((x) => bkey(x.url, x.i) !== bkey(url, i))); },
 };
 
+// Saved books: newest first. Each: { href, title, author, at }
+export const books = {
+  all() { return read('sp.books', []); },
+  has(href) { return this.all().some((x) => x.href === href); },
+  toggle(item) {
+    const list = this.all();
+    const i = list.findIndex((x) => x.href === item.href);
+    if (i >= 0) list.splice(i, 1); else list.unshift({ ...item, at: Date.now() });
+    write('sp.books', list);
+    return i < 0;
+  },
+};
+
 // Backup: everything the reader made on this device, as one JSON file to carry to another device.
-const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.bayts', 'sp.history', 'sp.wall', 'sp.resume'];
+const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.books', 'sp.bayts', 'sp.history', 'sp.wall', 'sp.resume'];
 export function exportData() {
   const data = {};
   BACKUP_KEYS.forEach((k) => { const v = read(k, null); if (v !== null) data[k] = v; });
