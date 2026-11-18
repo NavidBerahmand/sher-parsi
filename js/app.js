@@ -973,7 +973,7 @@ function openBayt(ctx, i, el) {
     <div class="actions four">
       <button id="bSave" aria-pressed="${bayts.has(meta.url, i)}">${ICON.bookmark}<span>${bayts.has(meta.url, i) ? 'نشان‌شده' : 'نشان کردن'}</span></button>
       <button id="bCopy">${ICON.copy}کپی</button>
-      <button id="bImg">${ICON.image}تصویر برای استوری</button>
+      <button id="bImg">${ICON.image}اسکرین‌شات</button>
       <button id="bShare">${ICON.share}ارسال متن</button>
     </div>`, (s) => {
     fitQuote(s.querySelector('.q'));
@@ -1192,7 +1192,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.111';
+export const VERSION = '0.9.112';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
