@@ -27,8 +27,11 @@ export function apply(s = settings.get()) {
   root.dataset.font = s.font === 'sans' ? 'sans' : 'naskh';
   root.style.setProperty('--poem-scale', s.size);
   root.style.setProperty('--fw-verse', s.weight);
-  const bg = getComputedStyle(document.body).backgroundColor;
-  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', bg));
+  // The home-screen app paints its status bar from theme-color. It used to copy the page colour at that moment
+  // (green on the wall, cream elsewhere), so the top changed and blurred depending on where the app opened.
+  // Now always the site green, as on the wall (Navid, 2026-11-18).
+  const bar = s.theme === 'dark' ? '#2f3526' : '#585e4a';
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', bar));
 }
 
 // Saved poems: newest first. Each: { url, title, poet, line, at }
