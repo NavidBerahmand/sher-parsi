@@ -963,3 +963,9 @@ body:not(.wall-mode) .site-ver { display: none; }
 .pl-tick input:indeterminate + i::after { content: ''; position: absolute; left: 5px; right: 5px; top: 50%; height: 2px; margin-top: -1px; background: var(--bg); }
 .pl-tick input:checked + i::after { content: ''; position: absolute; left: 7px; top: 3px; width: 5px; height: 10px; border: solid var(--bg); border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .pl-tick input:focus-visible + i { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* The poem sheet's layer starts below the status bar, so the green strip there stays the top-edge element
+   (iPhone Safari otherwise takes the sheet's layer as the page top and blurs the top after it closes). */
+.psheet-wrap { top: env(safe-area-inset-top, 0px); }
+.psheet { top: calc(var(--sheet-top) - env(safe-area-inset-top, 0px)); }
+.psheet-tools { top: 16px; }
+@media (min-width: 860px) { .psheet-tools { top: 20px; } }

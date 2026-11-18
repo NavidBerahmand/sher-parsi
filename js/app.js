@@ -571,12 +571,17 @@ function closePoemSheet(instant) {
   stackCleanup?.();
   const el = sheetEl; sheetEl = null;
   document.body.classList.remove('psheet-open');
-  if (instant) { el.remove(); return; }
+  if (instant) { el.remove(); refreshTopEdge(); return; }
   const sh = el.querySelector('.psheet'), bd = el.querySelector('.psheet-backdrop');
   sh.style.transform = sh.style.transition = '';
   bd.style.opacity = bd.style.transition = '';
   el.classList.remove('open');
-  setTimeout(() => el.remove(), 450);
+  setTimeout(() => { el.remove(); refreshTopEdge(); }, 450);
+}
+// Put the green strip under the status bar back in place, so iPhone Safari takes it again as the page's top edge.
+function refreshTopEdge() {
+  const t = document.querySelector('.top-edge');
+  if (t) { t.remove(); document.body.prepend(t); }
 }
 function requestCloseSheet() {
   if (!sheetEl) return;
@@ -1050,7 +1055,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.80';
+export const VERSION = '0.9.81';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
