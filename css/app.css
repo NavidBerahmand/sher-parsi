@@ -1054,3 +1054,8 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .bk-mark svg path { vector-effect: non-scaling-stroke; stroke-width: 1px; }
 /* The unsaved ribbon is filled with the cover's cloth, so the frame line doesn't show through it. */
 .bk-mark:not(.on) svg { fill: var(--cloth); }
+/* Anything bookmarked shows in one red, the book-ribbon red (Navid 2026-11-18). */
+:root { --saved: #c0392b; }
+.bk-mark.on svg { fill: var(--saved); stroke: var(--saved); }
+.icon-btn.on svg, .icon-btn.save.on svg, .psheet-tools .pt-save.on svg, .poems .mk-save svg, #bSave[aria-pressed="true"] svg { fill: var(--saved); stroke: var(--saved); color: var(--saved); }
+.icon-btn.on, .poems .mk-save { color: var(--saved); }
