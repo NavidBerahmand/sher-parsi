@@ -1001,3 +1001,10 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 /* Menu button: three dots on a black disc, the same size as the close button (replaces the logo, Navid 2026-11-18). */
 .menu-btn .dots, .w-menu .dots { width: 36px; height: 36px; margin: 5px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; gap: 3.5px; }
 .menu-btn .dots i, .w-menu .dots i { width: 4.5px; height: 4.5px; border-radius: 50%; background: #fff; }
+/* One size for every top button: 36px black discs, centred 34px from the top on phones and 38px on desktop (Navid 2026-11-18). */
+@media (min-width: 860px) {
+  .psheet-tools .icon-btn { width: 36px; height: 36px; }
+  .page-dl { top: calc(env(safe-area-inset-top, 0px) + 20px); }
+}
+.menu-btn .dots, .w-menu .dots { translate: 0 -5px; }
+@media (min-width: 860px) { .w-menu .dots { translate: 0 -9px; } }
