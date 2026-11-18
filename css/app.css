@@ -1015,3 +1015,6 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .pl-sort:hover { color: var(--ink); }
 .poet-list .pl-letter { font-family: var(--poem); font-size: 1.35rem; font-weight: 670; color: var(--accent); padding: 22px 2px 6px; border: 0; list-style: none; }
 .poet-list .pl-letter:first-child { padding-top: 10px; }
+.pl-sort { display: inline-flex; align-items: center; gap: 4px; }
+.pl-sort svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pl-sort svg { transform: scaleX(-1); }

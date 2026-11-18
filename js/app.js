@@ -332,7 +332,7 @@ async function viewPoets() {
   let alpha = false;
   try { alpha = localStorage.getItem('sp.poetsAlpha') === '1'; } catch { /* storage blocked */ }
   const sortBtn = $('#plSort');
-  const syncSort = () => { sortBtn.textContent = alpha ? 'به ترتیب شهرت' : 'به ترتیب الفبا'; };
+  const syncSort = () => { sortBtn.innerHTML = `<span>${alpha ? 'به ترتیب شهرت' : 'به ترتیب الفبا'}</span>${ICON.chev}`; };
   syncSort();
   sortBtn.addEventListener('click', () => {
     alpha = !alpha; syncSort();
@@ -1104,7 +1104,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.93';
+export const VERSION = '0.9.94';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
