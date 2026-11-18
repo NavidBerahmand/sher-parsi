@@ -324,19 +324,40 @@ async function viewPoets() {
     <div class="page-title"><h1>شاعران</h1><p>${fa(poets.length)} شاعر</p></div>
     <p class="pl-hint">با تیک زدنِ شاعرانی که تصویر دارند، آنها را همیشه در صفحهٔ خانه داشته باشید.</p>
     <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام شاعر" autocomplete="off"></label></div>
-    <label class="pl-allrow"><b id="plAllTxt">انتخاب همه</b><span class="pl-tick"><input type="checkbox" id="plAll"><i></i></span></label>
+    <div class="pl-tools"><button type="button" class="pl-sort" id="plSort"></button>
+      <label class="pl-allrow"><b id="plAllTxt">انتخاب همه</b><span class="pl-tick"><input type="checkbox" id="plAll"><i></i></span></label></div>
     <ul class="poet-list" id="pl"></ul></div>`;
   const pl = $('#pl');
+  // Order: by readership (default) or alphabetical; remembered on this device.
+  let alpha = false;
+  try { alpha = localStorage.getItem('sp.poetsAlpha') === '1'; } catch { /* storage blocked */ }
+  const sortBtn = $('#plSort');
+  const syncSort = () => { sortBtn.textContent = alpha ? 'به ترتیب شهرت' : 'به ترتیب الفبا'; };
+  syncSort();
+  sortBtn.addEventListener('click', () => {
+    alpha = !alpha; syncSort();
+    try { localStorage.setItem('sp.poetsAlpha', alpha ? '1' : '0'); } catch { /* storage blocked */ }
+    draw($('#q').value);
+  });
   const norm = (s) => s.replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/‌/g, ' ').trim();
   const draw = (q = '') => {
     const nq = norm(q);
-    const list = nq ? poets.filter((p) => norm(p.Nickname).includes(nq)) : poets;
+    let list = nq ? poets.filter((p) => norm(p.Nickname).includes(nq)) : poets;
+    if (alpha) list = [...list].sort((a, b) => norm(a.Nickname).localeCompare(norm(b.Nickname), 'fa'));
     const dark = settings.get().theme === 'dark';
     const face = (p) => { const s = clean(p.FullUrl); return TOP.includes(s) ? `<img class="pl-face" src="img/poets/${esc(s)}${dark ? '-dark' : ''}.webp" alt="" width="1024" height="1024" loading="lazy" decoding="async">` : mono(p.Nickname); };
     const wall = new Set(wallChoice());
     // A tick puts the poet on the home wall; only poets with a portrait have one.
     const tick = (p) => { const s = clean(p.FullUrl); return WALL_ALL.includes(s) ? `<label class="pl-tick" title="نمایش در خانه"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></label>` : ''; };
-    pl.innerHTML = list.length ? list.map((p) => `<li><a href="${catHref(p.FullUrl)}">${face(p)}<b>${esc(p.Nickname)}</b>${ICON.chev}</a>${tick(p)}</li>`).join('')
+    // Alphabetical: a letter heading over each group (آ goes with ا).
+    let last = '';
+    const head = (p) => {
+      if (!alpha) return '';
+      const L = norm(p.Nickname).charAt(0).replace('آ', 'ا');
+      if (L === last) return '';
+      last = L; return `<li class="pl-letter">${esc(L)}</li>`;
+    };
+    pl.innerHTML = list.length ? list.map((p) => `${head(p)}<li><a href="${catHref(p.FullUrl)}">${face(p)}<b>${esc(p.Nickname)}</b>${ICON.chev}</a>${tick(p)}</li>`).join('')
       : `<li class="empty-state"><b>شاعری با این نام پیدا نشد</b></li>`;
   };
   const all = $('#plAll');
@@ -1083,7 +1104,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.92';
+export const VERSION = '0.9.93';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

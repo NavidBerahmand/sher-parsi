@@ -1008,3 +1008,10 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 }
 .menu-btn .dots, .w-menu .dots { translate: 0 -5px; }
 @media (min-width: 860px) { .w-menu .dots { translate: 0 -9px; } }
+/* Poets list tools: «به ترتیب الفبا» on the right, «انتخاب همه» on the left, same size and line. */
+.pl-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 2px 4px; }
+.pl-tools .pl-allrow { padding: 0; }
+.pl-sort { color: var(--muted); font-size: .9rem; font-family: inherit; font-weight: inherit; background: none; border: 0; padding: 0; cursor: pointer; line-height: 22px; }
+.pl-sort:hover { color: var(--ink); }
+.poet-list .pl-letter { font-family: var(--poem); font-size: 1.35rem; font-weight: 670; color: var(--accent); padding: 22px 2px 6px; border: 0; list-style: none; }
+.poet-list .pl-letter:first-child { padding-top: 10px; }
