@@ -489,7 +489,8 @@ function observeFirstLines() {
       const a = e.target; flObserver.unobserve(a);
       getPoem(a.dataset.u).then((poem) => {
         const f = firstLines(poem, 1)[0];
-        const line = f ? f.m.find(Boolean) : '';
+        // A poem with no couplets (a tasnif or prose written as paragraphs) shows its first line instead.
+        const line = f ? f.m.find(Boolean) : ((poem.Verses || []).find((v) => v.Position === 'Paragraph' && v.Text.trim())?.Text || '');
         if (line) { a.querySelector('.fl').innerHTML = txt(line); a.classList.add('has-fl'); }
       }).catch(() => {});
     }
@@ -1080,7 +1081,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.88';
+export const VERSION = '0.9.89';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

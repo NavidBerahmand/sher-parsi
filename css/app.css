@@ -994,3 +994,5 @@ body:not(.wall-mode) .site-ver { display: none; }
           mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); }
 .page-dl.saved { cursor: default; }
 body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
+/* A poem whose first line can't be shown keeps its title at the same size as the other rows' first lines. */
+.poems a:not(.has-fl) small { font-family: var(--poem); font-size: 1.08rem; }
