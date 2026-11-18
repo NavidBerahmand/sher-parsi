@@ -1017,7 +1017,6 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .poet-list .pl-letter:first-child { padding-top: 10px; }
 .pl-sort { display: inline-flex; align-items: center; gap: 4px; }
 .pl-sort svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.pl-sort svg { transform: scaleX(-1); }
 /* Poets list: portrait and letter disc share one 56px slot, so names start on one line;
    rows without a tick keep its space, so every arrow lines up (Navid 2026-11-18). */
 .poet-list .pl-face { width: 56px; height: 56px; margin: -6px 0; }
