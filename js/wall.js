@@ -52,7 +52,9 @@ const INFO = [
   { slug: 'eshghi', full: NAMES.eshghi, bayt: ['ای وطن، ای مهد عشق پاک!', 'ای آن که ذکر عشق تو شام و سحر کنم'] },
 ];
 // Every poet has a portrait. The reader picks which of them show on the wall (ticks in the all-poets list).
-const ALL = TOP.map((slug) => ({ slug, full: NAMES[slug], ...INFO.find((q) => q.slug === slug) }));
+// Names under the portraits match ganjoor.net's home page exactly (Navid 2026-11-18); NAMES stays as is elsewhere.
+const GANJOOR_NAME = { saadi: 'سعدی', hafez: 'حافظ', attar: 'عطار', saeb: 'صائب', sanaee: 'سنایی', nezami: 'نظامی', khaghani: 'خاقانی', roodaki: 'رودکی', anvari: 'انوری', naserkhosro: 'ناصرخسرو', manoochehri: 'منوچهری' };
+const ALL = TOP.map((slug) => ({ slug, ...INFO.find((q) => q.slug === slug), full: GANJOOR_NAME[slug] || NAMES[slug] }));
 const WALL_KEY = 'sp.wall';
 // «ادامه خواندن»: back to the poem (and couplet) the reader was last on. Hidden until something has been read.
 function resumeLink() {
