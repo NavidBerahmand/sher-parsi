@@ -998,3 +998,6 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .poems a:not(.has-fl) small { font-family: var(--poem); font-size: 1.08rem; }
 /* Centred lines (green) and a lone * : centred, no kashida, not justified to the couplets' width. */
 .pcard .center-pair .m { width: auto; text-align: center; text-align-last: center; }
+/* Menu button: three dots on a black disc, the same size as the close button (replaces the logo, Navid 2026-11-18). */
+.menu-btn .dots, .w-menu .dots { width: 36px; height: 36px; margin: 5px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; gap: 3.5px; }
+.menu-btn .dots i, .w-menu .dots i { width: 4.5px; height: 4.5px; border-radius: 50%; background: #fff; }

@@ -124,7 +124,7 @@ export function mountWall() {
   root.className = 'wall-root';
   root.innerHTML = `
     <header class="w-header">
-      <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><img src="icons/logo-2.svg" alt=""></button>
+      <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></button>
     </header>
     <div class="wall" id="wall" role="region" aria-label="دیوار شاعران"></div>
     <div class="w-bar"><a class="w-all" href="#/poets">همه شاعران</a>${resumeLink()}</div>
