@@ -1039,3 +1039,5 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .search input { font: inherit; font-size: 1rem; color: inherit; }
 .mx-search input { height: 48px; padding: 0 44px 0 42px; border-radius: 999px; font-size: 1rem; }
 .mx-search > svg, .mx-search label > svg { right: 16px; width: 18px; height: 18px; }
+/* Menu: the close button sits to the left of the search field (Navid 2026-11-18). */
+.mx-top #mxX { order: 2; }
