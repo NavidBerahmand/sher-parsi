@@ -2,7 +2,7 @@ import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURE
 import { settings, apply, saved, history, bayts, exportData, importData } from './store.js';
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
-import { mountWall, unmountWall } from './wall.js';
+import { mountWall, unmountWall, wallChoice, setWallChoice, WALL_ALL } from './wall.js';
 import { attachSheetDrag } from './sheetdrag.js';
 import { overlayOpened, overlayClosed, overlayNavigate, overlayIsOpen, overlaySwap, overlayForget } from './overlay.js';
 
@@ -322,7 +322,9 @@ async function viewPoets() {
   document.body.classList.add('poet-bg');
   main.innerHTML = `${pageClose()}<div class="wrap fadein">
     <div class="page-title"><h1>شاعران</h1><p>${fa(poets.length)} شاعر</p></div>
+    <p class="pl-hint">با تیک زدنِ شاعرانی که تصویر دارند، آنها را همیشه در صفحهٔ خانه داشته باشید.</p>
     <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام شاعر" autocomplete="off"></label></div>
+    <label class="pl-allrow"><b id="plAllTxt">انتخاب همه</b><span class="pl-tick"><input type="checkbox" id="plAll"><i></i></span></label>
     <ul class="poet-list" id="pl"></ul></div>`;
   const pl = $('#pl');
   const norm = (s) => s.replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/‌/g, ' ').trim();
@@ -331,12 +333,31 @@ async function viewPoets() {
     const list = nq ? poets.filter((p) => norm(p.Nickname).includes(nq)) : poets;
     const dark = settings.get().theme === 'dark';
     const face = (p) => { const s = clean(p.FullUrl); return TOP.includes(s) ? `<img class="pl-face" src="img/poets/${esc(s)}${dark ? '-dark' : ''}.webp" alt="" width="1024" height="1024" loading="lazy" decoding="async">` : mono(p.Nickname); };
-    pl.innerHTML = list.length ? list.map((p) => `<li><a href="${catHref(p.FullUrl)}">${face(p)}<b>${esc(p.Nickname)}</b>${ICON.chev}</a></li>`).join('')
+    const wall = new Set(wallChoice());
+    // A tick puts the poet on the home wall; only poets with a portrait have one.
+    const tick = (p) => { const s = clean(p.FullUrl); return WALL_ALL.includes(s) ? `<label class="pl-tick" title="نمایش در خانه"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></label>` : ''; };
+    pl.innerHTML = list.length ? list.map((p) => `<li><a href="${catHref(p.FullUrl)}">${face(p)}<b>${esc(p.Nickname)}</b>${ICON.chev}</a>${tick(p)}</li>`).join('')
       : `<li class="empty-state"><b>شاعری با این نام پیدا نشد</b></li>`;
   };
-  draw();
+  const all = $('#plAll');
+  const syncAll = () => {
+    const n = wallChoice().length;
+    all.checked = n === WALL_ALL.length; all.indeterminate = n > 1 && n < WALL_ALL.length;
+    $('#plAllTxt').textContent = all.checked ? 'برداشتن همه' : 'انتخاب همه';
+  };
+  draw(); syncAll();
   wireClose('pageX');
   $('#q').addEventListener('input', (e) => draw(e.target.value));
+  // Ticks choose the wall's portraits; at least one always stays.
+  pl.addEventListener('change', (e) => {
+    const box = e.target.closest('input[type=checkbox]');
+    if (!box) return;
+    const keep = new Set(wallChoice());
+    if (box.checked) keep.add(box.dataset.slug); else keep.delete(box.dataset.slug);
+    if (!keep.size) { box.checked = true; return; }
+    setWallChoice([...keep]); syncAll();
+  });
+  all.addEventListener('change', () => { setWallChoice(all.checked ? WALL_ALL : WALL_ALL.slice(0, 1)); draw($('#q').value); syncAll(); });
 }
 
 async function viewCat(path) {
@@ -1029,7 +1050,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.79';
+export const VERSION = '0.9.80';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

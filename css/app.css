@@ -948,3 +948,18 @@ body:not(.wall-mode) .site-ver { display: none; }
 .next-sec small { color: var(--muted); flex: none; }
 .next-sec b { flex: 1; font-weight: var(--fw-title); }
 .next-sec svg { flex: none; width: 18px; height: 18px; }
+/* Poets page: the ticks that choose the home wall (they used to live in a card over the wall). */
+.pl-hint { color: var(--muted); font-size: .88rem; margin-top: 10px; }
+.poet-list li { display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--line); }
+.poet-list li a { flex: 1; min-width: 0; border-bottom: 0; }
+.poet-list li.empty-state { border-bottom: 0; }
+.pl-allrow { display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 6px 2px 4px; cursor: pointer; color: var(--muted); font-size: .9rem; }
+.pl-allrow b { font-weight: inherit; }
+.pl-tick { position: relative; flex: none; width: 22px; height: 22px; cursor: pointer; }
+.pl-tick input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: inherit; }
+.pl-tick i { position: absolute; inset: 0; border-radius: 6px; border: 1.5px solid color-mix(in srgb, var(--ink) 45%, transparent); transition: background .2s, border-color .2s; }
+.pl-tick input:checked + i { background: var(--accent); border-color: var(--accent); }
+.pl-tick input:indeterminate + i { background: color-mix(in srgb, var(--accent) 45%, transparent); border-color: var(--accent); }
+.pl-tick input:indeterminate + i::after { content: ''; position: absolute; left: 5px; right: 5px; top: 50%; height: 2px; margin-top: -1px; background: var(--bg); }
+.pl-tick input:checked + i::after { content: ''; position: absolute; left: 7px; top: 3px; width: 5px; height: 10px; border: solid var(--bg); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.pl-tick input:focus-visible + i { outline: 2px solid var(--accent); outline-offset: 2px; }

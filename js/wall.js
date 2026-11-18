@@ -1,6 +1,6 @@
 // Home page: an endless wall of carved poet portraits.
 // Drag (or scroll) in any direction; tap a portrait to bring it forward with its story.
-import { getPoet, getCat, getManifest, NAMES, TOP, savePoet, isPoetSaved, shelf, shelfHTML } from './data.js';
+import { getPoet, getCat, NAMES, TOP, savePoet, isPoetSaved, shelf, shelfHTML } from './data.js';
 import { attachSheetDrag } from './sheetdrag.js';
 import { overlayOpened, overlayClosed, overlayNavigate, overlayForget } from './overlay.js';
 
@@ -69,6 +69,14 @@ const chosen = () => {
   return list.length ? list : ALL.slice(0, 15); // first visit: the 15 most-read poets
 };
 let POETS = chosen();
+// The poets page (#/poets) holds the ticks that choose the wall; these let it read and change the choice.
+export const wallChoice = () => chosen().map((p) => p.slug);
+export const WALL_ALL = ALL.map((p) => p.slug);
+export function setWallChoice(slugs) {
+  const keep = new Set(slugs);
+  const list = ALL.filter((q) => keep.has(q.slug));
+  try { localStorage.setItem(WALL_KEY, JSON.stringify((list.length ? list : ALL.slice(0, 1)).map((q) => q.slug))); } catch { /* ignore */ }
+}
 const isDark = () => document.documentElement.dataset.theme === 'dark';
 const img = (p) => `img/poets/${p.slug}${isDark() ? '-dark' : ''}.webp`;
 // Swap portraits live when the reader toggles dark mode.
@@ -109,6 +117,7 @@ let cleanup = [];
 
 export function mountWall() {
   if (root) return;
+  POETS = chosen();
   document.body.classList.add('wall-mode');
 
   root = document.createElement('div');
@@ -118,17 +127,7 @@ export function mountWall() {
       <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><img src="icons/logo-2.svg" alt=""></button>
     </header>
     <div class="wall" id="wall" role="region" aria-label="دیوار شاعران"></div>
-    <div class="w-bar"><button class="w-all" type="button" aria-haspopup="dialog">همه شاعران</button>${resumeLink()}</div>
-    <div class="w-lb" id="wLb" aria-hidden="true">
-      <div class="w-lb-card" role="dialog" aria-modal="true" aria-label="همه شاعران">
-        <button type="button" class="lb-x" id="wLbX" aria-label="بستن"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-        <h2>همه شاعران</h2>
-        <p class="w-lb-hint">با انتخابِ شاعران منتخب، آنها را همیشه در صفحهٔ خانه خود داشته باشید.</p>
-        <input type="search" class="w-lb-q" placeholder="جست‌وجوی نام شاعر" autocomplete="off">
-        <div class="w-lb-cap"><label class="w-lb-allrow"><b id="wAllTxt">انتخاب همه</b><span class="w-lb-tick"><input type="checkbox" id="wAllTick"><i></i></span></label></div>
-        <ul class="w-lb-list"></ul>
-      </div>
-    </div>
+    <div class="w-bar"><a class="w-all" href="#/poets">همه شاعران</a>${resumeLink()}</div>
     <div class="w-grain" aria-hidden="true"></div>
     <div class="w-veil" id="wVeil"></div>
     <div class="w-focus" id="wFocus" aria-hidden="true"><div class="w-glow"></div><img alt=""></div>
@@ -243,7 +242,7 @@ export function mountWall() {
     openFocus(+tile.dataset.pi, tile);
   });
   on(window, 'wheel', (e) => {
-    if (panel.contains(e.target) || focusEl.classList.contains('show') || root.classList.contains('listing')) return;
+    if (panel.contains(e.target) || focusEl.classList.contains('show')) return;
     if (POETS.length === 1) return;
     offX -= e.deltaX; offY -= e.deltaY;
     render();
@@ -292,7 +291,7 @@ export function mountWall() {
       const dt = last ? Math.min(t - last, 100) / 1000 : 0; last = t;
       if (document.getElementById('splash')) { calmSince = t; return; }
       if (dragging) { touch(); return; }
-      if (root.classList.contains('focused') || root.classList.contains('listing') || document.hidden) { rest(1200); return; }
+      if (root.classList.contains('focused') || document.hidden) { rest(1200); return; }
       if (POETS.length === 1 || still.matches) return;
       const e = Math.min(1, Math.max(0, (t - calmSince) / 4000)); // ease back in over 4s
       const k = e * e * (3 - 2 * e);
@@ -437,76 +436,7 @@ export function mountWall() {
       <div class="wp-shelves" id="wpShelves"></div>`;
   }
 
-  /* ── All poets: a lightbox over the wall ── */
-  const lb = root.querySelector('#wLb'), lbList = lb.querySelector('.w-lb-list'), lbQ = lb.querySelector('.w-lb-q');
-  let lbPoets = null;
-  const norm = (x) => String(x).replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/\u200c/g, ' ').trim();
-  const allTick = lb.querySelector('#wAllTick');
-  const syncAll = () => {
-    allTick.checked = POETS.length === ALL.length;
-    allTick.indeterminate = POETS.length > 1 && POETS.length < ALL.length;
-    lb.querySelector('#wAllTxt').textContent = allTick.checked ? 'برداشتن همه' : 'انتخاب همه';
-  };
-  const drawList = () => {
-    syncAll();
-    if (!lbPoets) { lbList.innerHTML = '<li class="w-lb-empty">…</li>'; return; }
-    const q = norm(lbQ.value);
-    const list = q ? lbPoets.filter((p) => norm(p.Nickname).includes(q)) : lbPoets;
-    lbList.innerHTML = list.length
-      ? list.map((p) => {
-        // Only poets with a portrait can go on the wall, so only they get a tick; the rest are listed to read.
-        const slug = p.FullUrl.replace(/^\//, ''), has = ALL.some((q) => q.slug === slug);
-        const on = POETS.some((q) => q.slug === slug);
-        // The opposite portrait reads best on the card: dark portrait on the light card, light on the dark.
-        const face = has ? `<img class="w-lb-face" src="img/poets/${esc(slug)}${document.documentElement.dataset.theme === 'dark' ? '' : '-dark'}.webp" alt="" loading="lazy" decoding="async">` : '<i class="w-lb-face"></i>';
-        return `<li><a href="#/c/${esc(slug)}">${face}<span>${esc(p.Nickname)}</span></a>${has ? `<label class="w-lb-tick" title="نمایش در خانه"><input type="checkbox" data-slug="${esc(slug)}"${on ? ' checked' : ''}><i></i></label>` : ''}</li>`;
-      }).join('')
-      : '<li class="w-lb-empty">شاعری با این نام پیدا نشد</li>';
-  };
-  const listBack = () => closeList(true);
-  const openList = async () => {
-    overlayOpened(listBack);
-    root.classList.add('listing'); lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false');
-    drawList();
-    if (!lbPoets) { try { lbPoets = (await getManifest()).Poets; } catch { lbPoets = []; } drawList(); }
-  };
-  const closeList = (fromBack) => {
-    if (!lb.classList.contains('open')) return;
-    if (fromBack !== true) overlayClosed(listBack);
-    root.classList.remove('listing'); lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); };
-  on(root.querySelector('.w-all:not(.w-resume)'), 'click', openList);
-  on(lb, 'click', (e) => {
-    if (e.target === lb) return closeList();
-    const a = e.target.closest('a[href^="#/"]');
-    if (a) { e.preventDefault(); overlayNavigate(listBack, a.getAttribute('href')); }
-  });
-  on(root.querySelector('#wLbX'), 'click', () => closeList());
-  on(lbQ, 'input', drawList);
-  // Ticks choose which portraits make up the wall; at least one always stays.
-  on(lbList, 'change', (e) => {
-    const box = e.target.closest('input[type=checkbox]');
-    if (!box) return;
-    const keep = new Set(POETS.map((q) => q.slug));
-    if (box.checked) keep.add(box.dataset.slug); else keep.delete(box.dataset.slug);
-    if (!keep.size) { box.checked = true; return; }
-    setWall(keep);
-  });
-  // Select all / none. The wall can't be empty, so "none" keeps only the first poet.
-  on(allTick, 'change', () => {
-    setWall(new Set(allTick.checked ? ALL.map((q) => q.slug) : [ALL[0].slug]));
-    drawList();
-  });
-  function setWall(keep) {
-    POETS = ALL.filter((q) => keep.has(q.slug));
-    syncAll();
-    try { localStorage.setItem(WALL_KEY, JSON.stringify(POETS.map((q) => q.slug))); } catch { /* ignore */ }
-    for (const el of pool.values()) el.remove();
-    pool.clear();
-    render();
-    POETS.forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
-  }
-  on(document, 'keydown', (e) => { if (e.key === 'Escape') closeList(); });
-  cleanup.push(() => { overlayForget(listBack); overlayForget(focusBack); });
+  cleanup.push(() => { overlayForget(focusBack); });
 
   on(veil, 'click', () => closeFocus());
   on(focusEl, 'click', () => closeFocus());
