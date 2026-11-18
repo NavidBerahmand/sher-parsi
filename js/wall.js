@@ -157,7 +157,6 @@ export function mountWall() {
   let offX = Math.round(innerWidth / 2 - TILE * (centre + 0.5));
   let offY = Math.round(innerHeight / 2 - TILE * 0.5);
   const pool = new Map();
-  const touchNames = !matchMedia('(hover: hover)').matches;
   // Poets run in order along the rows, W to a row, so any W × floor(n/W) patch of the wall shows each poet
   // at most once: everyone appears side by side before anyone repeats.
   const poetAt = (r, c) => { const n = POETS.length, W = Math.max(1, Math.round(Math.sqrt(n))); return ((r * W + c) % n + n) % n; };
@@ -191,12 +190,12 @@ export function mountWall() {
           pool.set(key, el);
         }
         el.style.transform = `translate(${c * TILE + offX}px, ${r * TILE + offY}px)`;
-        if (touchNames) {
-          // Phones: the portrait nearest the centre of the screen shows its name; it fades as it moves away.
+        {
+          // Every portrait shows its name at half strength; near the centre of the screen it rises to full (Navid 2026-11-18).
           const dx = c * TILE + offX + TILE / 2 - vw / 2, dy = r * TILE + offY + TILE / 2 - vh / 2;
-          const o = Math.max(0, 1 - Math.hypot(dx, dy) / (TILE * 0.7));
+          const k = Math.max(0, 1 - Math.hypot(dx, dy) / (TILE * 0.9));
           if (POETS.length === 1) { el.lastElementChild.style.opacity = '1'; continue; }
-          el.lastElementChild.style.opacity = o.toFixed(3);
+          el.lastElementChild.style.opacity = (0.5 + 0.5 * k * k * (3 - 2 * k)).toFixed(3);
         }
       }
     }

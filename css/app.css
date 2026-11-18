@@ -1030,3 +1030,6 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .s-res { margin-top: 10px; }
 .w-bar { --wb-h: 39px; }
 @media (min-width: 860px) { .w-bar { --wb-h: 43px; } }
+/* Wall names: cream, no shadow, a little larger; always shown (opacity set from the distance to the screen centre). */
+.w-name { color: #f5f2e8; text-shadow: none; opacity: .5; font-size: 1.02rem; transition: none; }
+@media (max-width: 767px) { .w-name { font-size: .84rem; } }
