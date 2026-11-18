@@ -94,7 +94,7 @@ export async function poemImage({ groups, focus, poet, title, pic }) {
   ctx.textBaseline = 'middle';
 
   // Logo, small, top centre.
-  if (portrait) { const ps = 360; ctx.drawImage(portrait, (W - ps) / 2, 50, ps, ps); }
+  if (portrait) { const ps = 360; ctx.drawImage(portrait, (W - ps) / 2, 130, ps, ps); }
   else if (logo) { const lw = 120, lh = lw * 119.36 / 154.66; ctx.drawImage(logo, (W - lw) / 2, 250, lw, lh); }
 
   // Which couplets: the sharp three, plus up to three on each side to fade out.
@@ -126,7 +126,7 @@ export async function poemImage({ groups, focus, poet, title, pic }) {
   const lc = layer.getContext('2d');
   lc.direction = 'rtl'; lc.textBaseline = 'middle'; lc.font = ctx.font; lc.fillStyle = ink;
   const sharpH = shown.slice(a - from, b - from + 1).reduce((t, g) => t + hOf(g), 0) + (b - a) * gap;
-  const fadeTop = 400, fadeBottom = H - 450;
+  const fadeTop = portrait ? 470 : 400, fadeBottom = H - 450;
   const mid = fading ? (fadeTop + fadeBottom) / 2 : H / 2 - 40;
   let y = mid - sharpH / 2;
   for (let i = a - from - 1; i >= 0; i--) y -= hOf(shown[i]) + gap;
