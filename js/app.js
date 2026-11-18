@@ -419,7 +419,7 @@ async function viewPoets() {
   const poets = m.Poets;
   document.body.classList.add('poet-bg');
   main.innerHTML = `${pageClose()}<div class="wrap fadein">
-    <div class="page-title"><h1>شاعران</h1><p>${fa(poets.length)} شاعر</p></div>
+    <div class="page-title"><h1>همه سخنوران</h1><p>${fa(poets.length)} شاعر</p></div>
     <p class="pl-hint">با انتخاب شاعران، آنها را همیشه در صفحهٔ خانه خود داشته باشید.</p>
     <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام شاعر" autocomplete="off"></label></div>
     <div class="pl-tools"><button type="button" class="pl-sort" id="plSort"></button>
@@ -1217,7 +1217,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.114';
+export const VERSION = '0.9.115';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
