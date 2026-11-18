@@ -348,7 +348,7 @@ async function viewPoets() {
     const face = (p) => { const s = clean(p.FullUrl); return TOP.includes(s) ? `<img class="pl-face" src="img/poets/${esc(s)}${dark ? '-dark' : ''}.webp" alt="" width="1024" height="1024" loading="lazy" decoding="async">` : mono(p.Nickname); };
     const wall = new Set(wallChoice());
     // A tick puts the poet on the home wall; only poets with a portrait have one.
-    const tick = (p) => { const s = clean(p.FullUrl); return WALL_ALL.includes(s) ? `<label class="pl-tick" title="نمایش در خانه"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></label>` : ''; };
+    const tick = (p) => { const s = clean(p.FullUrl); return WALL_ALL.includes(s) ? `<label class="pl-tick" title="نمایش در خانه"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></label>` : '<span class="pl-tick pl-tick-sp" aria-hidden="true"></span>'; };
     // Alphabetical: a letter heading over each group (آ goes with ا).
     let last = '';
     const head = (p) => {
@@ -1104,7 +1104,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.94';
+export const VERSION = '0.9.95';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
