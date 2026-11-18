@@ -1052,3 +1052,5 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .bk-mark { left: 4%; width: 38px; height: 52px; }
 .bk-mark svg { width: 22.4px; height: 35.2px; stroke-width: 1px; vector-effect: non-scaling-stroke; }
 .bk-mark svg path { vector-effect: non-scaling-stroke; stroke-width: 1px; }
+/* The unsaved ribbon is filled with the cover's cloth, so the frame line doesn't show through it. */
+.bk-mark:not(.on) svg { fill: var(--cloth); }
