@@ -1048,6 +1048,7 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .bk-mark.on svg { fill: #c0392b; stroke: #c0392b; opacity: 1; }
 .bk-mark:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px; }
 #sbooks .books { margin-top: 18px; }
-/* Ribbon twice as large (Navid 2026-11-18). */
-.bk-mark { left: 4%; width: 44px; height: 60px; }
-.bk-mark svg { width: 28px; height: 44px; stroke-width: 1.5; }
+/* Ribbon 1.6× the first size, hairline stroke (Navid 2026-11-18). */
+.bk-mark { left: 4%; width: 38px; height: 52px; }
+.bk-mark svg { width: 22.4px; height: 35.2px; stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.bk-mark svg path { vector-effect: non-scaling-stroke; stroke-width: 1px; }
