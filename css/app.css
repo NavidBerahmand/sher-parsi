@@ -913,10 +913,11 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 /* Logo is the same size on every page (the larger inner-page size). */
 @media (max-width: 859px) { .w-menu img { width: 46px; } }
 /* A solid band under the phone status bar, so scrolled text never shows there as a blurred smear. */
-/* Safari 26 (iOS) blurs the top edge of the page, which smeared the logo and close button. A solid fixed band
-   touching the top edge makes Safari tint that edge with the band's colour instead of blurring. In the browser
-   safe-area-inset-top is 0, so the band keeps a few pixels of its own height; it ends above the buttons. */
-body:not(.wall-mode)::before { content: ''; position: fixed; z-index: 49; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top, 0px) + 6px); background: var(--bg); pointer-events: none; }
+/* The strip under the phone status bar is solid site green on every page, as it looks after coming from the home
+   wall (Navid, 2026-11-18). A real fixed element touching the top edge, so iPhone Safari paints its top edge with
+   this colour instead of blurring the page there (which smeared the logo and close button on the book lists). */
+.top-edge { position: fixed; z-index: 49; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: #585e4a; pointer-events: none; }
+:root[data-theme="dark"] .top-edge { background: #2f3526; }
 /* Poet download button: same size as the close button; black with a white icon once downloaded (Navid, 2026-11-13). */
 .wp-dl { width: 36px; height: 36px; }
 .wp-dl svg { width: 18px; height: 18px; }
@@ -947,5 +948,3 @@ body:not(.wall-mode) .site-ver { display: none; }
 .next-sec small { color: var(--muted); flex: none; }
 .next-sec b { flex: 1; font-weight: var(--fw-title); }
 .next-sec svg { flex: none; width: 18px; height: 18px; }
-body.poet-bg:not(.wall-mode)::before { background: #585e4a; }
-:root[data-theme="dark"] body.poet-bg:not(.wall-mode)::before { background: #2f3526; }
