@@ -913,11 +913,19 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 /* Logo is the same size on every page (the larger inner-page size). */
 @media (max-width: 859px) { .w-menu img { width: 46px; } }
 /* A solid band under the phone status bar, so scrolled text never shows there as a blurred smear. */
-/* The strip under the phone status bar is solid site green on every page, as it looks after coming from the home
-   wall (Navid, 2026-11-18). A real fixed element touching the top edge, so iPhone Safari paints its top edge with
-   this colour instead of blurring the page there (which smeared the logo and close button on the book lists). */
-.top-edge { position: fixed; z-index: 49; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: #585e4a; pointer-events: none; }
-:root[data-theme="dark"] .top-edge { background: #2f3526; }
+/* A solid header, the page's own colour, behind the logo and the close buttons. The home-screen iPhone app blurs
+   the top of any page that has none (test pages, Navid 2026-11-18: only the fixed-header variants stayed sharp).
+   It reaches as far down as the poem sheet's top edge. */
+.top-edge { position: fixed; z-index: 49; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top, 0px) + var(--sheet-top)); background: var(--bg); }
+body.poet-bg .top-edge { background: #585e4a; }
+:root[data-theme="dark"] body.poet-bg .top-edge { background: #2f3526; }
+body.psheet-open .top-edge, body.poet-bg.psheet-open .top-edge { background: var(--bg); }
+body.wall-mode .top-edge { display: none; }
+/* The poem sheet sits above that header (its buttons must show); its own layer lets taps through except on its parts,
+   and its backdrop starts where the sheet starts, so the header above stays the top of the page. */
+.psheet-wrap { z-index: 50; pointer-events: none; }
+.psheet-wrap > * { pointer-events: auto; }
+.psheet-backdrop { top: var(--sheet-top); }
 /* Poet download button: same size as the close button; black with a white icon once downloaded (Navid, 2026-11-13). */
 .wp-dl { width: 36px; height: 36px; }
 .wp-dl svg { width: 18px; height: 18px; }
