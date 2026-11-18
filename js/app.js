@@ -475,10 +475,13 @@ function observeFirstLines() {
   document.querySelectorAll('.poems a[data-u]:not(.has-fl)').forEach((a) => flObserver.observe(a));
 }
 
+// Lines that are only a divider (***, ٭٭٭, ...) are centred.
+const SEP_RE = /^[\s*٭⁂✱✲✳•·.…\-–—_=~]+$/;
 function renderBlocks(bs, { tappable = true } = {}) {
   let n = 0; // couplet number, shown faintly in the poem card only (via CSS, so it is never copied or exported)
   return bs.map((b, i) => {
     if (b.kind === 'break') return '<div class="section-break"></div>';
+    if ((b.kind === 'prose' || b.kind === 'note') && SEP_RE.test(b.text)) return `<p class="sep-line">${txt(b.text.trim())}</p>`;
     if (b.kind === 'prose') return `<p class="prose">${vtxt(b.text)}</p>`;
     if (b.kind === 'note') return `<p class="note">${txt(b.text)}</p>`;
     const cls = b.kind === 'center' ? 'bayt center-pair' : b.kind === 'single' ? 'bayt single' : 'bayt';
@@ -1055,7 +1058,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.86';
+export const VERSION = '0.9.87';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

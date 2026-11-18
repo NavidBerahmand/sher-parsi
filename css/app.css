@@ -980,3 +980,5 @@ body:not(.wall-mode) .site-ver { display: none; }
 /* The couplet sheet and its backdrop open above the poem sheet (now z-index 50) and the top header. */
 .sheet-backdrop { z-index: 55; }
 .sheet { z-index: 56; }
+/* Divider lines (***) sit in the middle of the card. */
+.sep-line { text-align: center; color: var(--muted); font-family: var(--ui); letter-spacing: .3em; padding: 4px 0; margin: 0; text-indent: .3em; }
