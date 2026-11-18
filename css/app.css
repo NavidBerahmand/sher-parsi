@@ -1059,3 +1059,6 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .bk-mark.on svg { fill: var(--saved); stroke: var(--saved); }
 .icon-btn.on svg, .icon-btn.save.on svg, .psheet-tools .pt-save.on svg, .poems .mk-save svg, #bSave[aria-pressed="true"] svg { fill: var(--saved); stroke: var(--saved); color: var(--saved); }
 .icon-btn.on, .poems .mk-save { color: var(--saved); }
+/* Ribbon fully opaque, so nothing of the frame line shows under it; only its outline is softened. */
+.bk-mark svg { opacity: 1; }
+.bk-mark:not(.on) svg { stroke: color-mix(in srgb, var(--ink-c) 80%, var(--cloth)); }
