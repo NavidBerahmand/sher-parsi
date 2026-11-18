@@ -977,3 +977,6 @@ body:not(.wall-mode) .site-ver { display: none; }
 .psheet { top: calc(var(--sheet-top) - env(safe-area-inset-top, 0px)); }
 .psheet-tools { top: 16px; }
 @media (min-width: 860px) { .psheet-tools { top: 20px; } }
+/* The couplet sheet and its backdrop open above the poem sheet (now z-index 50) and the top header. */
+.sheet-backdrop { z-index: 55; }
+.sheet { z-index: 56; }
