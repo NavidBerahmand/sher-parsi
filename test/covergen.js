@@ -1,4 +1,6 @@
 // Generative book covers: every motif is drawn from a seed made of the book title + poet, so a book keeps its picture.
+import { EMBLEM_NAMES } from './emblems.js';
+import { LAYOUTS, BGS } from './layouts.js';
 const W = 300, H = 420, ART = 250; // art box height (top), text below
 export const PALETTES = [
   { bg: '#3d4232', ink: '#e9e4d0', ac: '#c98a5e' }, // olive + clay
@@ -146,3 +148,26 @@ export function coverSVG({ title, author, motif, palette }) {
   const m = MOTIFS[motif] ?? Object.values(MOTIFS)[seed % Object.keys(MOTIFS).length];
   return { p, svg: `<svg viewBox="0 0 ${W} ${ART}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="${W}" height="${ART}" fill="${p.bg}"/>${m(r, p)}</svg>` };
 }
+
+// 100 designs: the 11 hand-made patterns above, then emblem x layout x background combinations.
+const UPRIGHT = new Set(['cypress', 'tree', 'candle', 'dome', 'arch', 'tulip', 'lamp', 'cup', 'flame', 'bird', 'anar', 'grapes']);
+const LAY = ['center', 'crop', 'grid', 'scatter', 'ring', 'band', 'halfdrop', 'row'];
+const BGL = ['none', 'dots', 'rings', 'stars', 'lattice', 'waves', 'stripes', 'rays'];
+export const DESIGNS = Object.keys(MOTIFS).map((m) => ({ motif: m }));
+{
+  const used = new Set(); let i = 0;
+  while (DESIGNS.length < 100) {
+    const e = EMBLEM_NAMES[i % EMBLEM_NAMES.length], lay = LAY[(Math.floor(i / EMBLEM_NAMES.length) * 3 + i) % LAY.length];
+    i++;
+    if (lay === 'row' && !UPRIGHT.has(e)) continue;
+    if (used.has(e + lay)) continue; used.add(e + lay);
+    const bg = lay === 'grid' || lay === 'halfdrop' || lay === 'band' ? 'none' : BGL[(i * 5) % BGL.length];
+    DESIGNS.push({ e, lay, bg });
+  }
+}
+export function designSVG(d, seed, p) {
+  const r = rng(seed);
+  const body = d.motif ? MOTIFS[d.motif](r, p) : BGS[d.bg](p, r) + LAYOUTS[d.lay](d.e, p, r);
+  return `<svg viewBox="0 0 ${W} ${ART}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="${W}" height="${ART}" fill="${p.bg}"/>${body}</svg>`;
+}
+export { hash };
