@@ -1,4 +1,4 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, saveBook, isBookSaved, unsaveBook, unsavePoet, verifySaved, setBookSaved, coverHTML, CENTURIES } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, saveBook, isBookSaved, unsaveBook, unsavePoet, verifySaved, checkDataVersion, setBookSaved, coverHTML, CENTURIES } from './data.js';
 import { settings, apply, onDeviceTheme, saved, history, bayts, books, doneBooks, readPoems, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
@@ -424,15 +424,28 @@ function libMeta(cat, other = false, info = {}) {
   const saved = book ? isBookSaved(cat) : isPoetSaved(cat);
   const data = Object.entries({ kind: book ? 'book' : 'poet', href: info.href || '', title: info.title || '', author: info.author || '', where: info.where || 'lib' }).map(([k, v]) => ` data-${k}="${esc(v)}"`).join('');
   // Right to left: «…» menu, the cloud, then the percent at the far left (Navid 2026-11-19).
-  return `<span class="lib-meta" data-cat="${esc(cat)}"${other ? ' data-other="1"' : ''}${data}><button type="button" class="lib-dots" aria-label="گزینه‌ها">${ICON.dots}</button><span class="lib-cl">${saved ? OK_ICON : DL_ICON}</span><span class="lib-pct">${fa(0)}٪</span></span>`;
+  return `<span class="lib-meta" data-cat="${esc(cat)}"${other ? ' data-other="1"' : ''}${data}><button type="button" class="lib-dots" aria-label="گزینه‌ها">${ICON.dots}</button><span class="lib-cl">${cloudHTML(book ? bookSaving.get(dlKey(cat, other)) : poetSaving.get(cat)?.f, saved)}</span><span class="lib-pct">${fa(0)}٪</span></span>`;
+}
+// The cloud under a book or poet: filled when saved, empty when not, and while it downloads the empty cloud with how far it is.
+const bookSaving = new Map(); // book key -> progress 0..1
+const dlKey = (cat, other) => `${clean(cat)}${other ? '/~other' : ''}`;
+const cloudHTML = (f, saved) => (f != null ? `<span class="lib-busy">${DL_ICON}<small>${fa(Math.round(f * 100))}٪</small></span>` : saved ? OK_ICON : DL_ICON);
+// A download moved on: show it on every cloud of that book or poet now on screen.
+function showDlProgress(kind, cat, other, f) {
+  document.querySelectorAll(`.lib-meta[data-kind="${kind}"]`).forEach((m) => {
+    if (m.dataset.cat !== cat || !!m.dataset.other !== !!other) return;
+    const sm = m.querySelector('.lib-busy small');
+    if (sm) sm.textContent = `${fa(Math.round(f * 100))}٪`; else m.querySelector('.lib-cl').innerHTML = cloudHTML(f, false);
+  });
 }
 // A cover's href → [category url, is it the poet's loose poems].
 const bookCat = (href) => [href.replace(/^#\/c\//, '').replace(/\/~other$/, ''), /\/~other$/.test(href)];
 // After a download or its removal: every cloud on screen, and the poet page's top button.
 function refreshClouds() {
   document.querySelectorAll('.lib-meta').forEach((m) => {
-    const ok = m.dataset.kind === 'poet' ? isPoetSaved(m.dataset.cat) : isBookSaved(m.dataset.cat);
-    m.querySelector('.lib-cl').innerHTML = ok ? OK_ICON : DL_ICON;
+    const poet = m.dataset.kind === 'poet';
+    const ok = poet ? isPoetSaved(m.dataset.cat) : isBookSaved(m.dataset.cat);
+    m.querySelector('.lib-cl').innerHTML = cloudHTML(poet ? poetSaving.get(m.dataset.cat)?.f : bookSaving.get(dlKey(m.dataset.cat, !!m.dataset.other)), ok);
   });
   const top = $('#pageDl');
   if (top && !top.classList.contains('busy')) { const sl = top.dataset.slug; top.outerHTML = dlButton(sl); $('#pageDl')?.addEventListener('click', () => startPoetSave(sl)); }
@@ -452,11 +465,12 @@ function openLibMenu(el) {
   const inLib = book && books.has(href);
   const done = book && el.querySelector('.lib-pct')?.textContent === `${fa(100)}٪`;
   const saved = book ? isBookSaved(cat) : isPoetSaved(slug);
+  const busy = book ? bookSaving.has(dlKey(cat, other)) || poetSaving.has(slug) : poetSaving.has(slug);
   const row = (id, icon, label, dis = false) => `<button type="button" id="${id}"${dis ? ' disabled' : ''}>${icon}<span>${label}</span></button>`;
   openSheet(`<h3>${esc(book ? title : POET_NAME(slug))}</h3>${book && author ? `<p class="lib-menu-sub">${esc(author)}</p>` : ''}
     <div class="lib-menu">
       ${book && !page ? row('lmPoet', ICON.user, 'صفحهٔ سخنور') : ''}
-      ${saved ? row('lmUndl', ICON.trash, 'حذف دانلود') : row('lmDl', DL_ICON, 'دانلود')}
+      ${busy ? row('lmBusy', DL_ICON, 'در حال دانلود…', true) : saved ? row('lmUndl', ICON.trash, 'حذف دانلود') : row('lmDl', DL_ICON, 'دانلود')}
       ${page ? (inLib ? row('lmDel', ICON.trash, 'حذف از کتابخانه') : row('lmAdd', ICON.bookmark, 'اضافه به کتابخانهٔ من')) : ''}
       ${book ? (done ? row('lmUnread', ICON.x, 'حذف از خوانده‌شده‌ها') : row('lmRead', ICON.check, 'خوانده‌شده')) : ''}
       ${row('lmShare', ICON.share, 'اشتراک‌گذاری')}
@@ -472,8 +486,12 @@ function openLibMenu(el) {
     s.querySelector('#lmDl')?.addEventListener('click', async () => {
       closeSheet();
       if (!book) { toast('دانلود آثار سخنور شروع شد'); await startPoetSave(slug); if (current.view === 'saved') viewSaved(); return; }
+      const key = dlKey(cat, other);
+      if (bookSaving.has(key)) return; // already on its way: a second tap must not start it again
       toast('دانلود کتاب شروع شد');
-      const ok = await saveBook(cat, other).catch(() => false);
+      bookSaving.set(key, 0); showDlProgress('book', cat, other, 0);
+      const ok = await saveBook(cat, other, (f) => { bookSaving.set(key, f); showDlProgress('book', cat, other, f); }).catch(() => false);
+      bookSaving.delete(key);
       toast(ok ? 'کتاب برای خواندن آفلاین ذخیره شد' : 'دانلود کامل نشد، دوباره امتحان کن');
       if (current.view === 'saved') viewSaved(); else refreshClouds();
     });
@@ -523,15 +541,19 @@ document.addEventListener('click', (e) => {
   e.preventDefault(); e.stopPropagation(); openLibMenu(d.closest('.lib-meta'));
 }, true);
 const COUNT_KEY = 'sp.counts';
+let countsP = null;
+const allCounts = () => (countsP ||= fetch('data/counts.json').then((r) => (r.ok ? r.json() : {})).catch(() => { countsP = null; return {}; }));
 async function poemCount(cat, other) {
   const key = `${cat}${other ? '/~other' : ''}`;
-  let all = {};
-  try { all = JSON.parse(localStorage.getItem(COUNT_KEY)) || {}; } catch { /* storage blocked */ }
-  if (all[key]) return all[key];
+  // One small file (tools/poem_counts.py) holds every book's count; only if it is missing are the book's files opened.
+  const known = (await allCounts())[key];
+  if (known) return known;
+  const stored = () => { try { return JSON.parse(localStorage.getItem(COUNT_KEY)) || {}; } catch { return {}; } };
+  if (stored()[key]) return stored()[key];
   const walk = async (u, deep) => { const c = await getCat(u); let n = (c.Poems || []).length; if (deep) for (const k of c.ChildCats || []) n += await walk(clean(k.FullUrl), true); return n; };
   const n = await walk(cat, !other);
-  all[key] = n;
-  try { localStorage.setItem(COUNT_KEY, JSON.stringify(all)); } catch { /* storage full */ }
+  // Read again just before writing: counts worked out meanwhile for other books must not be lost.
+  try { localStorage.setItem(COUNT_KEY, JSON.stringify({ ...stored(), [key]: n })); } catch { /* storage full */ }
   return n;
 }
 function fillLibMeta(root) {
@@ -566,24 +588,6 @@ async function randomFrom(catUrl, seed) {
 }
 
 /* ───────── Views ───────── */
-// Temporary home page: the owner has their own design for it, to be built once shared.
-async function viewHome() {
-  const hist = history.all()[0];
-  main.innerHTML = `<div class="wrap fadein">
-    <div class="hero"><p class="date">${new Intl.DateTimeFormat('fa-IR-u-ca-persian', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}</p>
-      <h1>شعر پارسی</h1></div>
-    <div class="tiles">
-      <a class="card tile" href="#/fal"><span class="ic">${ICON.star}</span><b>فال حافظ</b><span>نیت کن و دیوان را بگشا</span></a>
-      <button class="card tile" id="rnd"><span class="ic">${ICON.shuffle}</span><b>شعر تصادفی</b><span>یک غزل یا رباعی تازه</span></button>
-    </div>
-    ${hist ? `<div class="section"><a class="card continue" href="${poemHref(hist.url)}"><span class="ic">${ICON.clock}</span>
-      <span class="t"><b>${esc(hist.title)}</b><span>ادامهٔ خواندن · ${esc(hist.poet)}</span></span>${ICON.chev}</a></div>` : ''}
-    <div class="section"><div class="section-head"><h2>سخنوران</h2><a class="link" href="#/poets">همه</a></div>
-      <div class="poet-strip">${FEATURED.map(([s, n]) => `<a class="poet-chip" href="#/c/${s}"><img class="pl-face" src="${portrait(s, settings.get().theme === 'dark')}" alt="" width="1024" height="1024" loading="lazy" decoding="async"><span>${n}</span></a>`).join('')}</div></div>
-  </div>`;
-  $('#rnd').addEventListener('click', () => randomPoem((h) => openPoemOver(h)));
-}
-
 async function randomPoem(go = (h) => { location.hash = h; }) {
   try {
     const pick = await randomFrom(DAILY_POOL[Math.floor(Math.random() * DAILY_POOL.length)]);
@@ -659,13 +663,26 @@ function dlButton(slug) {
 }
 // Tapping download slides the disc open to the right into a capsule that fills as files are stored and counts the size; it closes back into a tick when done.
 async function startPoetSave(slug) {
-  if (isPoetSaved(slug) || poetSaving.has(slug)) return;
+  if (poetSaving.has(slug)) return;
+  // Already on the device: the cloud opens a small card that says so and can take the download off again.
+  if (isPoetSaved(slug)) {
+    openSheet(`<h3>${esc(POET_NAME(slug))}</h3><p class="lib-menu-sub">همهٔ آثار برای خواندن آفلاین روی این دستگاه ذخیره شده است.</p>
+      <div class="lib-menu"><button type="button" id="lmUndl">${ICON.trash}<span>حذف دانلود</span></button></div>`, (sh) => {
+      sh.querySelector('#lmUndl').addEventListener('click', async () => {
+        closeSheet();
+        try { await unsavePoet(slug); toast('دانلود حذف شد'); } catch { toast('حذف دانلود کامل نشد'); }
+        refreshClouds();
+      });
+    });
+    return;
+  }
   const cur = () => document.querySelector(`#pageDl[data-slug="${slug}"]`);
   poetSaving.set(slug, { f: 0, b: 0 });
   const b0 = cur(); if (b0) { b0.classList.add('busy'); b0.querySelector('.dl-txt').textContent = faSize(0); }
   let last = 0;
   const ok = await savePoet(slug, (f, b, t) => {
     poetSaving.set(slug, { f, b, t });
+    showDlProgress('poet', slug, false, f);
     const el = cur(); if (!el) return;
     el.style.setProperty('--p', f.toFixed(3));
     const now = performance.now();
@@ -911,6 +928,7 @@ function closePoemSheet(instant) {
   if (sheet.classList.contains('show')) { overlayForget(sheetBack); closeSheet(true); }
   stackCleanup?.();
   const el = sheetEl; sheetEl = null;
+  if (el.contains(document.activeElement)) main.focus({ preventScroll: true }); // focus must not stay in a sheet that is going away
   document.body.classList.remove('psheet-open');
   if (instant) { el.remove(); refreshTopEdge(); return; }
   const sh = el.querySelector('.psheet'), bd = el.querySelector('.psheet-backdrop');
@@ -992,6 +1010,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
   let idx = list.findIndex((p) => clean(p.FullUrl) === path);
 
   const sh = openSheetShell();
+  sh.focus({ preventScroll: true });
   sheetCat = main.dataset.cat === `${listPath}/~other` ? main.dataset.cat : listPath;
   const stack = $('#stack'), end = $('#stackEnd');
   stackRO = new ResizeObserver((es) => es.forEach((en) => placeCard(en.target)));
@@ -1093,11 +1112,31 @@ function stretchCard(card) {
   const verses = card.querySelector('.verses');
   const ms = [...verses.querySelectorAll('.bayt .m')];
   if (!ms.length) return;
+  // Nothing that decides the widths has changed since the last pass (same room, type and loaded fonts): keep it.
+  const vcs = getComputedStyle(verses);
+  const sig = [verses.clientWidth, innerWidth, ms.length, vcs.fontFamily, vcs.fontWeight, vcs.letterSpacing, vcs.getPropertyValue('--poem-size'), vcs.getPropertyValue('--poem-scale'), getComputedStyle(document.documentElement).fontSize,
+    document.fonts ? [...document.fonts].filter((f) => f.status === 'loaded').length : 0].join('|');
+  if (card.dataset.ksig === sig) return;
+  card.dataset.ksig = sig;
   if (!meter) { meter = document.createElement('span'); meter.className = 'kmeter'; }
   verses.style.removeProperty('font-size');
   verses.appendChild(meter);
-  const wOf = (t) => { meter.textContent = t; return meter.getBoundingClientRect().width; };
-  const measure = () => { for (const m of ms) { if (m.dataset.o == null) m.dataset.o = m.textContent; m.dataset.w = wOf(m.dataset.o); } return Math.max(...ms.map((m) => +m.dataset.w)); };
+  // Widths are measured many at a time, each text on its own line of the hidden meter: one layout for the whole
+  // poem instead of one per misra, which froze long poems (hundreds of couplets) for seconds on a phone.
+  const wMany = (texts) => {
+    const spans = texts.map((t) => { const sp = document.createElement('span'); sp.textContent = t; return sp; });
+    meter.replaceChildren(...spans);
+    const ws = spans.map((sp) => sp.getBoundingClientRect().width);
+    meter.replaceChildren();
+    return ws;
+  };
+  const wOf = (t) => wMany([t])[0];
+  const measure = () => {
+    for (const m of ms) if (m.dataset.o == null) m.dataset.o = m.textContent;
+    const ws = wMany(ms.map((m) => m.dataset.o));
+    ms.forEach((m, i) => { m.dataset.w = ws[i]; });
+    return Math.max(...ws);
+  };
   let natural = measure();
   // Couplet numbers sit centred between the card edge and the start of the verses. When the verses are
   // long, they give way so the number keeps the same space on both sides (NUM_EDGE from the edge, NUM_EDGE to the text).
@@ -1126,17 +1165,25 @@ function stretchCard(card) {
   }
   // In em, so the line width follows the text if its size changes before the next pass.
   verses.style.setProperty('--mw', (W / parseFloat(getComputedStyle(verses).fontSize)).toFixed(4) + 'em');
+  let fit = [];
   for (const m of ms) {
     const w = +m.dataset.w;
     // Centred lines (the green ones, a lone *) are never stretched: they stay centred at their own width (Navid).
     if (m.closest('.center-pair')) { m.textContent = m.dataset.o; m.classList.remove('wraps'); continue; }
     if (w > W) { m.textContent = m.dataset.o; m.classList.add('wraps'); continue; }
     m.classList.remove('wraps');
-    let n = Math.floor((W - w) / tw);
-    let t = withKashida(m.dataset.o, n);
-    while (n > 0 && wOf(t) > W) t = withKashida(m.dataset.o, --n);
-    m.textContent = t;
+    const n = Math.floor((W - w) / tw);
+    fit.push({ m, n, t: withKashida(m.dataset.o, n) });
   }
+  // Check every stretched line together; the few that came out too wide lose one kashida and are checked again.
+  const done = fit;
+  while (fit.some((f) => f.n > 0)) {
+    const ws = wMany(fit.map((f) => f.t));
+    fit = fit.filter((f, i) => f.n > 0 && ws[i] > W);
+    for (const f of fit) f.t = withKashida(f.m.dataset.o, --f.n);
+    if (!fit.length) break;
+  }
+  for (const f of done) if (f.m.textContent !== f.t) f.m.textContent = f.t;
   meter.remove();
 }
 
@@ -1282,6 +1329,7 @@ function viewSaved() {
       <span class="s">${esc(x.title)}${savedSort === 'poet' ? '' : ` · ${esc(x.poet)}`}</span></a>
       ${savedTab === 'poems' ? `<button class="icon-btn on" data-rm="${esc(x.url)}" aria-label="برداشتن">${ICON.bookmark}</button>` : ''}</li>`;
   };
+  const syncTabs = () => document.querySelectorAll('#stabs button').forEach((b) => { const on = b.dataset.t === savedTab; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
   const draw = () => {
     const isBooks = savedTab === 'books';
     $('#ssort').style.display = isBooks || savedTab === 'poets' ? 'none' : '';
@@ -1291,7 +1339,7 @@ function viewSaved() {
       $('#sbooks').innerHTML = ps.length ? `<div class="saved-poets"><ul class="poet-grid">${ps.map((sl) => poetTile(sl, POET_NAME(sl), true, libMeta(sl, false, { kind: 'poet' }))).join('')}</ul></div>`
         : `<ul class="saved-list"><li class="empty-state">${EMPTY.poets.join('')}</li></ul>`;
       fillLibMeta($('#sbooks'));
-      document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
+      syncTabs();
       return;
     }
     if (isBooks) {
@@ -1305,7 +1353,7 @@ function viewSaved() {
           + '<h2 class="lib-done-head" hidden>خوانده‌شده‌ها</h2><div class="books lib-done" hidden></div>';
       }
       $('#sl').hidden = true; $('#sbooks').hidden = false; $('#sbooks').innerHTML = html; fillLibMeta($('#sbooks'));
-      document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
+      syncTabs();
       return;
     }
     $('#sl').hidden = false; $('#sbooks').hidden = true;
@@ -1322,7 +1370,7 @@ function viewSaved() {
     } else html = list.map(item).join('');
     $('#sl').innerHTML = html;
     document.querySelector('#ssort [data-o="time"]').textContent = savedTab === 'history' ? 'زمان خواندن' : 'زمان نشان کردن';
-    document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
+    syncTabs();
     document.querySelectorAll('#ssort button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.o === savedSort));
   };
   main.innerHTML = `${pageClose('sX')}<div class="wrap fadein"><div class="page-title"><h1>کتابخانهٔ من</h1></div>
@@ -1331,6 +1379,15 @@ function viewSaved() {
     <ul class="saved-list" id="sl"></ul><div id="sbooks" hidden></div></div>`;
   wireClose('sX');
   document.querySelectorAll('#stabs button').forEach((b) => b.addEventListener('click', () => { savedTab = b.dataset.t; draw(); }));
+  // Tabs by keyboard: one Tab stop, the arrow keys move between them (right to left), Home and End jump to the ends.
+  $('#stabs').addEventListener('keydown', (e) => {
+    const tabs = [...document.querySelectorAll('#stabs button')], i = tabs.indexOf(document.activeElement);
+    const to = { ArrowLeft: i + 1, ArrowRight: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+    if (i < 0 || to == null) return;
+    e.preventDefault();
+    const t = tabs[(to + tabs.length) % tabs.length];
+    savedTab = t.dataset.t; draw(); t.focus();
+  });
   document.querySelectorAll('#ssort button').forEach((b) => b.addEventListener('click', () => { savedSort = b.dataset.o; draw(); }));
   $('#sl').addEventListener('click', (e) => {
     const rm = e.target.closest('[data-rm]'), rmb = e.target.closest('[data-rmb]');
@@ -1439,10 +1496,11 @@ async function route(keepScroll = false) {
   // A poem opened over the very list that was on screen (e.g. from search): leave the list where it was.
   const sameList = view === 'poem' && listBefore && main.dataset.cat === listBefore;
   window.scrollTo(0, keepScroll || (sameList && !memo) ? y : memo?.y || 0);
-  if (!keepScroll) main.focus({ preventScroll: true });
+  // Keyboard and screen readers follow the reader: into the poem when one opened, else to the page.
+  if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.161';
+export const VERSION = '0.9.162';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -1505,7 +1563,9 @@ document.fonts?.addEventListener?.('loadingdone', restretchSoon);
 /* ───────── Boot ───────── */
 apply();
 route();
-verifySaved().then((changed) => { if (changed) refreshClouds(); }).catch(() => {});
+// A little after opening, so it never slows the first view: renew the data cache if the poems were rebuilt,
+// then make sure every filled cloud still has its files.
+setTimeout(() => checkDataVersion().catch(() => false).then(() => verifySaved()).then((changed) => { if (changed) refreshClouds(); }).catch(() => {}), 2500);
 if ('serviceWorker' in navigator && location.protocol !== 'file:' && !document.querySelector('meta[name="sp-no-sw"]')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }

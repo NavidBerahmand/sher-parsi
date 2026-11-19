@@ -115,7 +115,7 @@ body.psheet-open .page-x { opacity: 0; pointer-events: none; }
 :root[data-theme="dark"] .logo-on-light { display: none !important; }
 :root[data-theme="dark"] .logo-on-dark { display: block !important; }
 
-main:focus, main:focus-visible { outline: none; }
+main:focus, main:focus-visible, .psheet:focus, .psheet:focus-visible { outline: none; }
 main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); padding-bottom: calc(48px + var(--safe-b)); outline: none; }
 .wrap { width: 100%; max-width: 720px; margin: 0 auto; padding: 0 var(--gutter); }
 
@@ -268,8 +268,9 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 .cover.c3 { --cloth: #262b1f; }
 @media (hover: hover) { .book:hover .cover { transform: rotateY(-9deg) translateX(-3px); box-shadow: 0 1px 1px rgb(0 0 0 / .18), 0 18px 30px -10px rgb(0 0 0 / .5); } }
 .book:active .cover { transform: scale(.97); }
-.book:focus-visible { outline: none; }
-.book:focus-visible .cover { outline: 2px solid var(--accent); outline-offset: 3px; }
+.book-link { position: absolute; inset: 0; z-index: 2; }
+.book-link:focus-visible { outline: none; }
+.book:has(.book-link:focus-visible) .cover { outline: 2px solid var(--accent); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .book { animation: none; } .cover { transition: none; } }
 
 .list-tools { display: flex; align-items: center; gap: 10px; margin-top: 26px; }
@@ -610,6 +611,7 @@ body.psheet-open { overflow: hidden; }
 /* Band couplets (tarji'/tarkib refrains) and lone misras stay centred under the two columns. */
 .pcard.two-col .center-pair .m, .pcard.two-col .single .m { margin-inline: auto; }
 .kmeter { position: absolute; visibility: hidden; white-space: nowrap; pointer-events: none; }
+.kmeter > span { display: block; width: max-content; }
 
 /* Opening card: the name in a small white box in the middle, then it fades away */
 .splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; pointer-events: none; transition: opacity .7s ease, visibility .7s; }
@@ -993,7 +995,7 @@ body:not(.wall-mode) .site-ver { display: none; }
   background: conic-gradient(#fff calc(var(--p) * 360deg), rgb(255 255 255 / .25) 0);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
           mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); }
-.page-dl.saved { cursor: default; }
+.page-dl.saved { cursor: pointer; }
 body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 /* A poem whose first line can't be shown keeps its title at the same size as the other rows' first lines. */
 .poems a:not(.has-fl) small { font-family: var(--poem); font-size: 1.08rem; }
@@ -1254,3 +1256,9 @@ svg.ms .f { display: none; }
 .pl-sort::after { inset: -10px -6px; }
 .sort-row button::after { inset: -6px -2px; }
 .bio-toggle::after { inset: -8px -6px; }
+/* A download on its way: the empty cloud breathes, with how far it is beside it. */
+.lib-busy { display: inline-flex; align-items: center; gap: 5px; }
+.lib-busy svg.cl { animation: libdl 1.2s ease-in-out infinite alternate; }
+.lib-busy small { font-size: .78rem; font-variant-numeric: tabular-nums; }
+@keyframes libdl { from { opacity: .35; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .lib-busy svg.cl { animation: none; } }

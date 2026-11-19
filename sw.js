@@ -1,5 +1,5 @@
 // Service worker: app shell is precached; poem data (immutable, pinned commit) is cached on first read.
-const SHELL = 'sp-shell-v115';
+const SHELL = 'sp-shell-v116';
 const DATA = 'sp-data-v1';
 // Every portrait (light and dark) and the faceless bust: fetched quietly after install, so the wall, the poet pages
 // and «کتابخانهٔ من» show their pictures offline too. A failed one never blocks the install.
