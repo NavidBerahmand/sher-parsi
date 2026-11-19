@@ -431,8 +431,7 @@ async function viewPoets() {
     <div class="page-title"><h1>همه سخنوران</h1><p>${fa(poets.length)} سخنور</p></div>
     <p class="pl-hint">با انتخاب سخنوران، آنها را همیشه در صفحهٔ خانه خود داشته باشید.</p>
     <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام سخنور" autocomplete="off"></label></div>
-    <div class="pl-tools"><span class="pl-sorts"><button type="button" class="pl-sort" id="plSort"></button><button type="button" class="pl-sort" id="plCent"></button></span>
-      <label class="pl-allrow"><b id="plAllTxt">انتخاب همه</b><span class="pl-tick"><input type="checkbox" id="plAll"><i></i></span></label></div>
+    <div class="pl-tools"><span class="pl-sorts"><button type="button" class="pl-sort" id="plSort"></button><button type="button" class="pl-sort" id="plCent"></button></span></div>
     <div class="poet-groups" id="pl"></div></div>`;
   const pl = $('#pl');
   // Order: by readership (default), alphabetical, or by century as on Ganjoor's home page; remembered on this device.
@@ -472,13 +471,7 @@ async function viewPoets() {
     pl.innerHTML = list.length ? groups.map((g) => `<section class="pl-group">${g.k ? `<h2 class="pl-head${mode === 'cent' ? ' pl-cent' : ''}"><span>${esc(g.k)}</span></h2>` : ''}<ul class="poet-grid">${g.ps.map(tile).join('')}</ul></section>`).join('')
       : `<p class="empty-state"><b>سخنوری با این نام پیدا نشد</b></p>`;
   };
-  const all = $('#plAll');
-  const syncAll = () => {
-    const n = wallChoice().length;
-    all.checked = n === WALL_ALL.length; all.indeterminate = n > 1 && n < WALL_ALL.length;
-    $('#plAllTxt').textContent = all.checked ? 'برداشتن همه' : 'انتخاب همه';
-  };
-  draw(); syncAll();
+  draw();
   wireClose('pageX');
   $('#q').addEventListener('input', (e) => draw(e.target.value));
   // Ticks choose the wall's portraits; at least one always stays.
@@ -488,9 +481,8 @@ async function viewPoets() {
     const keep = new Set(wallChoice());
     if (box.checked) keep.add(box.dataset.slug); else keep.delete(box.dataset.slug);
     if (!keep.size) { box.checked = true; return; }
-    setWallChoice([...keep]); syncAll();
+    setWallChoice([...keep]);
   });
-  all.addEventListener('change', () => { setWallChoice(all.checked ? WALL_ALL : WALL_ALL.slice(0, 1)); draw($('#q').value); syncAll(); });
 }
 
 // Whole-poet download for offline reading, beside the close button on the poet's page.
@@ -1259,7 +1251,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.134';
+export const VERSION = '0.9.135';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
