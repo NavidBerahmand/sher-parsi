@@ -427,13 +427,13 @@ async function viewPoets() {
   const m = await getManifest();
   const poets = m.Poets;
   document.body.classList.add('poet-bg');
-  main.innerHTML = `${pageClose()}<div class="wrap fadein">
+  main.innerHTML = `${pageClose()}<div class="wrap fadein pl-page">
     <div class="page-title"><h1>همه سخنوران</h1><p>${fa(poets.length)} شاعر</p></div>
     <p class="pl-hint">با انتخاب شاعران، آنها را همیشه در صفحهٔ خانه خود داشته باشید.</p>
     <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام شاعر" autocomplete="off"></label></div>
     <div class="pl-tools"><span class="pl-sorts"><button type="button" class="pl-sort" id="plSort"></button><button type="button" class="pl-sort" id="plCent"></button></span>
       <label class="pl-allrow"><b id="plAllTxt">انتخاب همه</b><span class="pl-tick"><input type="checkbox" id="plAll"><i></i></span></label></div>
-    <ul class="poet-list" id="pl"></ul></div>`;
+    <div class="poet-groups" id="pl"></div></div>`;
   const pl = $('#pl');
   // Order: by readership (default), alphabetical, or by century as on Ganjoor's home page; remembered on this device.
   let mode = 'fame';
@@ -462,18 +462,15 @@ async function viewPoets() {
     const dark = settings.get().theme === 'dark';
     const face = (p) => { const s = clean(p.FullUrl); return TOP.includes(s) ? `<img class="pl-face" src="img/poets/${esc(s)}${dark ? '-dark' : ''}.webp" alt="" width="1024" height="1024" loading="lazy" decoding="async">` : mono(p.Nickname); };
     const wall = new Set(wallChoice());
-    // A tick puts the poet on the home wall; only poets with a portrait have one.
-    const tick = (p) => { const s = clean(p.FullUrl); return WALL_ALL.includes(s) ? `<label class="pl-tick" title="نمایش در خانه"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></label>` : '<span class="pl-tick pl-tick-sp" aria-hidden="true"></span>'; };
-    // Alphabetical: a letter heading over each group (آ goes with ا); by century: the century's name.
-    let last = '';
-    const head = (p) => {
-      if (mode === 'fame') return '';
-      const L = mode === 'alpha' ? norm(p.Nickname).charAt(0).replace('آ', 'ا') : (centOf.get(clean(p.FullUrl)) || '');
-      if (L === last) return '';
-      last = L; return `<li class="pl-letter${mode === 'cent' ? ' pl-cent' : ''}">${esc(L)}</li>`;
-    };
-    pl.innerHTML = list.length ? list.map((p) => `${head(p)}<li><a href="${catHref(p.FullUrl)}">${face(p)}<b>${esc(p.Nickname)}</b>${ICON.chev}</a>${tick(p)}</li>`).join('')
-      : `<li class="empty-state"><b>شاعری با این نام پیدا نشد</b></li>`;
+    // Under each poet with a portrait: a small tick «نمایش در صفحه اصلی» that puts the poet on the home wall.
+    const tick = (p) => { const s = clean(p.FullUrl); return WALL_ALL.includes(s) ? `<label class="pt-wall"><span class="pl-tick"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></span><span>نمایش در صفحه اصلی</span></label>` : ''; };
+    const tile = (p) => `<li class="pt"><a href="${catHref(p.FullUrl)}"><span class="pt-pic">${face(p)}</span><b>${esc(p.Nickname)}</b></a>${tick(p)}</li>`;
+    // Alphabetical: one group per letter (آ goes with ا); by century: one group per century; by readership: a single group.
+    const key = (p) => mode === 'alpha' ? norm(p.Nickname).charAt(0).replace('آ', 'ا') : mode === 'cent' ? (centOf.get(clean(p.FullUrl)) || '') : '';
+    const groups = [];
+    list.forEach((p) => { const k = key(p); if (!groups.length || groups[groups.length - 1].k !== k) groups.push({ k, ps: [] }); groups[groups.length - 1].ps.push(p); });
+    pl.innerHTML = list.length ? groups.map((g) => `<section class="pl-group">${g.k ? `<h2 class="pl-head${mode === 'cent' ? ' pl-cent' : ''}"><span>${esc(g.k)}</span></h2>` : ''}<ul class="poet-grid">${g.ps.map(tile).join('')}</ul></section>`).join('')
+      : `<p class="empty-state"><b>شاعری با این نام پیدا نشد</b></p>`;
   };
   const all = $('#plAll');
   const syncAll = () => {
@@ -1262,7 +1259,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.132';
+export const VERSION = '0.9.133';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

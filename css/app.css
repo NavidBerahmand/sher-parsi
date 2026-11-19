@@ -1118,3 +1118,41 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .sheet h3 { margin-top: 0; }
 .sheet .about { margin-top: 0; padding: 0; }
 .sheet-body > :last-child, .sheet .about > :last-child { margin-bottom: 0; }
+/* All poets page (Navid 2026-11-19): centred; a grid of 3 poets a row (2 on narrow phones), portrait on top, name under it,
+   and under each poet with a portrait a small tick «نمایش در صفحه اصلی». Alphabet/century groups each get their own heading. */
+.pl-page .page-title, .pl-page .pl-hint { text-align: center; }
+.pl-page .pl-tools { flex-direction: column; justify-content: center; gap: 14px; padding: 10px 0 4px; }
+.pl-page .pl-sorts { justify-content: center; gap: 22px; }
+.pl-page .pl-allrow { justify-content: center; }
+.poet-groups { padding-bottom: 48px; }
+.pl-group + .pl-group { margin-top: 18px; }
+.pl-head { display: flex; align-items: center; gap: 16px; margin: 40px 0 16px; font-family: var(--poem); font-size: 1.5rem; font-weight: 670; color: var(--accent); }
+.pl-head::before, .pl-head::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.pl-head.pl-cent { font-size: 1.2rem; }
+.pl-head span { flex: none; padding: 0 4px; }
+.poet-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.pl-group:first-child .poet-grid { margin-top: 14px; }
+@media (max-width: 519px) { .poet-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; } }
+.pt { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 14px 8px 16px; border-radius: 20px;
+  border: 1px solid transparent; transition: background .2s, border-color .2s, transform .2s; }
+.pt a { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; color: inherit; }
+.pt-pic { display: grid; place-items: center; width: 78%; max-width: 168px; aspect-ratio: 1; }
+.pt .pl-face { width: 100%; height: 100%; margin: 0; transition: transform .35s cubic-bezier(.2,.7,.2,1); }
+.pt .mono { width: 62%; height: 62%; margin: 0; font-size: clamp(1.6rem, 6vw, 2.6rem); box-shadow: none; transition: transform .35s cubic-bezier(.2,.7,.2,1);
+  background: rgb(255 255 255 / .08); border-color: rgb(255 255 255 / .16); color: var(--ink); }
+.pt b { display: block; font-size: 1.02rem; line-height: 1.5; overflow-wrap: anywhere; }
+.pt-wall { display: inline-flex; align-items: center; gap: 7px; margin-top: 9px; padding: 3px 4px; cursor: pointer; color: var(--muted); font-size: .76rem; line-height: 1.4; white-space: nowrap; }
+.pt-wall .pl-tick { width: 16px; height: 16px; }
+.pt-wall .pl-tick i { border-radius: 4.5px; }
+.pt-wall .pl-tick input:checked + i::after { left: 4.6px; top: 1.6px; width: 4px; height: 8px; border-width: 0 1.7px 1.7px 0; }
+.pt-wall:has(input:checked) { color: var(--ink-soft); }
+.pt-wall:hover { color: var(--ink); }
+@media (hover: hover) {
+  .pt:hover { background: rgb(255 255 255 / .07); border-color: rgb(255 255 255 / .14); transform: translateY(-2px); }
+  .pt:hover .pl-face, .pt:hover .mono { transform: scale(1.06); }
+}
+.pt:has(a:active) { background: rgb(255 255 255 / .07); }
+.pt a:focus-visible { outline: none; }
+.pt:has(a:focus-visible) { border-color: var(--accent); }
+.poet-groups .empty-state { text-align: center; padding: 40px 0; }
+@media (max-width: 519px) { .pt { padding: 12px 4px 14px; } .pt b { font-size: .95rem; } .pt-wall { font-size: .72rem; gap: 6px; } }
