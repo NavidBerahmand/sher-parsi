@@ -287,18 +287,41 @@ export async function shelf(poetCat) {
 let bookSaved = () => false;
 export function setBookSaved(fn) { bookSaved = fn; }
 const RIBBON = '<svg viewBox="0 0 14 22" aria-hidden="true"><path d="M1 0v20.5l6-4.6 6 4.6V0"/></svg>';
+// Book covers (Navid, 2026-11-18): the top of each cover is a Persian motif drawn by js/covers/ (loaded only when a page has covers),
+// on one of these grounds; the bottom is a cream band with the title. Design and palette come from the title + poet, so a book keeps its cover;
+// on a shelf no two books share a design. A saved book stores its design, so «نشان‌ها» shows the same cover.
+export const PALETTES = [
+  { bg: '#3d4232', ink: '#e9e4d0', ac: '#c98a5e' }, { bg: '#a9ad91', ink: '#2b2e22', ac: '#8a4630' }, { bg: '#c29b57', ink: '#2b2e22', ac: '#f1e7d3' },
+  { bg: '#262b1f', ink: '#e9e4d0', ac: '#c4a05a' }, { bg: '#8a4b33', ink: '#f1e7d3', ac: '#e3b47e' }, { bg: '#34463f', ink: '#e7e1cf', ac: '#c9a24f' },
+];
+export const NDESIGNS = 60; // must match DESIGNS.length in js/covers/covergen.js
+const coverHash = (s) => { let h = 2166136261; for (const c of s) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+function coverPick(b, author) {
+  const s = coverHash(b.title + '|' + author);
+  return { s, d: b.d != null ? +b.d : s % NDESIGNS, p: b.p != null ? +b.p : (s >>> 8) % PALETTES.length };
+}
 export function coverHTML(b, author, i) {
-  const h = [...b.title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
   const e = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const on = bookSaved(b.href);
+  const { s, d, p } = coverPick(b, author), pal = PALETTES[p];
   // A bookmark ribbon at the top left: outline, red once the book is saved.
-  const mark = `<span class="bk-mark${on ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${on}" aria-label="نشان کردن کتاب" data-href="${e(b.href)}" data-title="${e(b.title)}" data-author="${e(author)}">${RIBBON}</span>`;
-  return `<a class="book" href="${e(b.href)}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover c${h % 4}">${mark}<span class="frame"><b>${e(b.title)}</b><small>${e(author)}</small></span></span></a>`;
+  const mark = `<span class="bk-mark${on ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${on}" aria-label="نشان کردن کتاب" data-href="${e(b.href)}" data-title="${e(b.title)}" data-author="${e(author)}" data-d="${d}" data-p="${p}">${RIBBON}</span>`;
+  return `<a class="book" href="${e(b.href)}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover" style="--cloth:${pal.bg};--ink-c:${pal.ink}">${mark}<span class="art" data-d="${d}" data-p="${p}" data-s="${s}"></span><span class="frame"><b>${e(b.title)}</b><small>${e(author)}</small></span></span></a>`;
 }
 export function shelfHTML(groups, author, extra = '') {
   let n = 0;
+  // No design twice on one poet's page, and no two neighbours in the same colour.
+  const used = new Set(); let prevP = -1;
+  const place = (b) => {
+    let { d, p } = coverPick(b, author);
+    for (let k = 0; used.has(d) && k < NDESIGNS; k++) d = (d + 7) % NDESIGNS;
+    used.add(d);
+    if (p === prevP) p = (p + 1) % PALETTES.length;
+    prevP = p;
+    return { ...b, d, p };
+  };
   // The non-divan works read «دیگر آثار» beside divans; a lone shelf needs no heading.
   const lone = groups.length === 1;
-  return groups.map((g) => `<section class="shelf">${lone ? '' : `<h3 class="shelf-h"><span>${coverEsc(g.title === 'آثار' ? 'دیگر آثار' : g.title)}</span></h3>`}<div class="books ${extra}">${g.books.map((b) => coverHTML(b, author, n++)).join('')}</div></section>`).join('');
+  return groups.map((g) => `<section class="shelf">${lone ? '' : `<h3 class="shelf-h"><span>${coverEsc(g.title === 'آثار' ? 'دیگر آثار' : g.title)}</span></h3>`}<div class="books ${extra}">${g.books.map((b) => coverHTML(place(b), author, n++)).join('')}</div></section>`).join('');
 }
 const coverEsc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
