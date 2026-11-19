@@ -1,4 +1,4 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, saveBook, isBookSaved, unsaveBook, unsavePoet, setBookSaved, coverHTML, CENTURIES } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, saveBook, isBookSaved, unsaveBook, unsavePoet, verifySaved, setBookSaved, coverHTML, CENTURIES } from './data.js';
 import { settings, apply, onDeviceTheme, saved, history, bayts, books, doneBooks, readPoems, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
@@ -369,13 +369,14 @@ function openAbout() {
 /* ───────── Helpers ───────── */
 // The one close button every page uses: a black disc, top left. Back to wherever the reader came from, else home.
 const pageClose = (id = 'pageX') => `<button class="icon-btn page-x tip-l" id="${id}" aria-label="بستن" data-tip="بستن">${ICON.x}</button>`;
-function wireClose(id, up = '#/') { $('#' + id)?.addEventListener('click', () => { if (navCount > 1) window.history.back(); else location.hash = up; }); }
+function wireClose(id, up = '#/') { $('#' + id)?.addEventListener('click', () => { if (curN > 0) window.history.back(); else location.hash = up; }); }
 function loading() {
   // The four verse strokes of the logo, twice, shimmering while the page loads.
   main.innerHTML = '<div class="wrap" aria-busy="true"><div class="skeleton sk-verses"></div></div>';
 }
 function failed(err, retry) {
   const offline = !navigator.onLine;
+  delete main.dataset.cat;
   main.innerHTML = `${pageClose('errX')}<div class="wrap"><div class="error-box fadein">
     <h2>${offline ? 'به اینترنت وصل نیستی' : 'این صفحه باز نشد'}</h2>
     <p>${offline ? 'این بخش هنوز روی دستگاه ذخیره نشده است. وقتی وصل شدی دوباره امتحان کن.' : 'شاید نشانی اشتباه است یا ارتباط قطع شد.'}</p>
@@ -592,7 +593,9 @@ async function randomPoem(go = (h) => { location.hash = h; }) {
 
 async function viewPoets() {
   loading(10);
+  const seq = routeSeq;
   const m = await getManifest();
+  if (seq !== routeSeq) return;
   const poets = m.Poets;
   document.body.classList.add('poet-bg');
   main.innerHTML = `${pageClose()}<div class="wrap fadein pl-page">
@@ -682,6 +685,7 @@ async function startPoetSave(slug) {
 
 async function viewCat(path) {
   loading(8);
+  const seq = routeSeq;
   const slug = path.split('/')[0];
   // "Other poems": a poet's loose poems, listed as their own book when the poet also has books.
   const other = path.endsWith('/~other');
@@ -720,6 +724,7 @@ async function viewCat(path) {
   const books = groups ? '' : (cat.ChildCats || []).map((c) => `<a class="part" href="${catHref(c.FullUrl)}"><b>${esc(c.Title)}</b>${ICON.chev}</a>`).join('');
   const poemItem = (p, i) => `<li><a href="${poemHref(p.FullUrl)}" data-u="${esc(clean(p.FullUrl))}"><span class="n">${fa(i + 1)}</span><span class="tt"><span class="fl"></span><small>${esc(p.Title)}</small></span><span class="marks">${marksHTML(clean(p.FullUrl), seen)}</span></a></li>`;
 
+  if (seq !== routeSeq) return;
   main.dataset.cat = path;
   document.body.classList.toggle('poet-bg', isPoet && !!poet);
   const dl = isPoet && poet ? dlButton(slug) : '';
@@ -740,7 +745,7 @@ async function viewCat(path) {
   observeFirstLines();
   // Close: back to wherever the reader came from in the app; otherwise up one level.
   $('#pageX').addEventListener('click', () => {
-    if (navCount > 1) window.history.back();
+    if (curN > 0) window.history.back();
     else location.hash = isPoet ? '#/' : catHref(parentOf(path));
   });
   $('#pageDl')?.addEventListener('click', () => startPoetSave(slug));
@@ -898,7 +903,8 @@ function openPoemOver(href, replace = false) {
   if (replace) window.history.replaceState(null, '', href); else window.history.pushState(null, '', href);
   sheetPushed = true;
   current.view = 'poem'; current.path = path;
-  viewPoem(path, { random: true }, true).catch(() => { toast('شعر باز نشد'); requestCloseSheet(); });
+  const seq = ++routeSeq;
+  viewPoem(path, { random: true }, true).catch(() => { if (seq !== routeSeq) return; toast('شعر باز نشد'); requestCloseSheet(); });
 }
 function closePoemSheet(instant) {
   if (!sheetEl) return;
@@ -976,9 +982,11 @@ async function viewPoem(path, opts = {}, fromList = false) {
   const slug = path.split('/')[0];
   const parent = parentOf(path);
   const listPath = parent || slug;
-  if (!fromList && main.dataset.cat !== listPath && main.dataset.cat !== `${listPath}/~other`) { await viewCat(listPath).catch(() => {}); current.view = 'poem'; current.path = path; }
+  const seq = routeSeq;
+  if (!fromList && main.dataset.cat !== listPath && main.dataset.cat !== `${listPath}/~other`) { await viewCat(listPath).catch(() => {}); if (seq !== routeSeq) return; current.view = 'poem'; current.path = path; }
   const [poem, poet, cat] = await Promise.all([getPoem(path), getPoet(slug).catch(() => null), getCat(parent).catch(() => null)]);
   if (cat && !cat._outer && parentOf(parent).includes('/')) cat._outer = await getCat(parentOf(parent)).then((c) => c.Title).catch(() => '');
+  if (seq !== routeSeq) return;
   const poetN = poet?.Nickname || '';
   const list = cat?.Poems || [];
   let idx = list.findIndex((p) => clean(p.FullUrl) === path);
@@ -1256,7 +1264,7 @@ let falNext = null;
 let savedTab = 'books', savedSort = 'time';
 function viewSaved() {
   const EMPTY = {
-    poems: [ICON.bookmark, 'هنوز شعری نشان نکرده‌ای', 'هر جا شعری به دلت نشست، نشانه‌ی بالای صفحه را بزن.'],
+    poems: [ICON.bookmark, 'هنوز شعری نشان نکرده‌ای', 'هر جا شعری به دلت نشست، نشانهٔ بالای صفحه را بزن.'],
     bayts: [ICON.bookmark, 'هنوز بیتی نشان نکرده‌ای', 'روی هر بیت بزن و «نشان کردن» را انتخاب کن.'],
     history: [ICON.clock, 'هنوز شعری نخوانده‌ای', 'شعرهایی که می‌خوانی اینجا می‌مانند.'],
     books: [ICON.bookmark, 'هنوز کتابی نشان نکرده‌ای', 'نوار نشانِ گوشهٔ جلد هر کتاب را بزن.'],
@@ -1264,12 +1272,12 @@ function viewSaved() {
   };
   const item = (x) => {
     if (savedTab === 'bayts') {
-      return `<li class="saved-item bayt-item"><a href="${poemHref(x.url)}" data-url="${esc(x.url)}" data-line="${esc(x.lines[0])}">
+      return `<li class="saved-item bayt-item"><a href="${esc(poemHref(x.url))}" data-url="${esc(x.url)}" data-line="${esc(x.lines[0])}">
         <span class="q">${x.lines.map((m) => `<span class="m">${txt(m)}</span>`).join('')}</span>
         <span class="s">${esc(x.title)}${savedSort === 'poet' ? '' : ` · ${esc(x.poet)}`}</span></a>
-        <button class="icon-btn on" data-rmb="${esc(x.url)}" data-i="${x.i}" aria-label="برداشتن">${ICON.bookmark}</button></li>`;
+        <button class="icon-btn on" data-rmb="${esc(x.url)}" data-i="${+x.i || 0}" aria-label="برداشتن">${ICON.bookmark}</button></li>`;
     }
-    return `<li class="saved-item"><a href="${poemHref(x.url)}">
+    return `<li class="saved-item"><a href="${esc(poemHref(x.url))}">
       ${x.line ? `<span class="q">${txt(x.line.split(' / ')[0])}</span>` : ''}
       <span class="s">${esc(x.title)}${savedSort === 'poet' ? '' : ` · ${esc(x.poet)}`}</span></a>
       ${savedTab === 'poems' ? `<button class="icon-btn on" data-rm="${esc(x.url)}" aria-label="برداشتن">${ICON.bookmark}</button>` : ''}</li>`;
@@ -1340,7 +1348,7 @@ function openBackup() {
   openSheet(`
     <h3>پشتیبان</h3>
     <div class="about">
-      <p>همهٔ نشان‌ها (${n(saved.all())} شعر، ${n(bayts.all())} بیت)، خوانده‌ها، سخنوران انتخابی و تنظیمات در یک فایل. این فایل را روی گوشی یا رایانهٔ دیگر بارگذاری کن تا همه‌چیز آنجا هم باشد.</p>
+      <p>همهٔ نشان‌ها (${n(books.all())} کتاب، ${n(saved.all())} شعر، ${n(bayts.all())} بیت)، خوانده‌ها، سخنوران انتخابی و تنظیمات در یک فایل. این فایل را روی گوشی یا رایانهٔ دیگر بارگذاری کن تا همه‌چیز آنجا هم باشد.</p>
     </div>
     <div class="actions two">
       <button id="bkOut">${ICON.download}گرفتن فایل</button>
@@ -1384,17 +1392,29 @@ try { window.history.scrollRestoration = 'manual'; } catch { /* old browser */ }
 const scrollMemo = new Map();
 let pageId = '', pageSeq = 0, restoreShown = 0;
 
+// A page that loads slowly must not land on top of the page the reader went to meanwhile: every navigation
+// takes a new number, and a view that finds the number changed after waiting gives up quietly.
+let routeSeq = 0;
+// How many pages deep in the app this history entry is (kept in history.state.n): above 0, the close button
+// can safely step back; at 0 (opened from a link, or a fresh visit) it goes up instead.
+let curN = 0, routedOnce = false;
 async function route(keepScroll = false) {
-  const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
+  const seq = ++routeSeq;
+  let h;
+  try { h = decodeURIComponent(location.hash.replace(/^#\/?/, '')); }
+  catch { location.hash = '#/'; return; } // a broken address (bad % code): home
   const [head, ...rest] = h.split('/');
   const path = clean(rest.join('/'));
   const view = head === 'p' ? 'poem' : head === 'c' ? 'cat' : head || 'home';
   const y = window.scrollY;
   if (!keepScroll && pageId) scrollMemo.set(pageId, { y, shown: document.querySelectorAll('#pm > li').length });
   let st = window.history.state;
-  if (!st || !st.pg) { st = { ...(st || {}), pg: `${Date.now()}-${++pageSeq}` }; window.history.replaceState(st, ''); }
+  if (!st || !st.pg) { st = { ...(st || {}), pg: `${Date.now()}-${++pageSeq}`, n: routedOnce ? curN + 1 : 0 }; window.history.replaceState(st, ''); }
+  curN = typeof st.n === 'number' ? st.n : 0; routedOnce = true;
   const memo = keepScroll ? null : scrollMemo.get(st.pg);
   pageId = st.pg; restoreShown = keepScroll ? document.querySelectorAll('#pm > li').length : memo?.shown || 0;
+  // Only a book's list (or a poem over it) owns this mark; any other page must not look like that list.
+  if (view !== 'cat' && view !== 'poem') delete main.dataset.cat;
   const listBefore = main.dataset.cat;
   current.view = view; current.path = path;
   document.title = 'شعر پارسی';
@@ -1413,7 +1433,8 @@ async function route(keepScroll = false) {
     else if (view === 'cat' && path) await viewCat(path);
     else if (view === 'poem' && path) await viewPoem(path, { fal: falNext === path });
     else location.hash = '#/';
-  } catch (e) { failed(e, () => route()); }
+  } catch (e) { if (seq === routeSeq) failed(e, () => route()); }
+  if (seq !== routeSeq) return;
   if (view === 'poem' && falNext !== path) falNext = null;
   // A poem opened over the very list that was on screen (e.g. from search): leave the list where it was.
   const sameList = view === 'poem' && listBefore && main.dataset.cat === listBefore;
@@ -1421,7 +1442,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.160';
+export const VERSION = '0.9.161';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -1429,9 +1450,9 @@ export const VERSION = '0.9.160';
   document.body.appendChild(v);
   $('#mxVer').textContent = 'شعر پارسی · ' + v.textContent + ' · برگرفته از گنجور';
 }
-let navCount = 0; // in-app navigations this visit, so "close" can step back safely
 window.addEventListener('hashchange', () => {
-  navCount++;
+  routeSeq++; // whatever was still loading for the page before is out of date now
+  if (typeof window.history.state?.n === 'number') curN = window.history.state.n;
   // Back from an open poem to its own list: just lower the sheet, keep the list where it was.
   // Back from a poem opened on the search page: lower the sheet, keep the results.
   if (sheetEl && location.hash === '#/search' && $('#sRes')) {
@@ -1474,7 +1495,8 @@ main.addEventListener('click', (e) => {
   window.history.pushState(null, '', href);
   sheetPushed = true;
   current.view = 'poem'; current.path = path;
-  viewPoem(path, {}, true).catch(() => { toast('شعر باز نشد'); requestCloseSheet(); });
+  const seq = ++routeSeq;
+  viewPoem(path, {}, true).catch(() => { if (seq !== routeSeq) return; toast('شعر باز نشد'); requestCloseSheet(); });
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheetEl && !sheet.classList.contains('show')) requestCloseSheet(); }, true);
 
@@ -1483,6 +1505,7 @@ document.fonts?.addEventListener?.('loadingdone', restretchSoon);
 /* ───────── Boot ───────── */
 apply();
 route();
+verifySaved().then((changed) => { if (changed) refreshClouds(); }).catch(() => {});
 if ('serviceWorker' in navigator && location.protocol !== 'file:' && !document.querySelector('meta[name="sp-no-sw"]')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }

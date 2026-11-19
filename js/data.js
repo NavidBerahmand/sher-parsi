@@ -220,6 +220,7 @@ export async function savePoet(slug, onProgress = () => {}) {
   if (fails) return false;
   const s = savedSet(); s.add(slug);
   try { localStorage.setItem(SAVED_KEY, JSON.stringify([...s])); } catch { /* ignore */ }
+  keepStorage();
   return true;
 }
 
@@ -259,7 +260,26 @@ export async function saveBook(cat, other = false, onProgress = () => {}) {
   if (fails) return false;
   const s = booksSet(); s.add(cat);
   try { localStorage.setItem(BOOKS_KEY, JSON.stringify([...s])); } catch { /* ignore */ }
+  keepStorage();
   return true;
+}
+
+// Ask the browser not to clear this site's storage when the device runs low, once something is downloaded.
+function keepStorage() { try { navigator.storage?.persist?.().catch(() => {}); } catch { /* not supported */ } }
+// On opening the app: a download whose files the browser has cleared meanwhile loses its filled cloud,
+// so the cloud never promises a poet or book that would not open offline. Resolves true when something changed.
+export async function verifySaved() {
+  if (!BUNDLED || !('caches' in self)) return false;
+  const poets = savedSet(), books = booksSet();
+  if (!poets.size && !books.size) return false;
+  let changed = false;
+  try {
+    const cache = await caches.open(DATA_CACHE);
+    for (const slug of [...poets]) if (!(await cache.match(`${await rootOf(slug)}p/${slug}.json`))) { poets.delete(slug); changed = true; }
+    for (const k of [...books]) if (!(await cache.match(`${await bundleName(k)}.json`))) { books.delete(k); changed = true; }
+  } catch { return false; }
+  if (changed) { writeSet(SAVED_KEY, poets); writeSet(BOOKS_KEY, books); }
+  return changed;
 }
 
 // «حذف دانلود» (Navid 2026-11-19): takes a book or a whole poet off the device and empties its cloud.

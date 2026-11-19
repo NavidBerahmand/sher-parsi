@@ -1206,10 +1206,8 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .pt-mark:not(.on) svg { fill: none; stroke: var(--line); opacity: 1; }
 .pt-mark:not(.on):hover svg { stroke: var(--muted); }
 /* Offline cloud (Navid 2026-11-19): empty outline = not downloaded, filled with a tick = downloaded. Poet page button and «کتابخانهٔ من». */
-svg.cl path { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
-svg.cl.ok path:first-child { fill: currentColor; }
-svg.cl.ok path.ck { fill: none; stroke: var(--ck, var(--bg)); stroke-width: 1.9; }
-.page-dl { --ck: #000; }
+/* Both clouds are solid Material shapes: filled, never stroked (the old stroke rule left the empty cloud invisible). */
+svg.cl path { fill: currentColor; stroke: none; }
 .page-dl svg.cl { width: 20px; height: 20px; }
 .page-dl .dl-ico { width: 20px; height: 20px; }
 /* «کتابخانهٔ من»: reading percent and the cloud under each book and poet. */
@@ -1237,8 +1235,6 @@ svg.cl.ok path.ck { fill: none; stroke: var(--ck, var(--bg)); stroke-width: 1.9;
 .lib-menu button:active { transform: scale(.98); }
 .lib-menu button:disabled { opacity: .55; cursor: default; }
 .lib-menu button svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.lib-menu button svg.cl.ok path:first-child { fill: currentColor; }
-.lib-menu button svg.cl.ok path.ck { stroke: var(--surface-2); }
 #lmDel, #lmUndl { color: var(--saved); }
 /* Cloud sits in the exact centre of the round poet-page button (Navid 2026-11-19, 0.9.152); the cloud path itself is centred by its viewBox. */
 .page-dl:not(.busy) { justify-content: center; padding: 0; gap: 0; }
@@ -1250,3 +1246,11 @@ svg.ms { fill: currentColor !important; stroke: none !important; }
 svg.ms .f { display: none; }
 .icon-btn.on svg.ms .o, .psheet-tools .pt-save.on svg.ms .o, .poems .mk-save svg.ms .o, #bSave[aria-pressed="true"] svg.ms .o { display: none; }
 .icon-btn.on svg.ms .f, .psheet-tools .pt-save.on svg.ms .f, .poems .mk-save svg.ms .f, #bSave[aria-pressed="true"] svg.ms .f { display: inline; }
+
+/* Small controls keep their look but take a finger-sized touch area (at least ~40px) through an invisible halo. */
+.lib-dots, .pl-sort, .sort-row button, .bio-toggle { position: relative; }
+.lib-dots::after, .pl-sort::after, .sort-row button::after, .bio-toggle::after { content: ''; position: absolute; }
+.lib-dots::after { inset: -8px -6px; }
+.pl-sort::after { inset: -10px -6px; }
+.sort-row button::after { inset: -6px -2px; }
+.bio-toggle::after { inset: -8px -6px; }
