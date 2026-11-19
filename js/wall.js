@@ -58,6 +58,8 @@ const ALL = TOP.map((slug) => ({ slug, ...INFO.find((q) => q.slug === slug), ful
 // Any other poet can be ticked too (Navid 2026-11-19): it shows the faceless bust, with Ganjoor's name once the manifest is in.
 const entry = (slug) => ALL.find((p) => p.slug === slug) || { slug, get full() { return NICK.get(slug) || ''; } };
 const WALL_KEY = 'sp.wall';
+// A first visit (nothing chosen yet) shows only these seven on the wall.
+const FIRST = ['moulavi', 'saadi', 'hafez', 'khayyam', 'ferdousi', 'attar', 'saeb'];
 // «ادامه خواندن»: back to the poem (and couplet) the reader was last on. Hidden until something has been read.
 function resumeLink() {
   let r = null;
@@ -71,7 +73,7 @@ const chosen = () => {
   try { v = JSON.parse(localStorage.getItem(WALL_KEY)); } catch { /* storage blocked */ }
   // Named poets keep readership order; the others follow in the order they were ticked.
   const list = Array.isArray(v) ? [...ALL.filter((p) => v.includes(p.slug)), ...v.filter((s) => typeof s === 'string' && s && !TOP.includes(s)).map(entry)] : [];
-  return list.length ? list : ALL.slice(0, 15); // first visit: the 15 most-read poets
+  return list.length ? list : ALL.filter((p) => FIRST.includes(p.slug)); // first visit: Navid's seven (2026-11-19)
 };
 let POETS = chosen();
 // The poets page (#/poets) holds the ticks that choose the wall; these let it read and change the choice.
