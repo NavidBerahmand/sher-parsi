@@ -20,7 +20,7 @@ body { margin: 0; background: #2e3326; font-family: Kahroba; padding: 36px; }
 <div class="grid" id="g"></div>
 <script type="module">
 import { DESIGNS, designSVG, PALETTES, hash } from './covergen.js';
-const q = new URLSearchParams(location.search), from = +(q.get('from') || 0), to = +(q.get('to') || 100);
+const q = new URLSearchParams(location.search), from = +(q.get('from') || 0), to = Math.min(+(q.get('to') || 100), DESIGNS.length);
 const T = ['غزلیات', 'رباعیات', 'قصاید', 'مثنوی', 'دیوان اشعار', 'قطعات', 'ترجیعات', 'مقطعات', 'ساقی‌نامه', 'مسمطات'];
 const P = ['حافظ', 'سعدی', 'مولانا', 'عطار', 'نظامی', 'جامی', 'سنایی', 'خاقانی', 'انوری', 'عراقی', 'وحشی بافقی', 'هاتف اصفهانی', 'فروغی بسطامی'];
 const fa = (n) => String(n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);

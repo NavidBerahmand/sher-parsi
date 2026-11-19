@@ -165,6 +165,10 @@ export const DESIGNS = Object.keys(MOTIFS).map((m) => ({ motif: m }));
     DESIGNS.push({ e, lay, bg });
   }
 }
+// Designs Navid turned down (2026-11-18): never used.
+const REMOVED = new Set(['anar', 'anar/halfdrop', 'bird/grid', 'fish/scatter', 'cup/ring', 'dome/center', 'cloud/scatter', 'flame/halfdrop', 'knot/crop',
+  'anar/center', 'bird/ring', 'fish/band', 'cloud/band', 'qalam/crop', 'toranj/ring', 'anar/grid', 'bird/halfdrop', 'qalam/scatter']);
+for (let i = DESIGNS.length - 1; i >= 0; i--) { const d = DESIGNS[i]; if (REMOVED.has(d.motif || d.e + '/' + d.lay)) DESIGNS.splice(i, 1); }
 export function designSVG(d, seed, p) {
   const r = rng(seed);
   const body = d.motif ? MOTIFS[d.motif](r, p) : BGS[d.bg](p, r) + LAYOUTS[d.lay](d.e, p, r);
