@@ -1107,3 +1107,14 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
   .topbar { left: auto; right: calc(var(--gutter) - 11px); translate: none; }
   .w-header { width: 100%; justify-content: flex-start; padding-inline: calc(var(--gutter) - 11px); -webkit-mask-image: none; mask-image: none; }
 }
+
+/* Popup sheets (0.9.129, Navid): one inner padding on every side for everything inside.
+   The close disc sits that far from the top and left edges, the content that far from the sides,
+   and the bottom row of buttons that far from the bottom edge. The grab handle floats and takes no room. */
+.sheet { --pad: 22px; padding: var(--pad) var(--pad) calc(var(--pad) + var(--safe-b)); }
+.sheet-handle { position: absolute; top: 8px; left: 50%; translate: -50% 0; margin: 0; }
+.sheet-body { padding-top: calc(36px + 16px); }
+.sheet-x { top: 0; left: 0; }
+.sheet h3 { margin-top: 0; }
+.sheet .about { margin-top: 0; padding: 0; }
+.sheet-body > :last-child, .sheet .about > :last-child { margin-bottom: 0; }
