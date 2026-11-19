@@ -211,7 +211,8 @@ document.addEventListener('keydown', (e) => {
   }
 }, true);
 $('#mxX').addEventListener('click', () => setMenu(false));
-$('#mxRandom').addEventListener('click', () => { setMenu(false, true); randomPoem((h) => overlayNavigate(menuBack, h)); });
+// «شعر تصادفی»: the poem opens as a sheet over whatever page is on screen; closing it leaves you exactly there (Navid 2026-11-19).
+$('#mxRandom').addEventListener('click', () => { setMenu(false, true); randomPoem((h) => { overlayForget(menuBack); openPoemOver(h, true); }); });
 $('#mxAbout').addEventListener('click', () => { setMenu(false, true); overlaySwap(menuBack, sheetBack); openAbout(); });
 $('#mxBackup').addEventListener('click', () => { setMenu(false, true); overlaySwap(menuBack, sheetBack); openBackup(); });
 $('#mxSz').addEventListener('input', (e) => { settings.set({ size: +e.target.value }); restretchSoon(); });
@@ -411,7 +412,7 @@ async function viewHome() {
     <div class="section"><div class="section-head"><h2>شاعران</h2><a class="link" href="#/poets">همه</a></div>
       <div class="poet-strip">${FEATURED.map(([s, n]) => `<a class="poet-chip" href="#/c/${s}">${mono(n)}<span>${n}</span></a>`).join('')}</div></div>
   </div>`;
-  $('#rnd').addEventListener('click', randomPoem);
+  $('#rnd').addEventListener('click', () => randomPoem((h) => openPoemOver(h)));
 }
 
 async function randomPoem(go = (h) => { location.hash = h; }) {
@@ -739,6 +740,17 @@ function placeCard(card) {
 
 /* The poem sheet rises from the bottom over the book's list; pull it down to close. */
 let sheetEl = null, sheetPushed = false, sheetCat = '';
+// A poem opened on top of any page (random poem): the address of that page and what it showed.
+let sheetOver = null;
+function openPoemOver(href, replace = false) {
+  const path = clean(decodeURIComponent(href.replace(/^#\/p\//, '')));
+  sheetOver = { hash: location.hash, view: current.view, path: current.path };
+  // From the menu the poem takes the menu's history entry, so back lands on the page itself.
+  if (replace) window.history.replaceState(null, '', href); else window.history.pushState(null, '', href);
+  sheetPushed = true;
+  current.view = 'poem'; current.path = path;
+  viewPoem(path, {}, true).catch(() => { toast('شعر باز نشد'); requestCloseSheet(); });
+}
 function closePoemSheet(instant) {
   if (!sheetEl) return;
   if (sheet.classList.contains('show')) { overlayForget(sheetBack); closeSheet(true); }
@@ -1246,7 +1258,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.124';
+export const VERSION = '0.9.125';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -1265,6 +1277,13 @@ window.addEventListener('hashchange', () => {
     closePoemSheet();
     return;
   }
+  if (sheetEl && sheetOver && location.hash === sheetOver.hash) {
+    sheetPushed = false; current.view = sheetOver.view; current.path = sheetOver.path; sheetOver = null;
+    if (window.history.state?.pg) pageId = window.history.state.pg;
+    closePoemSheet();
+    return;
+  }
+  sheetOver = null;
   if (sheetEl && location.hash === catHref(sheetCat)) {
     sheetPushed = false; current.view = 'cat'; current.path = sheetCat;
     if (window.history.state?.pg) pageId = window.history.state.pg;
