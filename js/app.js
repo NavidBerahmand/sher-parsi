@@ -20,11 +20,19 @@ const initial = (name) => (String(name).replace(/^(شیخ|خواجه|ملک‌ا
 // Book bookmarks: the ribbon on every cover toggles it; saved books show under «نشان‌ها» › «کتاب‌ها».
 setBookSaved((href) => books.has(href));
 function toggleBook(el) {
-  const on = books.toggle({ href: el.dataset.href, title: el.dataset.title, author: el.dataset.author });
+  const on = books.toggle({ href: el.dataset.href, title: el.dataset.title, author: el.dataset.author, d: +el.dataset.d, p: +el.dataset.p });
   document.querySelectorAll('.bk-mark').forEach((m) => { if (m.dataset.href === el.dataset.href) { m.classList.toggle('on', on); m.setAttribute('aria-pressed', on); } });
   toast(on ? 'کتاب نشان شد' : 'نشان کتاب برداشته شد');
   if (!on && current.view === 'saved' && savedTab === 'books') viewSaved();
 }
+// Cover art is drawn by js/covers/, loaded the first time a page shows a cover.
+let coverJob = 0;
+function paintCovers() {
+  coverJob = 0;
+  const els = document.querySelectorAll('.cover .art:empty');
+  if (els.length) import('./covers/covergen.js').then((m) => els.forEach((el) => { if (!el.firstChild) m.paint(el); }));
+}
+new MutationObserver(() => { if (!coverJob) coverJob = requestAnimationFrame(paintCovers); }).observe(document.body, { childList: true, subtree: true });
 document.addEventListener('click', (e) => {
   const m = e.target.closest('.bk-mark');
   if (!m) return;
@@ -540,12 +548,7 @@ async function viewCat(path) {
       + `<h1 class="cat-title">${esc(cat.Title)}</h1>`;
   }
 
-  // Works as a shelf of book covers: cloth colour picked from the title, so each book keeps its own.
   const author = poet?.Nickname || '';
-  const cover = (href, title, i) => {
-    const h = [...title].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
-    return `<a class="book" href="${href}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover c${h % 4}"><span class="frame"><b>${esc(title)}</b><small>${esc(author)}</small></span></span></a>`;
-  };
   // On a poet's page the works are grouped (a divan's forms get their own shelf); deeper pages show one shelf.
   const groups = isPoet && !other ? await shelf(cat) : null;
   // Inside a book its parts are a plain list, not more covers.
@@ -1225,7 +1228,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.117';
+export const VERSION = '0.9.118';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

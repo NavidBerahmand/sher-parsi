@@ -1,15 +1,8 @@
-// Generative book covers: every motif is drawn from a seed made of the book title + poet, so a book keeps its picture.
+// Generative book covers (Navid, 2026-11-18): every motif is drawn from a seed made of the book title + poet, so a book keeps its picture.
 import { EMBLEM_NAMES } from './emblems.js';
+import { PALETTES, NDESIGNS } from '../data.js';
 import { LAYOUTS, BGS } from './layouts.js';
 const W = 300, H = 420, ART = 250; // art box height (top), text below
-export const PALETTES = [
-  { bg: '#3d4232', ink: '#e9e4d0', ac: '#c98a5e' }, // olive + clay
-  { bg: '#a9ad91', ink: '#2b2e22', ac: '#8a4630' }, // sage + rust
-  { bg: '#c29b57', ink: '#2b2e22', ac: '#f1e7d3' }, // ochre + cream (cream is the text band now)
-  { bg: '#262b1f', ink: '#e9e4d0', ac: '#c4a05a' }, // near black + ochre
-  { bg: '#8a4b33', ink: '#f1e7d3', ac: '#e3b47e' }, // rust + sand
-  { bg: '#34463f', ink: '#e7e1cf', ac: '#c9a24f' }, // deep green-teal + ochre
-];
 function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 function rng(seed) { let a = seed; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const f = (n) => +n.toFixed(2);
@@ -142,12 +135,6 @@ function anar(r, p) {
 export const MOTIFS = { girih, eslimi, boteh, cypress, moon, toranj, shamseh, arches, tiles, waves, anar };
 
 
-export function coverSVG({ title, author, motif, palette }) {
-  const seed = hash(title + '|' + author), r = rng(seed);
-  const p = palette ?? PALETTES[seed % PALETTES.length];
-  const m = MOTIFS[motif] ?? Object.values(MOTIFS)[seed % Object.keys(MOTIFS).length];
-  return { p, svg: `<svg viewBox="0 0 ${W} ${ART}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="${W}" height="${ART}" fill="${p.bg}"/>${m(r, p)}</svg>` };
-}
 
 // 100 designs: the 11 hand-made patterns above, then emblem x layout x background combinations.
 const UPRIGHT = new Set(['cypress', 'tree', 'candle', 'dome', 'arch', 'tulip', 'lamp', 'cup', 'flame', 'bird', 'anar', 'grapes']);
@@ -175,4 +162,9 @@ export function designSVG(d, seed, p) {
   const body = d.motif ? MOTIFS[d.motif](r, p) : BGS[d.bg](p, r) + LAYOUTS[d.lay](d.e, p, r);
   return `<svg viewBox="0 0 ${W} ${ART}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="${W}" height="${ART}" fill="${p.bg}"/>${body}</svg>`;
 }
-export { hash };
+if (DESIGNS.length !== NDESIGNS) console.warn('covers: NDESIGNS in data.js is', NDESIGNS, 'but there are', DESIGNS.length);
+// Fills one empty .art box of a cover: data-d = design, data-p = palette, data-s = seed (from title + poet).
+export function paint(el) {
+  const d = DESIGNS[(+el.dataset.d || 0) % DESIGNS.length], p = PALETTES[(+el.dataset.p || 0) % PALETTES.length];
+  el.innerHTML = designSVG(d, +el.dataset.s || 1, p);
+}
