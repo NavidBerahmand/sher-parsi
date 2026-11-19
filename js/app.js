@@ -354,6 +354,7 @@ function openAbout() {
       <p>قلم این سایت «کهربا» از <a href="https://fontiran.com/license/YVO2HC8R" target="_blank" rel="noopener">فونت ایران</a> است و به صورت قانونی و با مجوز استفاده می‌شود.</p>
       <a class="font-badge" href="https://fontiran.com/license/YVO2HC8R" target="_blank" rel="noopener"><img src="https://fontiran.com/storage/uploads/images/2025/11/badge2-minjcHOH8rKPv7J.png" width="100" height="100" alt="فونت کهربا" loading="lazy"></a>
       <p class="muted">نسخهٔ ${fa(VERSION)}</p>
+      <p class="about-credit">ساختهٔ نوید برهمند · <a href="https://berahmand.com" target="_blank" rel="noopener" dir="ltr">Berahmand.com</a></p>
     </div>`);
 }
 
@@ -1249,7 +1250,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.139';
+export const VERSION = '0.9.140';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
