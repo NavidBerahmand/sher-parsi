@@ -41,9 +41,19 @@ const rootOf = async (slug) => {
 };
 const bundleName = async (url) => `${await rootOf(clean(url).split('/')[0])}b/${clean(url).replace(/\//g, '~')}`;
 const POS = { R: 'Right', L: 'Left', C1: 'CenteredVerse1', C2: 'CenteredVerse2', S: 'Single', P: 'Paragraph', N: 'Comment' };
+// Ganjoor's text sometimes puts a half-space (or a space) before a vowel mark: «دل‌ِ», «درباره‌ٔ».
+// The mark then has no letter to sit on, and iPhone draws it on a dotted circle. Put the mark first (Navid 2026-11-19).
+export const fixMarks = (s) => (typeof s === 'string' ? s.replace(/([\u200c ]+)([\u064b-\u065f\u0670]+)/g, '$2$1') : s);
+function fixPoem(p) {
+  if (!p) return p;
+  p.Title = fixMarks(p.Title);
+  (p.Verses || []).forEach((v) => { v.Text = fixMarks(v.Text); });
+  return p;
+}
 function expand(p) {
   if (!p || p.Verses) return p;
-  p.Verses = p.V.map(([pos, Text, CoupletIndex, SectionIndex1, CoupletSummary]) => ({ Position: POS[pos], Text, CoupletIndex, SectionIndex1, CoupletSummary }));
+  p.Verses = p.V.map(([pos, Text, CoupletIndex, SectionIndex1, CoupletSummary]) => ({ Position: POS[pos], Text: fixMarks(Text), CoupletIndex, SectionIndex1, CoupletSummary }));
+  p.Title = fixMarks(p.Title);
   delete p.V;
   return p;
 }
@@ -130,7 +140,7 @@ export async function getCat(url) {
   return (await getLocal(`${await bundleName(url)}.json`)).cat;
 }
 export async function getPoem(url) {
-  if (!BUNDLED) return getJSON(`poets/${clean(url)}.json`);
+  if (!BUNDLED) return getJSON(`poets/${clean(url)}.json`).then(fixPoem);
   const parent = parentOf(url), key = clean(url).split('/').pop();
   const cat = await getCat(parent);
   const i = cat.Poems.findIndex((p) => clean(p.FullUrl) === clean(url));
