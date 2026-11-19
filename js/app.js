@@ -965,7 +965,9 @@ function stretchCard(card) {
   card.style.setProperty('--vw', (twoCol ? W * 2 + pairGap : W) + 'px');
   if (numbered) {
     const gap = pad + (verses.clientWidth - (twoCol ? W * 2 + pairGap : W)) / 2; // card edge to where the verses start
-    card.style.setProperty('--nr', (gap / 2 - pad - NUM_W / 2).toFixed(1) + 'px');
+    // Phones: centred in that space. Desktop: split 8 to 2, nearer the poem (Navid, 0.9.130).
+    const fromEdge = innerWidth >= 860 ? (gap - NUM_W) * 0.8 : gap / 2 - NUM_W / 2;
+    card.style.setProperty('--nr', (fromEdge - pad).toFixed(1) + 'px');
   }
   // In em, so the line width follows the text if its size changes before the next pass.
   verses.style.setProperty('--mw', (W / parseFloat(getComputedStyle(verses).fontSize)).toFixed(4) + 'em');
@@ -1260,7 +1262,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.129';
+export const VERSION = '0.9.130';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
