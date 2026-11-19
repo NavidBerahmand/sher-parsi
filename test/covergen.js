@@ -78,11 +78,71 @@ function toranj(r, p) {
   for (const [x, y] of [[18, 18], [W - 18, 18], [18, ART - 14], [W - 18, ART - 14]]) o += `<circle cx="${x}" cy="${y}" r="5" fill="none" stroke="${p.ink}" stroke-width="1.2"/>`;
   return o;
 }
-export const MOTIFS = { girih, eslimi, boteh, cypress, moon, toranj };
+
+// 7) Shamseh: a sun of petals and rays.
+function shamseh(r, p) {
+  const cx = W / 2, cy = ART / 2 + 6, n = 12 + 4 * Math.floor(r() * 3); let o = '';
+  for (let i = 0; i < n * 2; i++) { const a = i * Math.PI / n, R2 = 150; o += `<line x1="${f(cx + 62 * Math.cos(a))}" y1="${f(cy + 62 * Math.sin(a))}" x2="${f(cx + R2 * Math.cos(a))}" y2="${f(cy + R2 * Math.sin(a))}" stroke="${p.ink}" stroke-width="${i % 2 ? .8 : 1.6}" opacity="${i % 2 ? .45 : .8}"/>`; }
+  for (let i = 0; i < n; i++) { const a = i * 2 * Math.PI / n, deg = f(a * 180 / Math.PI); o += `<path d="M0,0 C10,-9 30,-9 46,0 C30,9 10,9 0,0Z" transform="translate(${f(cx)} ${f(cy)}) rotate(${deg})" fill="${p.ac}"/>`; }
+  o += `<circle cx="${f(cx)}" cy="${f(cy)}" r="20" fill="${p.ink}"/><circle cx="${f(cx)}" cy="${f(cy)}" r="9" fill="${p.ac}"/>`;
+  return o;
+}
+// 8) Arches: a row of pointed arches like a courtyard, with a lamp in one.
+function arches(r, p) {
+  const n = 3 + Math.floor(r() * 2), w = W / n, base = ART + 2, lamp = Math.floor(r() * n); let o = '';
+  for (let i = 0; i < n; i++) {
+    const x0 = i * w + w * .14, x1 = (i + 1) * w - w * .14, xm = (x0 + x1) / 2, top = 70 + r() * 30, sh = top + (x1 - x0) * .55;
+    const d = `M${f(x0)},${base} L${f(x0)},${f(sh)} Q${f(x0)},${f(top + 10)} ${f(xm)},${f(top)} Q${f(x1)},${f(top + 10)} ${f(x1)},${f(sh)} L${f(x1)},${base}Z`;
+    o += `<path d="${d}" fill="${i === lamp ? p.ac : 'none'}" stroke="${p.ink}" stroke-width="1.8"/>`;
+    o += `<path d="M${f(x0 + 8)},${base} L${f(x0 + 8)},${f(sh + 6)} Q${f(x0 + 8)},${f(top + 20)} ${f(xm)},${f(top + 12)} Q${f(x1 - 8)},${f(top + 20)} ${f(x1 - 8)},${f(sh + 6)} L${f(x1 - 8)},${base}" fill="none" stroke="${p.ink}" stroke-width=".9" opacity=".5"/>`;
+    if (i === lamp) o += `<line x1="${f(xm)}" y1="${f(top + 12)}" x2="${f(xm)}" y2="${f(sh + 30)}" stroke="${p.ink}" stroke-width="1"/><path d="M${f(xm - 9)},${f(sh + 30)} L${f(xm + 9)},${f(sh + 30)} L${f(xm + 5)},${f(sh + 46)} L${f(xm - 5)},${f(sh + 46)}Z" fill="${p.ink}"/>`;
+  }
+  o += `<line x1="0" y1="40" x2="${W}" y2="40" stroke="${p.ink}" stroke-width="1" opacity=".5"/>`;
+  for (let x = 6; x < W; x += 14) o += `<circle cx="${x}" cy="28" r="2" fill="${p.ink}" opacity=".6"/>`;
+  return o;
+}
+// 9) Tiles: four-petal tiles in a grid, a few in the accent colour.
+function tiles(r, p) {
+  const n = 4 + Math.floor(r() * 2), s = W / n; let o = '';
+  for (let y = 0; y * s < ART + s; y++) for (let x = 0; x < n; x++) {
+    const cx = x * s + s / 2, cy = y * s + s / 2, k = s * .5, acc = r() < .25;
+    const d = `M${f(cx)},${f(cy - k)} Q${f(cx + k * .2)},${f(cy - k * .2)} ${f(cx + k)},${f(cy)} Q${f(cx + k * .2)},${f(cy + k * .2)} ${f(cx)},${f(cy + k)} Q${f(cx - k * .2)},${f(cy + k * .2)} ${f(cx - k)},${f(cy)} Q${f(cx - k * .2)},${f(cy - k * .2)} ${f(cx)},${f(cy - k)}Z`;
+    o += `<path d="${d}" fill="${acc ? p.ac : 'none'}" stroke="${p.ink}" stroke-width="1.4"/><circle cx="${f(cx)}" cy="${f(cy)}" r="${f(s * .07)}" fill="${p.ink}"/>`;
+    o += `<circle cx="${f(x * s)}" cy="${f(y * s)}" r="${f(s * .1)}" fill="none" stroke="${p.ink}" stroke-width="1" opacity=".6"/>`;
+  }
+  return o;
+}
+// 10) Waves: layered water lines, a boat or a fish on one of them.
+function waves(r, p) {
+  let o = ''; const rows = 9, amp = 6 + r() * 6, len = 40 + r() * 30, ph = r() * 6.28, hi = 3 + Math.floor(r() * 4);
+  for (let j = 0; j < rows; j++) {
+    const y0 = 60 + j * 21; let d = `M0,${f(y0)}`;
+    for (let x = 0; x <= W; x += 6) d += ` L${x},${f(y0 + amp * Math.sin(x / len * 6.28 + ph + j * .7))}`;
+    o += `<path d="${d}" fill="none" stroke="${j === hi ? p.ac : p.ink}" stroke-width="${j === hi ? 4 : 1.3}" stroke-linecap="round" opacity="${j === hi ? 1 : .75}"/>`;
+  }
+  const mx = 60 + r() * 180; o += `<circle cx="${f(mx)}" cy="30" r="13" fill="${p.ac}"/>`;
+  return o;
+}
+// 11) Pomegranates: a branch of fruit with crowns.
+function anar(r, p) {
+  let o = ''; const n = 3 + Math.floor(r() * 3);
+  o += `<path d="M-10,${f(ART * .3)} C80,${f(ART * .1)} 200,${f(ART * .55)} ${W + 10},${f(ART * .35)}" fill="none" stroke="${p.ink}" stroke-width="2.2"/>`;
+  for (let i = 0; i < n; i++) {
+    const t = (i + .5) / n, x = t * W, y = ART * .3 + Math.sin(t * Math.PI) * ART * .12 + 40 + r() * 70, R = 22 + r() * 12, acc = r() < .6;
+    o += `<line x1="${f(x)}" y1="${f(y - R - 4)}" x2="${f(x + (r() - .5) * 20)}" y2="${f(ART * .3 + Math.sin(t * Math.PI) * ART * .1)}" stroke="${p.ink}" stroke-width="1.4"/>`;
+    o += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(R)}" fill="${acc ? p.ac : 'none'}" stroke="${p.ink}" stroke-width="1.6"/>`;
+    o += `<path d="M${f(x - 7)},${f(y - R + 2)} L${f(x - 5)},${f(y - R - 8)} L${f(x)},${f(y - R - 2)} L${f(x + 5)},${f(y - R - 8)} L${f(x + 7)},${f(y - R + 2)}Z" fill="${p.ink}"/>`;
+    for (let k = 0; k < 5; k++) o += `<circle cx="${f(x + (r() - .5) * R)}" cy="${f(y + (r() - .3) * R * .8)}" r="2" fill="${acc ? p.bg : p.ink}"/>`;
+    o += `<path d="M0,0 C8,-8 22,-8 30,0 C22,8 8,8 0,0Z" transform="translate(${f(x + 10)} ${f(ART * .3 + Math.sin(t * Math.PI) * ART * .1)}) rotate(${f(-40 + r() * 80)})" fill="${p.ink}"/>`;
+  }
+  return o;
+}
+export const MOTIFS = { girih, eslimi, boteh, cypress, moon, toranj, shamseh, arches, tiles, waves, anar };
+
 
 export function coverSVG({ title, author, motif, palette }) {
   const seed = hash(title + '|' + author), r = rng(seed);
   const p = palette ?? PALETTES[seed % PALETTES.length];
-  const m = MOTIFS[motif] ?? Object.values(MOTIFS)[seed % 6];
+  const m = MOTIFS[motif] ?? Object.values(MOTIFS)[seed % Object.keys(MOTIFS).length];
   return { p, svg: `<svg viewBox="0 0 ${W} ${ART}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="${W}" height="${ART}" fill="${p.bg}"/>${m(r, p)}</svg>` };
 }

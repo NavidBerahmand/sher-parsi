@@ -2,7 +2,7 @@
 <style>
 @font-face { font-family: Kahroba; src: url(../fonts/kahroba-vf.woff2) format("woff2"); font-weight: 100 900; }
 body { margin: 0; background: #2e3326; font-family: Kahroba; padding: 40px; }
-.grid { display: grid; grid-template-columns: repeat(3, 230px); gap: 40px 34px; justify-content: center; }
+.grid { display: grid; grid-template-columns: repeat(4, 230px); gap: 40px 34px; justify-content: center; }
 .cover { position: relative; aspect-ratio: 5/7; border-radius: 3px 7px 7px 3px; overflow: hidden; background: var(--bg); color: var(--ink);
   box-shadow: 0 1px 1px rgb(0 0 0/.18), 0 10px 22px -8px rgb(0 0 0/.45); }
 .cover::after { content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 9%;
@@ -20,8 +20,11 @@ body { margin: 0; background: #2e3326; font-family: Kahroba; padding: 40px; }
 <script type="module">
 import { coverSVG, PALETTES } from './covergen.js';
 const books = [
-  ['غزلیات', 'حافظ شیرازی', 'eslimi', 2], ['رباعیات', 'خیام نیشابوری', 'moon', 3], ['شاهنامه', 'فردوسی', 'girih', 4],
-  ['مثنوی معنوی', 'مولانا', 'toranj', 0], ['گلستان', 'سعدی شیرازی', 'cypress', 5], ['بوستان', 'سعدی شیرازی', 'boteh', 1],
+  ['غزلیات', 'حافظ شیرازی', 'eslimi', 2], ['رباعیات', 'خیام نیشابوری', 'moon', 3], ['شاهنامه', 'فردوسی', 'girih', 4], ['مثنوی معنوی', 'مولانا', 'toranj', 0],
+  ['گلستان', 'سعدی شیرازی', 'cypress', 5], ['بوستان', 'سعدی شیرازی', 'boteh', 1], ['دیوان شمس', 'مولانا', 'shamseh', 4], ['منطق‌الطیر', 'عطار نیشابوری', 'waves', 0],
+  ['خمسه', 'نظامی گنجوی', 'arches', 1], ['هفت اورنگ', 'جامی', 'tiles', 3], ['حدیقة‌الحقیقه', 'سنایی غزنوی', 'anar', 5], ['قصاید', 'ناصرخسرو', 'girih', 2],
+  ['دوبیتی‌ها', 'باباطاهر', 'moon', 1], ['دیوان اشعار', 'پروین اعتصامی', 'eslimi', 0], ['غزلیات', 'صائب تبریزی', 'boteh', 3], ['گلشن راز', 'شیخ محمود شبستری', 'shamseh', 5],
+  ['قصاید', 'خاقانی', 'arches', 4], ['دیوان', 'رودکی', 'waves', 2], ['رباعیات', 'ابوسعید ابوالخیر', 'anar', 1], ['کلیات', 'عبید زاکانی', 'tiles', 0],
 ];
 const fa = (n) => String(n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 g.innerHTML = books.map(([t, a, m, pi]) => { const { p, svg } = coverSVG({ title: t, author: a, motif: m, palette: PALETTES[pi] });
