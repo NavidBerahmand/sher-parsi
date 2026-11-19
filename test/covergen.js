@@ -3,7 +3,7 @@ const W = 300, H = 420, ART = 250; // art box height (top), text below
 export const PALETTES = [
   { bg: '#3d4232', ink: '#e9e4d0', ac: '#c98a5e' }, // olive + clay
   { bg: '#a9ad91', ink: '#2b2e22', ac: '#8a4630' }, // sage + rust
-  { bg: '#e7e1cf', ink: '#3d4232', ac: '#b2653f' }, // cream + terracotta
+  { bg: '#c29b57', ink: '#2b2e22', ac: '#f1e7d3' }, // ochre + cream (cream is the text band now)
   { bg: '#262b1f', ink: '#e9e4d0', ac: '#c4a05a' }, // near black + ochre
   { bg: '#8a4b33', ink: '#f1e7d3', ac: '#e3b47e' }, // rust + sand
   { bg: '#34463f', ink: '#e7e1cf', ac: '#c9a24f' }, // deep green-teal + ochre
