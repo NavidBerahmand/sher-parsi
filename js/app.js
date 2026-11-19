@@ -1,4 +1,4 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, saveBook, isBookSaved, setBookSaved, coverHTML, CENTURIES } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, saveBook, isBookSaved, unsaveBook, unsavePoet, setBookSaved, coverHTML, CENTURIES } from './data.js';
 import { settings, apply, onDeviceTheme, saved, history, bayts, books, readPoems, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
@@ -438,13 +438,18 @@ function openLibMenu(el) {
   openSheet(`<h3>${esc(book ? title : POET_NAME(slug))}</h3>${book && author ? `<p class="lib-menu-sub">${esc(author)}</p>` : ''}
     <div class="lib-menu">
       ${book ? row('lmPoet', ICON.user, 'صفحهٔ سخنور') : ''}
-      ${row('lmDl', saved ? OK_ICON : DL_ICON, saved ? 'دانلود شده' : 'دانلود', saved)}
+      ${saved ? row('lmUndl', ICON.trash, 'حذف دانلود') : row('lmDl', DL_ICON, 'دانلود')}
       ${book ? row('lmRead', ICON.check, 'خوانده‌شده') : ''}
       ${row('lmShare', ICON.share, 'اشتراک‌گذاری')}
       ${row('lmDel', ICON.trash, 'حذف از کتابخانه')}
     </div>`, (s) => {
     s.querySelector('#lmPoet')?.addEventListener('click', () => { closeSheet(); location.hash = `#/c/${slug}`; });
-    s.querySelector('#lmDl').addEventListener('click', async () => {
+    s.querySelector('#lmUndl')?.addEventListener('click', async () => {
+      closeSheet();
+      try { await (book ? unsaveBook(cat, other) : unsavePoet(slug)); toast('دانلود حذف شد'); } catch { toast('حذف دانلود کامل نشد'); }
+      if (current.view === 'saved') viewSaved();
+    });
+    s.querySelector('#lmDl')?.addEventListener('click', async () => {
       closeSheet();
       if (!book) { toast('دانلود آثار سخنور شروع شد'); await startPoetSave(slug); if (current.view === 'saved') viewSaved(); return; }
       toast('دانلود کتاب شروع شد');
@@ -601,8 +606,8 @@ async function viewPoets() {
 const poetSaving = new Map(); // slug -> { f: progress 0..1, b: bytes }
 // Offline state (Navid 2026-11-19): an empty cloud = not downloaded; a filled cloud with a tick = downloaded.
 const CLOUD_D = 'M7 18.5a4.5 4.5 0 0 1-.55-8.97A6 6 0 0 1 18.1 8.6a4.75 4.75 0 0 1-.6 9.9z';
-const DL_ICON = `<svg class="cl" viewBox="0 0 24 24"><path d="${CLOUD_D}"/></svg>`;
-const OK_ICON = `<svg class="cl ok" viewBox="0 0 24 24"><path d="${CLOUD_D}"/><path class="ck" d="M9.2 13.4l2 2 3.8-4"/></svg>`;
+const DL_ICON = `<svg class="cl" viewBox="0.6 -0.55 24 24"><path d="${CLOUD_D}"/></svg>`;
+const OK_ICON = `<svg class="cl ok" viewBox="0.6 -0.55 24 24"><path d="${CLOUD_D}"/><path class="ck" d="M9.2 13.4l2 2 3.8-4"/></svg>`;
 // Size in Persian: «۸۵۰ کیلوبایت» / «۲٫۴ مگابایت».
 // With the whole size: «۲٫۴ از ۹٫۱ مگابایت», both in the unit of the whole.
 const faNum = (b, mb) => mb ? fa((b / 1048576).toFixed(1)).replace('.', '٫') : fa(Math.round(b / 1024));
@@ -1376,7 +1381,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.151';
+export const VERSION = '0.9.152';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

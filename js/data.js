@@ -228,7 +228,8 @@ export async function savePoet(slug, onProgress = () => {}) {
 const BOOKS_KEY = 'sp.savedBooks';
 const booksSet = () => { try { return new Set(JSON.parse(localStorage.getItem(BOOKS_KEY)) || []); } catch { return new Set(); } };
 export const isBookSaved = (cat) => booksSet().has(clean(cat)) || isPoetSaved(clean(cat).split('/')[0]);
-export async function saveBook(cat, other = false, onProgress = () => {}) {
+// Every data file one book needs: its own files, plus the poet's top files so it opens.
+async function bookFiles(cat, other = false) {
   cat = clean(cat);
   const slug = cat.split('/')[0], urls = [];
   const walk = async (url, deep) => {
@@ -240,6 +241,11 @@ export async function saveBook(cat, other = false, onProgress = () => {}) {
   await walk(cat, !other);
   if (!other && cat !== slug) urls.push(BUNDLED ? `${await bundleName(slug)}.json` : `${DATA_BASE}poets/${slug}/_cat.json`);
   urls.push(BUNDLED ? `${await rootOf(slug)}p/${slug}.json` : `${DATA_BASE}poets/${slug}/poet.json`);
+  return urls;
+}
+export async function saveBook(cat, other = false, onProgress = () => {}) {
+  cat = clean(cat);
+  const urls = await bookFiles(cat, other);
   const cache = 'caches' in self ? await caches.open(DATA_CACHE) : null;
   let done = 0, fails = 0, i = 0;
   const one = async () => {
@@ -254,6 +260,42 @@ export async function saveBook(cat, other = false, onProgress = () => {}) {
   const s = booksSet(); s.add(cat);
   try { localStorage.setItem(BOOKS_KEY, JSON.stringify([...s])); } catch { /* ignore */ }
   return true;
+}
+
+// «حذف دانلود» (Navid 2026-11-19): takes a book or a whole poet off the device and empties its cloud.
+// Files another download still needs (a shared poet.json, the poet's top file, another saved book) stay.
+// A saved book key equal to the poet slug is the poet's loose poems («other»).
+const bookKey = (k) => [k, k === k.split('/')[0]];
+const writeSet = (key, set) => { try { localStorage.setItem(key, JSON.stringify([...set])); } catch { /* ignore */ } };
+async function dropFiles(urls) {
+  if (!('caches' in self)) return;
+  const keep = new Set();
+  for (const p of savedSet()) (await poetFiles(p).catch(() => [])).forEach((u) => keep.add(u));
+  for (const b of booksSet()) (await bookFiles(...bookKey(b)).catch(() => [])).forEach((u) => keep.add(u));
+  const cache = await caches.open(DATA_CACHE);
+  await Promise.all(urls.filter((u) => !keep.has(u)).map((u) => cache.delete(u, { ignoreSearch: true })));
+}
+export async function unsavePoet(slug) {
+  const urls = await poetFiles(slug);
+  const s = savedSet(); s.delete(slug); writeSet(SAVED_KEY, s);
+  const b = booksSet(); for (const k of [...b]) if (k.split('/')[0] === slug) b.delete(k); writeSet(BOOKS_KEY, b);
+  await dropFiles(urls);
+}
+export async function unsaveBook(cat, other = false) {
+  cat = clean(cat);
+  const slug = cat.split('/')[0];
+  const urls = await bookFiles(cat, other);
+  const b = booksSet(); b.delete(cat);
+  // The book was saved as part of its whole poet: the poet's other books stay downloaded on their own.
+  const s = savedSet();
+  if (s.has(slug)) {
+    s.delete(slug); writeSet(SAVED_KEY, s);
+    const root = await getCat(slug);
+    for (const k of root.ChildCats || []) { const c = clean(k.FullUrl); if (c !== cat) b.add(c); }
+    if ((root.Poems || []).length && !(other && cat === slug)) b.add(slug);
+  }
+  writeSet(BOOKS_KEY, b);
+  await dropFiles(urls);
 }
 
 // Curated poets for the home page, in the order a reader is likely to look for them.
