@@ -32,7 +32,10 @@
       var s = JSON.parse(localStorage.getItem('sp.settings') || '{}');
       if (s.size) document.documentElement.style.setProperty('--poem-scale', s.size);
       if (s.weight) document.documentElement.style.setProperty('--fw-verse', s.weight);
-      if (!s.themeChosen || s.theme === 'dark') document.documentElement.dataset.theme = 'dark'; // dark by default
+      // Until the reader picks a theme in reading settings, follow the device's light/dark setting (Navid, 2026-11-19).
+      var dk = s.themeChosen ? s.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dk) document.documentElement.dataset.theme = 'dark';
+      else document.querySelector('meta[name="theme-color"]').setAttribute('content', '#585e4a');
     } catch (e) {}
     // The opening card belongs to the home page only, and shows every time the site opens there (Navid, 2026-11-19).
     if (!/^#?\/?$/.test(location.hash)) document.documentElement.classList.add('no-splash');

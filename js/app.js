@@ -1,5 +1,5 @@
 import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, setBookSaved, coverHTML, CENTURIES } from './data.js';
-import { settings, apply, saved, history, bayts, books, exportData, importData } from './store.js';
+import { settings, apply, onDeviceTheme, saved, history, bayts, books, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
@@ -229,10 +229,13 @@ document.querySelectorAll('.mx-sw').forEach((b) => b.addEventListener('click', (
 }));
 $('#mxTheme').addEventListener('click', () => {
   const dark = settings.get().theme !== 'dark';
-  settings.set({ theme: dark ? 'dark' : 'light', themeChosen: true }); syncMenuSettings();
+  settings.set({ theme: dark ? 'dark' : 'light', themeChosen: true }); syncMenuSettings(); swapPortraits(dark);
+});
+function swapPortraits(dark) {
   document.querySelectorAll('img.poet-pic, img.pl-face').forEach((im) => { im.src = im.src.replace(/(-dark)?\.webp/, dark ? '-dark.webp' : '.webp'); });
   document.querySelectorAll('img.w-lb-face').forEach((im) => { im.src = im.src.replace(/(-dark)?\.webp/, dark ? '.webp' : '-dark.webp'); });
-});
+}
+onDeviceTheme((dark) => { syncMenuSettings(); swapPortraits(dark); });
 $('#mxHk').addEventListener('click', () => {
   settings.set({ harakat: !settings.get().harakat }); syncMenuSettings();
   if (current.view === 'poem' && sheetEl) redrawVerses();
@@ -1250,7 +1253,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.140';
+export const VERSION = '0.9.141';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

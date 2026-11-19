@@ -7,15 +7,24 @@ function write(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
 }
 
+const darkQuery = matchMedia('(prefers-color-scheme: dark)');
+const deviceTheme = () => (darkQuery.matches ? 'dark' : 'light');
+// The device switches light/dark (e.g. at sunset) while no theme is chosen: follow it live.
+export function onDeviceTheme(fn) {
+  darkQuery.addEventListener?.('change', () => { if (!read('sp.settings', {}).themeChosen) { apply(); fn(settings.get().theme === 'dark'); } });
+}
+
 export const settings = {
-  // Dark is the default; a theme saved before the reader chose one in settings is ignored.
+  // Until the reader picks a theme in reading settings, the device's light/dark setting decides
+  // (Navid, 2026-11-19); a theme saved before the reader chose one is ignored.
   get() {
     const r = read('sp.settings', {});
-    return { font: 'naskh', size: 1, weight: 390, harakat: true, ...r, theme: r.themeChosen ? r.theme : 'dark' };
+    return { font: 'naskh', size: 1, weight: 390, harakat: true, ...r, theme: r.themeChosen ? r.theme : deviceTheme() };
   },
   set(patch) {
     const s = { ...this.get(), ...patch };
-    write('sp.settings', s);
+    const keep = { ...s }; if (!keep.themeChosen) delete keep.theme; // don't freeze the device theme
+    write('sp.settings', keep);
     apply(s);
     return s;
   },
