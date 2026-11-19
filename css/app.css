@@ -1102,3 +1102,8 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .page-dl.busy::before { content: none; }
 /* Cover titles: line-clamp needs overflow hidden, which cut the dots above tall letters (فـ); room above, same position (0.9.124). */
 .cover .frame b, .wp-shelf .cover .frame b { padding-top: .3em; margin-top: -.3em; padding-bottom: .15em; margin-bottom: -.15em; }
+/* Desktop: the menu button sits at the top right, as on phones, not in the centre (Navid 2026-11-19). */
+@media (min-width: 860px) {
+  .topbar { left: auto; right: calc(var(--gutter) - 11px); translate: none; }
+  .w-header { width: 100%; justify-content: flex-start; padding-inline: calc(var(--gutter) - 11px); -webkit-mask-image: none; mask-image: none; }
+}
