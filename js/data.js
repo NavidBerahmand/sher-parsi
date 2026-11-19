@@ -124,6 +124,8 @@ export const CENTURIES = [
 export const TOP = Object.keys(NAMES);
 // Ganjoor's short name for every poet in the manifest (filled when it loads); NAMES wins where it has one.
 export const NICK = new Map();
+// A poet's portrait; poets without one get the faceless plaster bust (img/poets/blank, Navid 2026-11-19).
+export const portrait = (slug, dark) => `img/poets/${TOP.includes(slug) ? slug : 'blank'}${dark ? '-dark' : ''}.webp`;
 const named = (slug, o) => { if (o && NAMES[slug]) o.Nickname = o.Name = NAMES[slug]; return o; };
 export const getManifest = () => (BUNDLED ? getLocal('data/manifest.json') : getJSON('manifest.json'))
   .then((m) => {

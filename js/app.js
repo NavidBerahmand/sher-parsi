@@ -1,9 +1,9 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, shelf, shelfHTML, savePoet, isPoetSaved, setBookSaved, coverHTML, CENTURIES } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, setBookSaved, coverHTML, CENTURIES } from './data.js';
 import { settings, apply, saved, history, bayts, books, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
-import { mountWall, unmountWall, wallChoice, setWallChoice, WALL_ALL } from './wall.js';
+import { mountWall, unmountWall, wallChoice, setWallChoice } from './wall.js';
 import { attachSheetDrag } from './sheetdrag.js';
 import { overlayOpened, overlayClosed, overlayNavigate, overlayIsOpen, overlaySwap, overlayForget } from './overlay.js';
 
@@ -15,7 +15,6 @@ const esc = (s) => String(s ?? '').replace(/\s+(?=[\u064B-\u065F\u0670])/g, '').
 const HARAKAT = /[ً-ْٰ]/g;
 const txt = (s) => esc(settings.get().harakat ? s : String(s).replace(HARAKAT, ''));
 const vtxt = txt;
-const initial = (name) => (String(name).replace(/^(شیخ|خواجه|ملک‌الشعرا|حکیم|امیر|میرزا|ملا)\s+/, '').trim()[0] || '؟');
 
 // Book bookmarks: the ribbon on every cover toggles it; saved books show under «نشان‌ها» › «کتاب‌ها».
 setBookSaved((href) => books.has(href));
@@ -376,7 +375,6 @@ function failed(err, retry) {
   wireClose('errX');
   console.warn(err);
 }
-function mono(name, cls = '') { return `<span class="mono ${cls}" aria-hidden="true">${esc(initial(name))}</span>`; }
 function crumbs(parts) {
   return `<nav class="crumbs" aria-label="مسیر">${parts.map((p, i) =>
     (i ? '<span class="sep">›</span>' : '') + (p.href ? `<a href="${p.href}">${esc(p.t)}</a>` : `<span>${esc(p.t)}</span>`)).join('')}</nav>`;
@@ -410,7 +408,7 @@ async function viewHome() {
     ${hist ? `<div class="section"><a class="card continue" href="${poemHref(hist.url)}"><span class="ic">${ICON.clock}</span>
       <span class="t"><b>${esc(hist.title)}</b><span>ادامهٔ خواندن · ${esc(hist.poet)}</span></span>${ICON.chev}</a></div>` : ''}
     <div class="section"><div class="section-head"><h2>سخنوران</h2><a class="link" href="#/poets">همه</a></div>
-      <div class="poet-strip">${FEATURED.map(([s, n]) => `<a class="poet-chip" href="#/c/${s}">${mono(n)}<span>${n}</span></a>`).join('')}</div></div>
+      <div class="poet-strip">${FEATURED.map(([s, n]) => `<a class="poet-chip" href="#/c/${s}"><img class="pl-face" src="${portrait(s, settings.get().theme === 'dark')}" alt="" width="1024" height="1024" loading="lazy" decoding="async"><span>${n}</span></a>`).join('')}</div></div>
   </div>`;
   $('#rnd').addEventListener('click', () => randomPoem((h) => openPoemOver(h)));
 }
@@ -459,10 +457,10 @@ async function viewPoets() {
     if (mode === 'alpha') list = [...list].sort((a, b) => norm(a.Nickname).localeCompare(norm(b.Nickname), 'fa'));
     if (mode === 'cent') list = [...list].sort((a, b) => (centPos.get(clean(a.FullUrl)) ?? 1e9) - (centPos.get(clean(b.FullUrl)) ?? 1e9));
     const dark = settings.get().theme === 'dark';
-    const face = (p) => { const s = clean(p.FullUrl); return TOP.includes(s) ? `<img class="pl-face" src="img/poets/${esc(s)}${dark ? '-dark' : ''}.webp" alt="" width="1024" height="1024" loading="lazy" decoding="async">` : mono(p.Nickname); };
+    const face = (p) => `<img class="pl-face" src="${esc(portrait(clean(p.FullUrl), dark))}" alt="" width="1024" height="1024" loading="lazy" decoding="async">`;
     const wall = new Set(wallChoice());
-    // Under each poet with a portrait: a small tick «نمایش در صفحه اصلی» that puts the poet on the home wall.
-    const tick = (p) => { const s = clean(p.FullUrl); return WALL_ALL.includes(s) ? `<label class="pt-wall"><span class="pl-tick"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></span><span>نمایش در صفحه اصلی</span></label>` : ''; };
+    // Under every poet (the bust stands in for a missing portrait): a small tick «نمایش در صفحه اصلی» that puts the poet on the home wall.
+    const tick = (p) => { const s = clean(p.FullUrl); return s ? `<label class="pt-wall"><span class="pl-tick"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></span><span>نمایش در صفحه اصلی</span></label>` : ''; };
     const tile = (p) => `<li class="pt"><a href="${catHref(p.FullUrl)}"><span class="pt-pic">${face(p)}</span><b>${esc(p.Nickname)}</b></a>${tick(p)}</li>`;
     // Alphabetical: one group per letter (آ goes with ا); by century: one group per century; by readership: a single group.
     const key = (p) => mode === 'alpha' ? norm(p.Nickname).charAt(0).replace('آ', 'ا') : mode === 'cent' ? (centOf.get(clean(p.FullUrl)) || '') : '';
@@ -543,7 +541,7 @@ async function viewCat(path) {
     const years = poet.BirthYearInLHijri && poet.DeathYearInLHijri ? `${fa(poet.BirthYearInLHijri)}–${fa(poet.DeathYearInLHijri)} ق` : '';
     const place = [poet.BirthPlace, poet.DeathPlace].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join('، ');
     const dark = document.documentElement.dataset.theme === 'dark';
-    const pic = TOP.includes(slug) ? `<img class="poet-pic" src="img/poets/${esc(slug)}${dark ? '-dark' : ''}.webp" alt="" width="1024" height="1024" decoding="async">` : '';
+    const pic = `<img class="poet-pic" src="${esc(portrait(slug, dark))}" alt="" width="1024" height="1024" decoding="async">`;
     head = `<div class="poet-head">${pic}<div><h1>${esc(poet.Nickname)}</h1>
       <p class="meta">${[esc(poet.Name !== poet.Nickname ? poet.Name : ''), years, esc(place)].filter(Boolean).join(' · ')}</p></div></div>
       ${poet.Description ? `<p class="bio clamp" id="bio">${esc(poet.Description)}</p><button class="bio-toggle" id="bioT">بیشتر</button>` : ''}`;
@@ -564,7 +562,7 @@ async function viewCat(path) {
   const poemItem = (p, i) => `<li><a href="${poemHref(p.FullUrl)}" data-u="${esc(clean(p.FullUrl))}"><span class="n">${fa(i + 1)}</span><span class="tt"><span class="fl"></span><small>${esc(p.Title)}</small></span><span class="marks">${marksHTML(clean(p.FullUrl), seen)}</span></a></li>`;
 
   main.dataset.cat = path;
-  document.body.classList.toggle('poet-bg', isPoet && !!poet && TOP.includes(slug));
+  document.body.classList.toggle('poet-bg', isPoet && !!poet);
   const dl = isPoet && poet ? dlButton(slug) : '';
   main.innerHTML = `<button class="icon-btn page-x tip-l" id="pageX" aria-label="بستن" data-tip="بستن">${ICON.x}</button>${dl}<div class="wrap fadein">${head}
     ${groups ? shelfHTML(groups, author) : books ? `<div class="parts">${books}</div>` : ''}
@@ -1251,7 +1249,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.135';
+export const VERSION = '0.9.136';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

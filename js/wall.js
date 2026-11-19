@@ -1,6 +1,6 @@
 // Home page: an endless wall of carved poet portraits.
 // Drag (or scroll) in any direction; tap a portrait to bring it forward with its story.
-import { getPoet, getCat, NAMES, TOP, savePoet, isPoetSaved, shelf, shelfHTML } from './data.js';
+import { getPoet, getCat, getManifest, NAMES, NICK, TOP, portrait, savePoet, isPoetSaved, shelf, shelfHTML } from './data.js';
 import { attachSheetDrag } from './sheetdrag.js';
 import { overlayOpened, overlayClosed, overlayNavigate, overlayForget } from './overlay.js';
 
@@ -55,6 +55,8 @@ const INFO = [
 // Names under the portraits match ganjoor.net's home page exactly (Navid 2026-11-18); NAMES stays as is elsewhere.
 const GANJOOR_NAME = { saadi: 'سعدی', hafez: 'حافظ', attar: 'عطار', saeb: 'صائب', sanaee: 'سنایی', nezami: 'نظامی', khaghani: 'خاقانی', roodaki: 'رودکی', anvari: 'انوری', naserkhosro: 'ناصرخسرو', manoochehri: 'منوچهری' };
 const ALL = TOP.map((slug) => ({ slug, ...INFO.find((q) => q.slug === slug), full: GANJOOR_NAME[slug] || NAMES[slug] }));
+// Any other poet can be ticked too (Navid 2026-11-19): it shows the faceless bust, with Ganjoor's name once the manifest is in.
+const entry = (slug) => ALL.find((p) => p.slug === slug) || { slug, get full() { return NICK.get(slug) || ''; } };
 const WALL_KEY = 'sp.wall';
 // «ادامه خواندن»: back to the poem (and couplet) the reader was last on. Hidden until something has been read.
 function resumeLink() {
@@ -67,20 +69,20 @@ function resumeLink() {
 const chosen = () => {
   let v = null;
   try { v = JSON.parse(localStorage.getItem(WALL_KEY)); } catch { /* storage blocked */ }
-  const list = Array.isArray(v) ? ALL.filter((p) => v.includes(p.slug)) : [];
+  // Named poets keep readership order; the others follow in the order they were ticked.
+  const list = Array.isArray(v) ? [...ALL.filter((p) => v.includes(p.slug)), ...v.filter((s) => typeof s === 'string' && s && !TOP.includes(s)).map(entry)] : [];
   return list.length ? list : ALL.slice(0, 15); // first visit: the 15 most-read poets
 };
 let POETS = chosen();
 // The poets page (#/poets) holds the ticks that choose the wall; these let it read and change the choice.
 export const wallChoice = () => chosen().map((p) => p.slug);
-export const WALL_ALL = ALL.map((p) => p.slug);
 export function setWallChoice(slugs) {
   const keep = new Set(slugs);
-  const list = ALL.filter((q) => keep.has(q.slug));
-  try { localStorage.setItem(WALL_KEY, JSON.stringify((list.length ? list : ALL.slice(0, 1)).map((q) => q.slug))); } catch { /* ignore */ }
+  const list = [...ALL.filter((q) => keep.has(q.slug)).map((q) => q.slug), ...slugs.filter((x) => !TOP.includes(x))];
+  try { localStorage.setItem(WALL_KEY, JSON.stringify(list.length ? list : [ALL[0].slug])); } catch { /* ignore */ }
 }
 const isDark = () => document.documentElement.dataset.theme === 'dark';
-const img = (p) => `img/poets/${p.slug}${isDark() ? '-dark' : ''}.webp`;
+const img = (p) => portrait(p.slug, isDark());
 // Swap portraits live when the reader toggles dark mode.
 new MutationObserver(() => {
   document.querySelectorAll('.w-tile img, #wFocus img').forEach((i) => {
@@ -120,6 +122,11 @@ let cleanup = [];
 export function mountWall() {
   if (root) return;
   POETS = chosen();
+  // Names of ticked poets outside the named 44 come from the manifest; fill them in when it arrives.
+  if (POETS.some((p) => !p.full)) getManifest().then(() => document.querySelectorAll('.w-tile').forEach((el) => {
+    const p = POETS[+el.dataset.pi]; if (!p) return;
+    el.setAttribute('aria-label', p.full); el.querySelector('.w-name').textContent = p.full;
+  })).catch(() => {});
   document.body.classList.add('wall-mode');
 
   root = document.createElement('div');
@@ -187,7 +194,7 @@ export function mountWall() {
           el.tabIndex = 0;
           el.setAttribute('role', 'button');
           el.setAttribute('aria-label', p.full);
-          el.innerHTML = `<div class="w-tglow"></div><img src="${img(p)}" alt="" draggable="false" loading="lazy" onload="this.classList.add('loaded')"><div class="w-name">${p.full}</div>`;
+          el.innerHTML = `<div class="w-tglow"></div><img src="${img(p)}" alt="" draggable="false" loading="lazy" onload="this.classList.add('loaded')"><div class="w-name">${esc(p.full)}</div>`;
           wall.appendChild(el);
           pool.set(key, el);
         }
@@ -331,7 +338,7 @@ export function mountWall() {
   // so the panel opens complete and nothing appears or shifts afterwards.
   const loadInfo = (slug) => Promise.all([getPoet(slug), getCat(slug)]).then(([poet, cat]) => { const d = { poet, cat }; info.set(slug, d); return d; });
   // Fetched once the wall has painted and the browser is idle, so it never slows the first view.
-  const prefetch = () => POETS.forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
+  const prefetch = () => POETS.slice(0, 24).forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
   { const t = setTimeout(() => (window.requestIdleCallback ? requestIdleCallback(prefetch, { timeout: 3000 }) : prefetch()), 1200); cleanup.push(() => clearTimeout(t)); }
 
   // A tap on a portrait opens the poet's own page (the half card is gone, Navid 2026-11-18).

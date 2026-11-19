@@ -194,7 +194,7 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
 .poet-strip { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px var(--gutter) 10px; margin: 0 calc(var(--gutter) * -1); scrollbar-width: none; }
 .poet-strip::-webkit-scrollbar { display: none; }
 .poet-chip { scroll-snap-align: start; flex: none; width: 92px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; font-size: .86rem; }
-.poet-chip .mono { width: 72px; height: 72px; font-size: 1.7rem; }
+.poet-chip .pl-face { width: 72px; height: 72px; margin: 0; }
 .mono {
   display: grid; place-items: center; border-radius: 50%; flex: none;
   font-family: var(--poem); font-weight: var(--fw-strong); line-height: 1;
