@@ -304,7 +304,7 @@ export function setBookSaved(fn) { bookSaved = fn; }
 const RIBBON = '<svg viewBox="0 0 14 22" aria-hidden="true"><path d="M1 0v20.5l6-4.6 6 4.6V0"/></svg>';
 // Book covers (Navid, 2026-11-18): the top of each cover is a Persian motif drawn by js/covers/ (loaded only when a page has covers),
 // on one of these grounds; the bottom is a cream band with the title. Design and palette come from the title + poet, so a book keeps its cover;
-// on a shelf no two books share a design. A saved book stores its design, so «نشان‌ها» shows the same cover.
+// on a shelf no two books share a design. A saved book stores its design, so «کتابخانهٔ من» shows the same cover.
 export const PALETTES = [
   { bg: '#3d4232', ink: '#e9e4d0', ac: '#c98a5e' }, { bg: '#a9ad91', ink: '#2b2e22', ac: '#8a4630' }, { bg: '#c29b57', ink: '#2b2e22', ac: '#f1e7d3' },
   { bg: '#262b1f', ink: '#e9e4d0', ac: '#c4a05a' }, { bg: '#8a4b33', ink: '#f1e7d3', ac: '#e3b47e' }, { bg: '#34463f', ink: '#e7e1cf', ac: '#c9a24f' },

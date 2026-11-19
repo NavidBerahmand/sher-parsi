@@ -16,7 +16,7 @@ const HARAKAT = /[ً-ْٰ]/g;
 const txt = (s) => esc(settings.get().harakat ? s : String(s).replace(HARAKAT, ''));
 const vtxt = txt;
 
-// Book bookmarks: the ribbon on every cover toggles it; saved books show under «نشان‌ها» › «کتاب‌ها».
+// Book bookmarks: the ribbon on every cover toggles it; saved books show under «کتابخانهٔ من» › «کتاب‌ها».
 setBookSaved((href) => books.has(href));
 function toggleBook(el) {
   const on = books.toggle({ href: el.dataset.href, title: el.dataset.title, author: el.dataset.author, d: +el.dataset.d, p: +el.dataset.p });
@@ -387,7 +387,7 @@ async function poetName(slug) {
   try { return (await getPoet(slug)).Nickname; } catch { return ''; }
 }
 const catHref = (u) => `#/c/${clean(u)}`;
-// Poet squares (poets page and «نشان‌ها» › «سخنوران»): portrait, name, and the book ribbon at the top left.
+// Poet squares (poets page and «کتابخانهٔ من» › «سخنوران»): portrait, name, and the book ribbon at the top left.
 // A marked (red) poet shows on the home wall (Navid 2026-11-19); the mark is the wall choice (sp.wall).
 const POET_RIBBON = '<svg viewBox="0 0 14 22" aria-hidden="true"><path d="M1 0v20.5l6-4.6 6 4.6V0"/></svg>';
 function poetTile(slug, name, marked) {
@@ -727,7 +727,7 @@ function mountCard(stack, path, poem, poetN, cat, opts) {
     refreshMarks(path);
     e.currentTarget.classList.toggle('on', on);
     e.currentTarget.setAttribute('aria-pressed', on);
-    toast(on ? 'به نشان‌ها اضافه شد' : 'از نشان‌ها برداشته شد');
+    toast(on ? 'به کتابخانهٔ من اضافه شد' : 'از کتابخانهٔ من برداشته شد');
   });
   card.querySelector('.share').addEventListener('click', () => openPoemShare(card, ctx, path));
   stretchCard(card);
@@ -1111,7 +1111,7 @@ function viewFal() {
 }
 let falNext = null;
 
-let savedTab = 'poems', savedSort = 'time';
+let savedTab = 'books', savedSort = 'time';
 function viewSaved() {
   const EMPTY = {
     poems: [ICON.bookmark, 'هنوز شعری نشان نکرده‌ای', 'هر جا شعری به دلت نشست، نشانه‌ی بالای صفحه را بزن.'],
@@ -1172,8 +1172,8 @@ function viewSaved() {
     document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
     document.querySelectorAll('#ssort button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.o === savedSort));
   };
-  main.innerHTML = `${pageClose('sX')}<div class="wrap fadein"><div class="page-title"><h1>نشان‌ها</h1></div>
-    <div class="tabs" id="stabs" role="tablist"><button role="tab" data-t="poems">شعرها</button><button role="tab" data-t="bayts">بیت‌ها</button><button role="tab" data-t="books">کتاب‌ها</button><button role="tab" data-t="poets">سخنوران</button><button role="tab" data-t="history">خوانده‌ها</button></div>
+  main.innerHTML = `${pageClose('sX')}<div class="wrap fadein"><div class="page-title"><h1>کتابخانهٔ من</h1></div>
+    <div class="tabs" id="stabs" role="tablist"><button role="tab" data-t="books">کتاب‌ها</button><button role="tab" data-t="poets">سخنوران</button><button role="tab" data-t="poems">شعرها</button><button role="tab" data-t="bayts">ابیات</button><button role="tab" data-t="history">خوانده‌ها</button></div>
     <div class="sort-row" id="ssort"><span>ترتیب:</span><button data-o="time">زمان نشان کردن</button><button data-o="poet">سخنور</button></div>
     <ul class="saved-list" id="sl"></ul><div id="sbooks" hidden></div></div>`;
   wireClose('sX');
@@ -1276,7 +1276,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.146';
+export const VERSION = '0.9.147';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
