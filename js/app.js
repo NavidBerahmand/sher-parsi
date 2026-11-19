@@ -1,5 +1,5 @@
 import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, setBookSaved, coverHTML, CENTURIES } from './data.js';
-import { settings, apply, onDeviceTheme, saved, history, bayts, books, exportData, importData } from './store.js';
+import { settings, apply, onDeviceTheme, saved, history, bayts, books, readPoems, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
@@ -390,9 +390,9 @@ const catHref = (u) => `#/c/${clean(u)}`;
 // Poet squares (poets page and «کتابخانهٔ من» › «سخنوران»): portrait, name, and the book ribbon at the top left.
 // A marked (red) poet shows on the home wall (Navid 2026-11-19); the mark is the wall choice (sp.wall).
 const POET_RIBBON = '<svg viewBox="0 0 14 22" aria-hidden="true"><path d="M1 0v20.5l6-4.6 6 4.6V0"/></svg>';
-function poetTile(slug, name, marked) {
+function poetTile(slug, name, marked, extra = '') {
   const dark = settings.get().theme === 'dark';
-  return `<li class="pt"><a href="#/c/${esc(slug)}"><span class="pt-pic"><img class="pl-face" src="${esc(portrait(slug, dark))}" alt="" width="1024" height="1024" loading="lazy" decoding="async"></span><b>${esc(name)}</b></a>`
+  return `<li class="pt"><a href="#/c/${esc(slug)}"><span class="pt-pic"><img class="pl-face" src="${esc(portrait(slug, dark))}" alt="" width="1024" height="1024" loading="lazy" decoding="async"></span><b>${esc(name)}</b></a>${extra}`
     + `<span class="pt-mark${marked ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${marked}" aria-label="نشان کردن سخنور" data-slug="${esc(slug)}">${POET_RIBBON}</span></li>`;
 }
 function togglePoetMark(slug) {
@@ -410,6 +410,36 @@ document.addEventListener('click', (e) => {
   if (!m) return;
   e.preventDefault(); e.stopPropagation(); togglePoetMark(m.dataset.slug);
 }, true);
+// «کتابخانهٔ من»: under each book and poet, the reading percent (poems opened / poems in it) and the offline cloud.
+// cat = the book's category url (or the poet's slug); other = the poet's loose poems («سایر اشعار»), only the top category's own poems.
+function libMeta(cat, other = false) {
+  const slug = clean(cat).split('/')[0];
+  return `<span class="lib-meta" data-cat="${esc(clean(cat))}"${other ? ' data-other="1"' : ''}><span class="lib-pct">${fa(0)}٪</span><span class="lib-cl">${isPoetSaved(slug) ? OK_ICON : DL_ICON}</span></span>`;
+}
+const COUNT_KEY = 'sp.counts';
+async function poemCount(cat, other) {
+  const key = `${cat}${other ? '/~other' : ''}`;
+  let all = {};
+  try { all = JSON.parse(localStorage.getItem(COUNT_KEY)) || {}; } catch { /* storage blocked */ }
+  if (all[key]) return all[key];
+  const walk = async (u, deep) => { const c = await getCat(u); let n = (c.Poems || []).length; if (deep) for (const k of c.ChildCats || []) n += await walk(clean(k.FullUrl), true); return n; };
+  const n = await walk(cat, !other);
+  all[key] = n;
+  try { localStorage.setItem(COUNT_KEY, JSON.stringify(all)); } catch { /* storage full */ }
+  return n;
+}
+function fillLibMeta(root) {
+  const urls = readPoems.all().map(clean);
+  root.querySelectorAll('.lib-meta').forEach(async (el) => {
+    const cat = el.dataset.cat, other = !!el.dataset.other;
+    const read = urls.filter((u) => (other ? parentOf(u) === cat : u.startsWith(`${cat}/`))).length;
+    if (!read) return;
+    try {
+      const n = await poemCount(cat, other);
+      el.querySelector('.lib-pct').textContent = `${fa(n ? Math.min(100, Math.max(1, Math.round((read / n) * 100))) : 0)}٪`;
+    } catch { /* offline: leave 0 */ }
+  });
+}
 document.addEventListener('keydown', (e) => {
   const m = e.target.closest?.('.pt-mark');
   if (m && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); togglePoetMark(m.dataset.slug); }
@@ -503,8 +533,10 @@ async function viewPoets() {
 
 // Whole-poet download for offline reading, beside the close button on the poet's page.
 const poetSaving = new Map(); // slug -> { f: progress 0..1, b: bytes }
-const DL_ICON = '<svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg>';
-const OK_ICON = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+// Offline state (Navid 2026-11-19): an empty cloud = not downloaded; a filled cloud with a tick = downloaded.
+const CLOUD_D = 'M7 18.5a4.5 4.5 0 0 1-.55-8.97A6 6 0 0 1 18.1 8.6a4.75 4.75 0 0 1-.6 9.9z';
+const DL_ICON = `<svg class="cl" viewBox="0 0 24 24"><path d="${CLOUD_D}"/></svg>`;
+const OK_ICON = `<svg class="cl ok" viewBox="0 0 24 24"><path d="${CLOUD_D}"/><path class="ck" d="M9.2 13.4l2 2 3.8-4"/></svg>`;
 // Size in Persian: «۸۵۰ کیلوبایت» / «۲٫۴ مگابایت».
 // With the whole size: «۲٫۴ از ۹٫۱ مگابایت», both in the unit of the whole.
 const faNum = (b, mb) => mb ? fa((b / 1048576).toFixed(1)).replace('.', '٫') : fa(Math.round(b / 1024));
@@ -1138,8 +1170,9 @@ function viewSaved() {
     if (savedTab === 'poets') {
       const ps = wallChoice();
       $('#sl').hidden = true; $('#sbooks').hidden = false;
-      $('#sbooks').innerHTML = ps.length ? `<div class="saved-poets"><ul class="poet-grid">${ps.map((sl) => poetTile(sl, POET_NAME(sl), true)).join('')}</ul></div>`
+      $('#sbooks').innerHTML = ps.length ? `<div class="saved-poets"><ul class="poet-grid">${ps.map((sl) => poetTile(sl, POET_NAME(sl), true, libMeta(sl))).join('')}</ul></div>`
         : `<ul class="saved-list"><li class="empty-state">${EMPTY.poets.join('')}</li></ul>`;
+      fillLibMeta($('#sbooks'));
       document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
       return;
     }
@@ -1149,9 +1182,9 @@ function viewSaved() {
       if (!bl.length) { const [ic, t, d] = EMPTY.books; html = `<ul class="saved-list"><li class="empty-state">${ic}<b>${t}</b>${d}</li></ul>`; }
       else {
         const list2 = savedSort === 'poet' ? [...bl].sort((p, q) => (p.author || '').localeCompare(q.author || '', 'fa')) : bl;
-        html = `<div class="books">${list2.map((b, i) => coverHTML(b, b.author, i)).join('')}</div>`;
+        html = `<div class="books">${list2.map((b, i) => coverHTML(b, b.author, i, libMeta(b.href.replace(/^#\/c\//, '').replace(/\/~other$/, ''), /\/~other$/.test(b.href)))).join('')}</div>`;
       }
-      $('#sl').hidden = true; $('#sbooks').hidden = false; $('#sbooks').innerHTML = html;
+      $('#sl').hidden = true; $('#sbooks').hidden = false; $('#sbooks').innerHTML = html; fillLibMeta($('#sbooks'));
       document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
       return;
     }
@@ -1276,7 +1309,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.147';
+export const VERSION = '0.9.148';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

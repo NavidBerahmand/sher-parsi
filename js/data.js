@@ -315,13 +315,13 @@ function coverPick(b, author) {
   const s = coverHash(b.title + '|' + author);
   return { s, d: b.d != null ? +b.d : s % NDESIGNS, p: b.p != null ? +b.p : (s >>> 8) % PALETTES.length };
 }
-export function coverHTML(b, author, i) {
+export function coverHTML(b, author, i, after = '') {
   const e = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const on = bookSaved(b.href);
   const { s, d, p } = coverPick(b, author), pal = PALETTES[p];
   // A bookmark ribbon at the top left: outline, red once the book is saved.
   const mark = `<span class="bk-mark${on ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${on}" aria-label="نشان کردن کتاب" data-href="${e(b.href)}" data-title="${e(b.title)}" data-author="${e(author)}" data-d="${d}" data-p="${p}">${RIBBON}</span>`;
-  return `<a class="book" href="${e(b.href)}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover" style="--cloth:${pal.bg};--ink-c:${pal.ink}">${mark}<span class="art" data-d="${d}" data-p="${p}" data-s="${s}"></span><span class="frame"><b>${e(b.title)}</b><small>${e(author)}</small></span></span></a>`;
+  return `<a class="book" href="${e(b.href)}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover" style="--cloth:${pal.bg};--ink-c:${pal.ink}">${mark}<span class="art" data-d="${d}" data-p="${p}" data-s="${s}"></span><span class="frame"><b>${e(b.title)}</b><small>${e(author)}</small></span></span>${after}</a>`;
 }
 export function shelfHTML(groups, author, extra = '') {
   let n = 0;

@@ -57,6 +57,11 @@ export const saved = {
   remove(url) { write('sp.saved', this.all().filter((x) => x.url !== url)); },
 };
 
+// Every poem ever opened (not only the last 60): the reading percent of books and poets in «کتابخانهٔ من».
+export const readPoems = {
+  all() { return [...new Set([...read('sp.read', []), ...read('sp.history', []).map((x) => x.url)])]; },
+  add(url) { const l = read('sp.read', []); if (url && !l.includes(url)) { l.push(url); write('sp.read', l); } },
+};
 // Reading history: last 60 poems, newest first.
 export const history = {
   all() { return read('sp.history', []); },
@@ -64,6 +69,7 @@ export const history = {
     const list = this.all().filter((x) => x.url !== item.url);
     list.unshift({ ...item, at: Date.now() });
     write('sp.history', list.slice(0, 60));
+    readPoems.add(item.url);
   },
   seen() { return new Set(this.all().map((x) => x.url)); },
   clear() { write('sp.history', []); },
@@ -98,7 +104,7 @@ export const books = {
 };
 
 // Backup: everything the reader made on this device, as one JSON file to carry to another device.
-const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.books', 'sp.bayts', 'sp.history', 'sp.wall', 'sp.resume'];
+const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.books', 'sp.bayts', 'sp.history', 'sp.read', 'sp.wall', 'sp.resume'];
 export function exportData() {
   const data = {};
   BACKUP_KEYS.forEach((k) => { const v = read(k, null); if (v !== null) data[k] = v; });
@@ -118,6 +124,7 @@ export function importData(obj) {
   merge('sp.saved', (x) => x.url);
   merge('sp.bayts', (x) => bkey(x.url, x.i));
   merge('sp.history', (x) => x.url);
+  if (Array.isArray(d['sp.read'])) write('sp.read', [...new Set([...read('sp.read', []), ...d['sp.read'].filter((u) => typeof u === 'string')])]);
   if (d['sp.settings'] && typeof d['sp.settings'] === 'object') write('sp.settings', d['sp.settings']);
   if (Array.isArray(d['sp.wall'])) write('sp.wall', d['sp.wall']);
   // Reading position («ادامه خواندن»): keep whichever is newer, this device's or the file's.

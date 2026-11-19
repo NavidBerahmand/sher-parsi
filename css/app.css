@@ -1204,3 +1204,16 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 /* Unmarked poet ribbon: empty, outlined with exactly the squares' hairline (Navid 2026-11-19). */
 .pt-mark:not(.on) svg { fill: none; stroke: var(--line); opacity: 1; }
 .pt-mark:not(.on):hover svg { stroke: var(--muted); }
+/* Offline cloud (Navid 2026-11-19): empty outline = not downloaded, filled with a tick = downloaded. Poet page button and «کتابخانهٔ من». */
+svg.cl path { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+svg.cl.ok path:first-child { fill: currentColor; }
+svg.cl.ok path.ck { fill: none; stroke: var(--ck, var(--bg)); stroke-width: 1.9; }
+.page-dl { --ck: #000; }
+.page-dl svg.cl { width: 20px; height: 20px; }
+.page-dl .dl-ico { width: 20px; height: 20px; }
+/* «کتابخانهٔ من»: reading percent and the cloud under each book and poet. */
+.lib-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; padding: 0 2px; color: var(--muted); font-size: .86rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.lib-meta .lib-cl { display: grid; place-items: center; }
+.lib-meta svg.cl { width: 22px; height: 22px; }
+.pt .lib-meta { justify-content: center; gap: 18px; margin-top: 8px; }
+.pt .lib-meta svg.cl { width: 20px; height: 20px; }
