@@ -686,7 +686,7 @@ body.wall-mode .site-ver { color: rgb(255 255 255 / .5); }
 .psheet-tools .pt-save.on svg { fill: currentColor; }
 @media (min-width: 860px) { .psheet-tools { top: calc(env(safe-area-inset-top, 0px) + 20px); } .psheet-tools .icon-btn { width: 42px; height: 42px; } }
 
-/* Menu: one card in the middle of the screen, the same size as «همه شاعران». */
+/* Menu: one card in the middle of the screen, the same size as «همه سخنوران». */
 .mx { position: fixed; inset: 0; z-index: 70; display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: 20px; overflow: hidden;
   background: rgb(38 43 31 / .55); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
   opacity: 0; pointer-events: none; transition: opacity .3s ease; }
@@ -746,7 +746,7 @@ body.menu-open { overflow: hidden; }
 .mx-clr svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; position: static; translate: none; fill: none; }
 .mx-search input { padding-left: 42px; }
 
-/* Close buttons of the menu and «همه شاعران» */
+/* Close buttons of the menu and «همه سخنوران» */
 .lb-x { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; display: grid; place-items: center;
   background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); transition: background .2s; }
 .lb-x:hover { background: color-mix(in srgb, var(--ink) 15%, transparent); }
@@ -766,7 +766,7 @@ body.menu-open { overflow: hidden; }
 body.poet-bg .search label { background: rgb(255 255 255 / .08); border-color: rgb(255 255 255 / .16); }
 body.poet-bg .search input { color: var(--ink); }
 body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color: rgb(255 255 255 / .16); color: var(--ink); }
-/* «همه شاعران»: a small round portrait beside each name. */
+/* «همه سخنوران»: a small round portrait beside each name. */
 .w-lb-list a { display: flex; align-items: center; gap: 12px; padding-inline-start: 12px; }
 .w-lb-face { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; background: color-mix(in srgb, var(--w-paper-ink) 8%, transparent); }
 
@@ -883,7 +883,7 @@ body.poet-bg .poet-list .mono { background: rgb(255 255 255 / .08); border-color
 /* Weight slider: a thin آ at one end, a bold آ at the other. */
 #mxLt, #mxBd { font-size: 1.1rem; }
 #mxLt { font-weight: 250; } #mxBd { font-weight: 700; }
-/* Home: «ادامه خواندن» and «همه شاعران» side by side, bottom centre. */
+/* Home: «ادامه خواندن» and «همه سخنوران» side by side, bottom centre. */
 .w-bar { position: fixed; z-index: 30; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom, 0px)); translate: -50% 0; display: flex; gap: 10px; transition: opacity .5s; }
 .w-bar .w-all { position: static; translate: none; left: auto; bottom: auto; display: inline-block; text-decoration: none; }
 .wall-root.focused .w-bar, .wall-root.listing .w-bar { opacity: 0; pointer-events: none; }
@@ -1022,7 +1022,7 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .poet-list .pl-face { width: 56px; height: 56px; margin: -6px 0; }
 .poet-list .mono { flex: none; width: 48px; height: 48px; margin-inline: 4px; }
 .pl-tick-sp { visibility: hidden; }
-/* Home: black round search button between «همه شاعران» and «ادامه خواندن». */
+/* Home: black round search button between «همه سخنوران» and «ادامه خواندن». */
 .w-search { flex: none; align-self: center; width: var(--wb-h, 36px); height: var(--wb-h, 36px); display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%;
   background: #000; color: #fff; cursor: pointer; box-shadow: 0 8px 28px rgb(20 24 14 / .28); transition: transform .15s; }
 .w-search:active { transform: scale(.94); }

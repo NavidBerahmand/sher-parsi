@@ -128,7 +128,7 @@ export function mountWall() {
     <header class="w-header">
       <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></button>
     </header>
-    <div class="wall" id="wall" role="region" aria-label="دیوار شاعران"></div>
+    <div class="wall" id="wall" role="region" aria-label="دیوار سخنوران"></div>
     <div class="w-bar"><a class="w-all" href="#/poets">همه سخنوران</a><button type="button" class="w-search" aria-label="جست‌وجو در اشعار"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg></button>${resumeLink()}</div>
     <div class="w-grain" aria-hidden="true"></div>
     <div class="w-veil" id="wVeil"></div>

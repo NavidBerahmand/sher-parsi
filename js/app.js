@@ -409,7 +409,7 @@ async function viewHome() {
     </div>
     ${hist ? `<div class="section"><a class="card continue" href="${poemHref(hist.url)}"><span class="ic">${ICON.clock}</span>
       <span class="t"><b>${esc(hist.title)}</b><span>ادامهٔ خواندن · ${esc(hist.poet)}</span></span>${ICON.chev}</a></div>` : ''}
-    <div class="section"><div class="section-head"><h2>شاعران</h2><a class="link" href="#/poets">همه</a></div>
+    <div class="section"><div class="section-head"><h2>سخنوران</h2><a class="link" href="#/poets">همه</a></div>
       <div class="poet-strip">${FEATURED.map(([s, n]) => `<a class="poet-chip" href="#/c/${s}">${mono(n)}<span>${n}</span></a>`).join('')}</div></div>
   </div>`;
   $('#rnd').addEventListener('click', () => randomPoem((h) => openPoemOver(h)));
@@ -428,9 +428,9 @@ async function viewPoets() {
   const poets = m.Poets;
   document.body.classList.add('poet-bg');
   main.innerHTML = `${pageClose()}<div class="wrap fadein pl-page">
-    <div class="page-title"><h1>همه سخنوران</h1><p>${fa(poets.length)} شاعر</p></div>
-    <p class="pl-hint">با انتخاب شاعران، آنها را همیشه در صفحهٔ خانه خود داشته باشید.</p>
-    <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام شاعر" autocomplete="off"></label></div>
+    <div class="page-title"><h1>همه سخنوران</h1><p>${fa(poets.length)} سخنور</p></div>
+    <p class="pl-hint">با انتخاب سخنوران، آنها را همیشه در صفحهٔ خانه خود داشته باشید.</p>
+    <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام سخنور" autocomplete="off"></label></div>
     <div class="pl-tools"><span class="pl-sorts"><button type="button" class="pl-sort" id="plSort"></button><button type="button" class="pl-sort" id="plCent"></button></span>
       <label class="pl-allrow"><b id="plAllTxt">انتخاب همه</b><span class="pl-tick"><input type="checkbox" id="plAll"><i></i></span></label></div>
     <div class="poet-groups" id="pl"></div></div>`;
@@ -470,7 +470,7 @@ async function viewPoets() {
     const groups = [];
     list.forEach((p) => { const k = key(p); if (!groups.length || groups[groups.length - 1].k !== k) groups.push({ k, ps: [] }); groups[groups.length - 1].ps.push(p); });
     pl.innerHTML = list.length ? groups.map((g) => `<section class="pl-group">${g.k ? `<h2 class="pl-head${mode === 'cent' ? ' pl-cent' : ''}"><span>${esc(g.k)}</span></h2>` : ''}<ul class="poet-grid">${g.ps.map(tile).join('')}</ul></section>`).join('')
-      : `<p class="empty-state"><b>شاعری با این نام پیدا نشد</b></p>`;
+      : `<p class="empty-state"><b>سخنوری با این نام پیدا نشد</b></p>`;
   };
   const all = $('#plAll');
   const syncAll = () => {
@@ -1157,7 +1157,7 @@ function viewSaved() {
   };
   main.innerHTML = `${pageClose('sX')}<div class="wrap fadein"><div class="page-title"><h1>نشان‌ها</h1></div>
     <div class="tabs" id="stabs" role="tablist"><button role="tab" data-t="poems">شعرها</button><button role="tab" data-t="bayts">بیت‌ها</button><button role="tab" data-t="books">کتاب‌ها</button><button role="tab" data-t="history">خوانده‌ها</button></div>
-    <div class="sort-row" id="ssort"><span>ترتیب:</span><button data-o="time">زمان نشان کردن</button><button data-o="poet">شاعر</button></div>
+    <div class="sort-row" id="ssort"><span>ترتیب:</span><button data-o="time">زمان نشان کردن</button><button data-o="poet">سخنور</button></div>
     <ul class="saved-list" id="sl"></ul><div id="sbooks" hidden></div></div>`;
   wireClose('sX');
   document.querySelectorAll('#stabs button').forEach((b) => b.addEventListener('click', () => { savedTab = b.dataset.t; draw(); }));
@@ -1178,7 +1178,7 @@ function openBackup() {
   openSheet(`
     <h3>پشتیبان</h3>
     <div class="about">
-      <p>همهٔ نشان‌ها (${n(saved.all())} شعر، ${n(bayts.all())} بیت)، خوانده‌ها، شاعران انتخابی و تنظیمات در یک فایل. این فایل را روی گوشی یا رایانهٔ دیگر بارگذاری کن تا همه‌چیز آنجا هم باشد.</p>
+      <p>همهٔ نشان‌ها (${n(saved.all())} شعر، ${n(bayts.all())} بیت)، خوانده‌ها، سخنوران انتخابی و تنظیمات در یک فایل. این فایل را روی گوشی یا رایانهٔ دیگر بارگذاری کن تا همه‌چیز آنجا هم باشد.</p>
     </div>
     <div class="actions two">
       <button id="bkOut">${ICON.down}گرفتن فایل</button>
@@ -1259,7 +1259,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.133';
+export const VERSION = '0.9.134';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
