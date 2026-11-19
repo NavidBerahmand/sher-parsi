@@ -147,40 +147,61 @@ const SAVED_KEY = 'sp.savedPoets';
 const savedSet = () => { try { return new Set(JSON.parse(localStorage.getItem(SAVED_KEY)) || []); } catch { return new Set(); } };
 export const isPoetSaved = (slug) => savedSet().has(slug);
 
-async function poetFiles(slug) {
+// Lists every data file of a poet, calling found(url) as soon as each one is known.
+async function poetFiles(slug, found = () => {}, books = () => {}) {
   const urls = [];
-  const walk = async (url) => {
+  const add = (u) => { urls.push(u); found(u); };
+  const walk = async (url, top, tick) => {
     const cat = await getCat(url);
     if (BUNDLED) {
       const base = await bundleName(url);
-      for (let i = 0; i < (cat._chunks || 1); i++) urls.push(`${base}${i ? '.' + i : ''}.json`);
+      for (let i = 0; i < (cat._chunks || 1); i++) add(`${base}${i ? '.' + i : ''}.json`);
     } else {
-      urls.push(`${DATA_BASE}poets/${clean(url)}/_cat.json`);
-      (cat.Poems || []).forEach((p) => urls.push(`${DATA_BASE}poets/${clean(p.FullUrl)}.json`));
+      add(`${DATA_BASE}poets/${clean(url)}/_cat.json`);
+      (cat.Poems || []).forEach((p) => add(`${DATA_BASE}poets/${clean(p.FullUrl)}.json`));
     }
-    for (const c of cat.ChildCats || []) await walk(c.FullUrl);
+    let i = 0;
+    for (const c of cat.ChildCats || []) { await walk(c.FullUrl); if (top) tick(++i, top.length); }
   };
-  await walk(slug);
-  urls.push(BUNDLED ? `${await rootOf(slug)}p/${slug}.json` : `${DATA_BASE}poets/${slug}/poet.json`);
+  // books(done, total): how many of the poet's top-level books are listed so far.
+  const root = await getCat(slug), kids = root.ChildCats || [];
+  books(0, kids.length);
+  await walk(slug, kids, books);
+  add(BUNDLED ? `${await rootOf(slug)}p/${slug}.json` : `${DATA_BASE}poets/${slug}/poet.json`);
   return urls;
 }
 
-// onProgress(0..1). Resolves true when every file is stored.
+// onProgress(0..1, bytes stored so far). Files are stored while the poet's books are still being
+// listed, so the size grows from the first moment; the fill never goes backwards. Resolves true when every file is stored.
 export async function savePoet(slug, onProgress = () => {}) {
-  const urls = await poetFiles(slug);
   const cache = 'caches' in self ? await caches.open(DATA_CACHE) : null;
-  let done = 0, fails = 0;
-  const queue = urls.slice();
-  const worker = async () => {
-    while (queue.length) {
-      const u = queue.shift();
-      try {
-        if (cache) { if (!(await cache.match(u))) await cache.add(u); } else { const r = await fetch(u); if (!r.ok) throw 0; }
-      } catch { fails++; }
-      onProgress(++done / urls.length);
-    }
+  let found = 0, done = 0, fails = 0, bytes = 0, listing = true, shown = 0, active = 0, booksDone = 0, booksAll = 0;
+  const waiting = [], jobs = [];
+  const size = async (r) => { try { return (await r.clone().blob()).size; } catch { return 0; } };
+  const report = () => {
+    const f = listing ? 0.92 * (booksAll ? booksDone / booksAll : 0) * (done / Math.max(found, 1)) : done / Math.max(found, 1);
+    shown = Math.max(shown, f); onProgress(shown, bytes);
   };
-  await Promise.all(Array.from({ length: 6 }, worker));
+  const store = async (u) => {
+    try {
+      const hit = cache && await cache.match(u);
+      if (hit) bytes += await size(hit);
+      else {
+        const r = await fetch(u); if (!r.ok) throw 0;
+        bytes += await size(r);
+        if (cache) await cache.put(u, r);
+      }
+    } catch { fails++; }
+    done++; report();
+  };
+  // At most 6 files at a time.
+  const run = (u) => new Promise((resolve) => {
+    const go = async () => { active++; await store(u); active--; resolve(); waiting.shift()?.(); };
+    if (active < 6) go(); else waiting.push(go);
+  });
+  await poetFiles(slug, (u) => { found++; jobs.push(run(u)); }, (n, all) => { booksDone = n; booksAll = all; report(); });
+  listing = false; report();
+  await Promise.all(jobs);
   if (fails) return false;
   const s = savedSet(); s.add(slug);
   try { localStorage.setItem(SAVED_KEY, JSON.stringify([...s])); } catch { /* ignore */ }

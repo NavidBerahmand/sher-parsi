@@ -488,23 +488,39 @@ async function viewPoets() {
 }
 
 // Whole-poet download for offline reading, beside the close button on the poet's page.
-const poetSaving = new Map(); // slug -> progress 0..1
+const poetSaving = new Map(); // slug -> { f: progress 0..1, b: bytes }
 const DL_ICON = '<svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg>';
 const OK_ICON = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+// Size in Persian: «۸۵۰ کیلوبایت» / «۲٫۴ مگابایت».
+const faSize = (b) => b < 1048576 ? `${fa(Math.round(b / 1024))}\u00a0کیلوبایت` : `${fa((b / 1048576).toFixed(1)).replace('.', '٫')}\u00a0مگابایت`;
 function dlButton(slug) {
   const ok = isPoetSaved(slug), prog = poetSaving.get(slug);
   const tip = ok ? 'ذخیره شده برای آفلاین' : 'دانلود برای آفلاین';
-  return `<button class="icon-btn page-dl tip-l${ok ? ' saved' : ''}${prog != null ? ' busy' : ''}" id="pageDl" data-slug="${esc(slug)}" aria-label="${tip}" data-tip="${tip}" style="--p:${prog ?? 0}">${ok ? OK_ICON : DL_ICON}</button>`;
+  return `<button class="icon-btn page-dl tip-l${ok ? ' saved' : ''}${prog ? ' busy' : ''}" id="pageDl" data-slug="${esc(slug)}" aria-label="${tip}" data-tip="${tip}" style="--p:${prog?.f ?? 0}"><span class="dl-ico">${ok ? OK_ICON : DL_ICON}</span><span class="dl-txt">${prog ? faSize(prog.b) : ''}</span></button>`;
 }
+// Tapping download slides the disc open to the right into a capsule that fills as files are stored and counts the size; it closes back into a tick when done.
 async function startPoetSave(slug) {
   if (isPoetSaved(slug) || poetSaving.has(slug)) return;
   const cur = () => document.querySelector(`#pageDl[data-slug="${slug}"]`);
-  poetSaving.set(slug, 0); cur()?.classList.add('busy');
-  const ok = await savePoet(slug, (f) => { poetSaving.set(slug, f); cur()?.style.setProperty('--p', f.toFixed(3)); }).catch(() => false);
+  poetSaving.set(slug, { f: 0, b: 0 });
+  const b0 = cur(); if (b0) { b0.classList.add('busy'); b0.querySelector('.dl-txt').textContent = faSize(0); }
+  let last = 0;
+  const ok = await savePoet(slug, (f, b) => {
+    poetSaving.set(slug, { f, b });
+    const el = cur(); if (!el) return;
+    el.style.setProperty('--p', f.toFixed(3));
+    const now = performance.now();
+    if (now - last > 120 || f === 1) { last = now; el.querySelector('.dl-txt').textContent = faSize(b); }
+  }).catch(() => false);
+  const fin = poetSaving.get(slug) || { b: 0 };
+  const el = cur();
+  if (el && ok) { el.style.setProperty('--p', '1'); el.querySelector('.dl-ico').innerHTML = OK_ICON; el.querySelector('.dl-txt').textContent = faSize(fin.b); }
+  await new Promise((r) => setTimeout(r, ok ? 1400 : 0));
   poetSaving.delete(slug);
-  const b = cur(); if (b) b.outerHTML = dlButton(slug);
-  const nb = cur(); nb?.addEventListener('click', () => startPoetSave(slug));
-  toast(ok ? 'آثار برای خواندن آفلاین ذخیره شد' : 'دانلود کامل نشد، دوباره امتحان کن');
+  const b = cur(); if (b) { b.classList.remove('busy'); await new Promise((r) => setTimeout(r, 380)); }
+  const b2 = cur(); if (b2) b2.outerHTML = dlButton(slug);
+  cur()?.addEventListener('click', () => startPoetSave(slug));
+  toast(ok ? `آثار برای خواندن آفلاین ذخیره شد (${faSize(fin.b)})` : 'دانلود کامل نشد، دوباره امتحان کن');
 }
 
 async function viewCat(path) {
@@ -1225,7 +1241,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.117';
+export const VERSION = '0.9.118';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
