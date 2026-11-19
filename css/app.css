@@ -1244,7 +1244,7 @@ svg.cl.ok path.ck { fill: none; stroke: var(--ck, var(--bg)); stroke-width: 1.9;
 .page-dl:not(.busy) { justify-content: center; padding: 0; gap: 0; }
 /* «کتابخانهٔ من» disc on the home bar, beside search (Navid 2026-11-19, 0.9.155). */
 .w-search svg.ms, .w-lib svg.ms { width: 21px; height: 21px; } /* home discs: Material search + newsstand (library, Navid 0.9.159) */
-/* Material Symbols (Rounded 400, self-hosted in js/icons.js; Navid 2026-11-19, 0.9.158): solid shapes, so never stroked.
+/* Material Symbols (Sharp 400 since 0.9.160, self-hosted in js/icons.js; Navid 2026-11-19, 0.9.158): solid shapes, so never stroked.
    A toggled icon carries its filled form (.f) and shows it when on, in place of the outline (.o). */
 svg.ms { fill: currentColor !important; stroke: none !important; }
 svg.ms .f { display: none; }
