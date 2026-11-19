@@ -745,11 +745,13 @@ let sheetOver = null;
 function openPoemOver(href, replace = false) {
   const path = clean(decodeURIComponent(href.replace(/^#\/p\//, '')));
   sheetOver = { hash: location.hash, view: current.view, path: current.path };
+  // Opened over a poem being read: remember it, and where in it, to put it back on close.
+  if (sheetEl && current.view === 'poem') sheetOver.poem = { path: current.path, pushed: sheetPushed, searchBack, top: sheetEl.querySelector('.psheet')?.scrollTop || 0 };
   // From the menu the poem takes the menu's history entry, so back lands on the page itself.
   if (replace) window.history.replaceState(null, '', href); else window.history.pushState(null, '', href);
   sheetPushed = true;
   current.view = 'poem'; current.path = path;
-  viewPoem(path, {}, true).catch(() => { toast('شعر باز نشد'); requestCloseSheet(); });
+  viewPoem(path, { random: true }, true).catch(() => { toast('شعر باز نشد'); requestCloseSheet(); });
 }
 function closePoemSheet(instant) {
   if (!sheetEl) return;
@@ -856,7 +858,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
   let resumeT;
   const saveSpot = () => {
     const c = activeCard && cardCtx.get(activeCard);
-    if (!c || current.view !== 'poem') return;
+    if (!c || current.view !== 'poem' || opts.random) return; // a random poem is not «ادامه خواندن»
     const top = sh.getBoundingClientRect().top + 60;
     const el = [...activeCard.querySelectorAll('.verses [data-i]')].find((x) => x.getBoundingClientRect().bottom > top);
     const line = el ? (el.querySelector('.m') || el).textContent.trim() : '';
@@ -1258,7 +1260,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.125';
+export const VERSION = '0.9.126';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -1278,7 +1280,16 @@ window.addEventListener('hashchange', () => {
     return;
   }
   if (sheetEl && sheetOver && location.hash === sheetOver.hash) {
+    const under = sheetOver.poem;
     sheetPushed = false; current.view = sheetOver.view; current.path = sheetOver.path; sheetOver = null;
+    if (under) {
+      // Back to the poem that was open under the random one, at the same place.
+      viewPoem(under.path, { instant: true }, true).then(() => {
+        sheetPushed = under.pushed; searchBack = under.searchBack;
+        const sh = sheetEl?.querySelector('.psheet'); if (sh) sh.scrollTop = under.top;
+      }).catch(() => closePoemSheet());
+      return;
+    }
     if (window.history.state?.pg) pageId = window.history.state.pg;
     closePoemSheet();
     return;
