@@ -104,8 +104,16 @@ export const books = {
   },
 };
 
+// Books marked «خوانده‌شده» on a poet page without being in the library (Navid 2026-11-19): they still show in
+// «کتابخانهٔ من» › کتاب‌ها › «خوانده‌شده‌ها». Each: { href, title, author, d, p, at }
+export const doneBooks = {
+  all() { return read('sp.doneBooks', []); },
+  add(item) { const list = this.all().filter((x) => x.href !== item.href); list.unshift({ ...item, at: Date.now() }); write('sp.doneBooks', list); },
+  remove(href) { write('sp.doneBooks', this.all().filter((x) => x.href !== href)); },
+};
+
 // Backup: everything the reader made on this device, as one JSON file to carry to another device.
-const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.books', 'sp.bayts', 'sp.history', 'sp.read', 'sp.wall', 'sp.resume'];
+const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.books', 'sp.bayts', 'sp.history', 'sp.read', 'sp.doneBooks', 'sp.wall', 'sp.resume'];
 export function exportData() {
   const data = {};
   BACKUP_KEYS.forEach((k) => { const v = read(k, null); if (v !== null) data[k] = v; });
@@ -123,6 +131,7 @@ export function importData(obj) {
     write(key, key === 'sp.history' ? all.slice(0, 60) : all);
   };
   merge('sp.saved', (x) => x.url);
+  merge('sp.doneBooks', (x) => x.href);
   merge('sp.bayts', (x) => bkey(x.url, x.i));
   merge('sp.history', (x) => x.url);
   if (Array.isArray(d['sp.read'])) write('sp.read', [...new Set([...read('sp.read', []), ...d['sp.read'].filter((u) => typeof u === 'string')])]);

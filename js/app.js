@@ -1,5 +1,5 @@
 import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, saveBook, isBookSaved, unsaveBook, unsavePoet, setBookSaved, coverHTML, CENTURIES } from './data.js';
-import { settings, apply, onDeviceTheme, saved, history, bayts, books, readPoems, exportData, importData } from './store.js';
+import { settings, apply, onDeviceTheme, saved, history, bayts, books, doneBooks, readPoems, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
@@ -419,11 +419,22 @@ function libMeta(cat, other = false, info = {}) {
   cat = clean(cat);
   const book = info.kind !== 'poet';
   const saved = book ? isBookSaved(cat) : isPoetSaved(cat);
-  const data = Object.entries({ kind: book ? 'book' : 'poet', href: info.href || '', title: info.title || '', author: info.author || '' }).map(([k, v]) => ` data-${k}="${esc(v)}"`).join('');
+  const data = Object.entries({ kind: book ? 'book' : 'poet', href: info.href || '', title: info.title || '', author: info.author || '', where: info.where || 'lib' }).map(([k, v]) => ` data-${k}="${esc(v)}"`).join('');
   // Right to left: «…» menu, the cloud, then the percent at the far left (Navid 2026-11-19).
   return `<span class="lib-meta" data-cat="${esc(cat)}"${other ? ' data-other="1"' : ''}${data}><button type="button" class="lib-dots" aria-label="گزینه‌ها">${ICON.dots}</button><span class="lib-cl">${saved ? OK_ICON : DL_ICON}</span><span class="lib-pct">${fa(0)}٪</span></span>`;
 }
-// The «…» menu under a book or poet in «کتابخانهٔ من».
+// A cover's href → [category url, is it the poet's loose poems].
+const bookCat = (href) => [href.replace(/^#\/c\//, '').replace(/\/~other$/, ''), /\/~other$/.test(href)];
+// After a download or its removal: every cloud on screen, and the poet page's top button.
+function refreshClouds() {
+  document.querySelectorAll('.lib-meta').forEach((m) => {
+    const ok = m.dataset.kind === 'poet' ? isPoetSaved(m.dataset.cat) : isBookSaved(m.dataset.cat);
+    m.querySelector('.lib-cl').innerHTML = ok ? OK_ICON : DL_ICON;
+  });
+  const top = $('#pageDl');
+  if (top && !top.classList.contains('busy')) { const sl = top.dataset.slug; top.outerHTML = dlButton(sl); $('#pageDl')?.addEventListener('click', () => startPoetSave(sl)); }
+}
+// The «…» menu under a book or poet in «کتابخانهٔ من», and under each book on a poet's page.
 async function catPoemUrls(cat, other) {
   const out = [];
   const walk = async (u, deep) => { const c = await getCat(u); (c.Poems || []).forEach((p) => out.push(clean(p.FullUrl))); if (deep) for (const k of c.ChildCats || []) await walk(clean(k.FullUrl), true); };
@@ -433,21 +444,25 @@ async function catPoemUrls(cat, other) {
 function openLibMenu(el) {
   const { cat, kind, href, title, author } = el.dataset, other = !!el.dataset.other, book = kind === 'book';
   const slug = cat.split('/')[0];
+  // On a poet's page (Navid 2026-11-19): دانلود، اضافه به کتابخانهٔ من، خوانده‌شده، اشتراک‌گذاری.
+  const page = el.dataset.where === 'page', mark = el.closest('.book')?.querySelector('.bk-mark');
+  const inLib = book && books.has(href);
   const saved = book ? isBookSaved(cat) : isPoetSaved(slug);
   const row = (id, icon, label, dis = false) => `<button type="button" id="${id}"${dis ? ' disabled' : ''}>${icon}<span>${label}</span></button>`;
   openSheet(`<h3>${esc(book ? title : POET_NAME(slug))}</h3>${book && author ? `<p class="lib-menu-sub">${esc(author)}</p>` : ''}
     <div class="lib-menu">
-      ${book ? row('lmPoet', ICON.user, 'صفحهٔ سخنور') : ''}
+      ${book && !page ? row('lmPoet', ICON.user, 'صفحهٔ سخنور') : ''}
       ${saved ? row('lmUndl', ICON.trash, 'حذف دانلود') : row('lmDl', DL_ICON, 'دانلود')}
+      ${page ? (inLib ? row('lmDel', ICON.trash, 'حذف از کتابخانه') : row('lmAdd', ICON.bookmark, 'اضافه به کتابخانهٔ من')) : ''}
       ${book ? row('lmRead', ICON.check, 'خوانده‌شده') : ''}
       ${row('lmShare', ICON.share, 'اشتراک‌گذاری')}
-      ${row('lmDel', ICON.trash, 'حذف از کتابخانه')}
+      ${page ? '' : row('lmDel', ICON.trash, 'حذف از کتابخانه')}
     </div>`, (s) => {
     s.querySelector('#lmPoet')?.addEventListener('click', () => { closeSheet(); location.hash = `#/c/${slug}`; });
     s.querySelector('#lmUndl')?.addEventListener('click', async () => {
       closeSheet();
       try { await (book ? unsaveBook(cat, other) : unsavePoet(slug)); toast('دانلود حذف شد'); } catch { toast('حذف دانلود کامل نشد'); }
-      if (current.view === 'saved') viewSaved();
+      if (current.view === 'saved') viewSaved(); else refreshClouds();
     });
     s.querySelector('#lmDl')?.addEventListener('click', async () => {
       closeSheet();
@@ -455,12 +470,18 @@ function openLibMenu(el) {
       toast('دانلود کتاب شروع شد');
       const ok = await saveBook(cat, other).catch(() => false);
       toast(ok ? 'کتاب برای خواندن آفلاین ذخیره شد' : 'دانلود کامل نشد، دوباره امتحان کن');
-      if (current.view === 'saved') viewSaved();
+      if (current.view === 'saved') viewSaved(); else refreshClouds();
     });
+    s.querySelector('#lmAdd')?.addEventListener('click', () => { closeSheet(); if (mark) toggleBook(mark); });
     s.querySelector('#lmRead')?.addEventListener('click', async () => {
       closeSheet();
-      try { readPoems.addAll(await catPoemUrls(cat, other)); toast('کتاب خوانده‌شده شد'); } catch { toast('اتصال برقرار نشد'); }
-      if (current.view === 'saved') viewSaved();
+      try {
+        readPoems.addAll(await catPoemUrls(cat, other));
+        // On a poet page only the number turns ١٠٠٪; the book still joins «خوانده‌شده‌ها» in the library.
+        if (page && mark && !books.has(href)) doneBooks.add({ href, title, author, d: +mark.dataset.d, p: +mark.dataset.p });
+        toast('کتاب خوانده‌شده شد');
+      } catch { toast('اتصال برقرار نشد'); }
+      if (current.view === 'saved') viewSaved(); else fillLibMeta(el.parentElement);
     });
     s.querySelector('#lmShare').addEventListener('click', async () => {
       const url = `${location.origin}${location.pathname}${book ? href : `#/c/${slug}`}`;
@@ -468,11 +489,13 @@ function openLibMenu(el) {
       closeSheet();
       if (navigator.share) { try { await navigator.share({ title: name, url }); } catch { /* cancelled */ } } else { await copy(url); toast('پیوند کپی شد'); }
     });
-    s.querySelector('#lmDel').addEventListener('click', () => {
+    s.querySelector('#lmDel')?.addEventListener('click', () => {
       closeSheet();
       if (!book) { togglePoetMark(slug); return; }
+      if (page) { if (mark) toggleBook(mark); return; }
       const item = books.all().find((x) => x.href === href);
       if (item) books.toggle(item);
+      doneBooks.remove(href);
       toast('از کتابخانه حذف شد');
       if (current.view === 'saved') viewSaved();
     });
@@ -640,6 +663,7 @@ async function startPoetSave(slug) {
   const b2 = cur(); if (b2) b2.outerHTML = dlButton(slug);
   cur()?.addEventListener('click', () => startPoetSave(slug));
   toast(ok ? `آثار برای خواندن آفلاین ذخیره شد (${faSize(fin.b)})` : 'دانلود کامل نشد، دوباره امتحان کن');
+  refreshClouds();
 }
 
 async function viewCat(path) {
@@ -686,12 +710,13 @@ async function viewCat(path) {
   document.body.classList.toggle('poet-bg', isPoet && !!poet);
   const dl = isPoet && poet ? dlButton(slug) : '';
   main.innerHTML = `<button class="icon-btn page-x tip-l" id="pageX" aria-label="بستن" data-tip="بستن">${ICON.x}</button>${dl}<div class="wrap fadein">${head}
-    ${groups ? shelfHTML(groups, author) : books ? `<div class="parts">${books}</div>` : ''}
+    ${groups ? shelfHTML(groups, author, '', (b) => libMeta(...bookCat(b.href), { href: b.href, title: b.title, author, where: 'page' })) : books ? `<div class="parts">${books}</div>` : ''}
     ${poems.length ? `<div class="list-tools"><span class="count">${fa(poems.length)} شعر</span></div>
       <ul class="poems" id="pm">${poems.slice(0, shown).map(poemItem).join('')}</ul>
       ${poems.length > shown ? `<button class="btn ghost more-btn" id="more">نمایش بیشتر</button>` : ''}` : ''}
     <div id="nextSec"></div>
   </div>`;
+  if (groups) fillLibMeta(main);
   // End of a section: a button on to the next one in the poet's works (the next sibling, or the parent's next).
   if (!isPoet && !other) nextSection(path).then((n) => {
     const box = $('#nextSec');
@@ -1248,12 +1273,13 @@ function viewSaved() {
       return;
     }
     if (isBooks) {
-      const bl = books.all();
+      const bl0 = books.all(), have = new Set(bl0.map((x) => x.href));
+      const bl = [...bl0, ...doneBooks.all().filter((x) => !have.has(x.href))];
       let html;
       if (!bl.length) { const [ic, t, d] = EMPTY.books; html = `<ul class="saved-list"><li class="empty-state">${ic}<b>${t}</b>${d}</li></ul>`; }
       else {
         const list2 = savedSort === 'poet' ? [...bl].sort((p, q) => (p.author || '').localeCompare(q.author || '', 'fa')) : bl;
-        html = `<div class="books">${list2.map((b, i) => coverHTML(b, b.author, i, libMeta(b.href.replace(/^#\/c\//, '').replace(/\/~other$/, ''), /\/~other$/.test(b.href), { href: b.href, title: b.title, author: b.author }))).join('')}</div>`
+        html = `<div class="books">${list2.map((b, i) => coverHTML(b, b.author, i, libMeta(...bookCat(b.href), { href: b.href, title: b.title, author: b.author }))).join('')}</div>`
           + '<h2 class="lib-done-head" hidden>خوانده‌شده‌ها</h2><div class="books lib-done" hidden></div>';
       }
       $('#sl').hidden = true; $('#sbooks').hidden = false; $('#sbooks').innerHTML = html; fillLibMeta($('#sbooks'));
@@ -1381,7 +1407,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.152';
+export const VERSION = '0.9.153';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

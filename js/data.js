@@ -398,7 +398,7 @@ export function coverHTML(b, author, i, after = '') {
   const mark = `<span class="bk-mark${on ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${on}" aria-label="نشان کردن کتاب" data-href="${e(b.href)}" data-title="${e(b.title)}" data-author="${e(author)}" data-d="${d}" data-p="${p}">${RIBBON}</span>`;
   return `<a class="book" href="${e(b.href)}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover" style="--cloth:${pal.bg};--ink-c:${pal.ink}">${mark}<span class="art" data-d="${d}" data-p="${p}" data-s="${s}"></span><span class="frame"><b>${e(b.title)}</b><small>${e(author)}</small></span></span>${after}</a>`;
 }
-export function shelfHTML(groups, author, extra = '') {
+export function shelfHTML(groups, author, extra = '', meta = null) {
   let n = 0;
   // No design twice on one poet's page, and no two neighbours in the same colour.
   const used = new Set(); let prevP = -1;
@@ -412,6 +412,6 @@ export function shelfHTML(groups, author, extra = '') {
   };
   // The non-divan works read «دیگر آثار» beside divans; a lone shelf needs no heading.
   const lone = groups.length === 1;
-  return groups.map((g) => `<section class="shelf">${lone ? '' : `<h3 class="shelf-h"><span>${coverEsc(g.title === 'آثار' ? 'دیگر آثار' : g.title)}</span></h3>`}<div class="books ${extra}">${g.books.map((b) => coverHTML(place(b), author, n++)).join('')}</div></section>`).join('');
+  return groups.map((g) => `<section class="shelf">${lone ? '' : `<h3 class="shelf-h"><span>${coverEsc(g.title === 'آثار' ? 'دیگر آثار' : g.title)}</span></h3>`}<div class="books ${extra}">${g.books.map((b) => { const pb = place(b); return coverHTML(pb, author, n++, meta ? meta(pb) : ''); }).join('')}</div></section>`).join('');
 }
 const coverEsc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
