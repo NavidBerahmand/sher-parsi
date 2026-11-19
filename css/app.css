@@ -1148,11 +1148,12 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .pt-wall:hover { color: var(--ink); }
 /* Hover: no box, just a soft light around the portrait, like the home wall (Navid 2026-11-19). */
 .pt-pic { position: relative; }
-.pt-pic::before { content: ''; position: absolute; inset: -28%; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .9s;
-  background: radial-gradient(circle closest-side, rgb(255 255 255 / .16) 0%, rgb(255 255 255 / .11) 25%, rgb(255 255 255 / .06) 48%, rgb(255 255 255 / .02) 72%, transparent 100%); }
+.pt-pic::after { content: ''; position: absolute; inset: -12.5%; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .9s;
+  /* Same light as a home wall tile: a circle the size of the tile laid OVER the portrait, alpha .085 x (1 - t^2)^2.2 (sunImage in js/wall.js). */
+  background: radial-gradient(circle closest-side, rgb(255 255 255 / .085) 0%, rgb(255 255 255 / .078) 20%, rgb(255 255 255 / .058) 40%, rgb(255 255 255 / .032) 60%, rgb(255 255 255 / .02) 70%, rgb(255 255 255 / .009) 80%, rgb(255 255 255 / .002) 90%, transparent 100%); }
 .pt-pic > * { position: relative; }
-@media (hover: hover) { .pt:hover .pt-pic::before { opacity: 1; } .pt:hover b { color: #fff; } }
-.pt:has(a:active) .pt-pic::before { opacity: 1; }
-.pt:has(a:focus-visible) .pt-pic::before { opacity: 1; }
+@media (hover: hover) { .pt:hover .pt-pic::after { opacity: 1; } .pt:hover b { color: #fff; } }
+.pt:has(a:active) .pt-pic::after { opacity: 1; }
+.pt:has(a:focus-visible) .pt-pic::after { opacity: 1; }
 .poet-groups .empty-state { text-align: center; padding: 40px 0; }
 @media (max-width: 519px) { .pt { padding: 12px 4px 14px; } .pt b { font-size: .95rem; } .pt-wall { font-size: .72rem; gap: 6px; } }
