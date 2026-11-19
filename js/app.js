@@ -351,7 +351,7 @@ function openAbout() {
   openSheet(`
     <h3>دربارهٔ شعر پارسی</h3>
     <div class="about">
-      <p>شعر پارسی جایی ساده و آرام برای خواندن شعر فارسی است؛ بی‌آگهی و بی‌حواس‌پرتی.</p>
+      <p>شعر پارسی ساده ساخته شده تا فقط شعر بخوانی، بی‌شلوغی و بی‌حواس‌پرتی. شعر سخنوران دلخواهت را دانلود کن تا بدون اینترنت هم همیشه در گوشی‌ات باشد و هر جا که هستی به‌راحتی بخوانی. هر بیتی را که دوست داری نشان کن تا بماند، یا از آن تصویری بساز و با دیگران به اشتراک بگذار.</p>
       <p>متن همهٔ اشعار از <a href="https://ganjoor.net" target="_blank" rel="noopener">گنجور</a> گرفته شده است. سپاس از گنجور و همهٔ کسانی که این گنجینه را گرد آورده‌اند.</p>
       <p>برای نصب روی گوشی: در سافاری دکمهٔ اشتراک‌گذاری و سپس «افزودن به صفحهٔ اصلی» را بزن؛ در کروم از منوی سه‌نقطه «نصب برنامه» را انتخاب کن.</p>
       <p>قلم این سایت «کهربا» از <a href="https://fontiran.com/license/YVO2HC8R" target="_blank" rel="noopener">فونت ایران</a> است و به صورت قانونی و با مجوز استفاده می‌شود.</p>
@@ -1253,7 +1253,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.142';
+export const VERSION = '0.9.143';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
