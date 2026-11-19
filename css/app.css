@@ -1119,7 +1119,7 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .sheet .about { margin-top: 0; padding: 0; }
 .sheet-body > :last-child, .sheet .about > :last-child { margin-bottom: 0; }
 /* All poets page (Navid 2026-11-19): centred; a grid of 3 poets a row (2 on narrow phones), portrait on top, name under it,
-   and under each poet with a portrait a small tick «نمایش در صفحه اصلی». Alphabet/century groups each get their own heading. */
+   and under each poet with a portrait a small tick «نمایش در خانه». Alphabet/century groups each get their own heading. */
 .pl-page .page-title, .pl-page .pl-hint { text-align: center; }
 .pl-page .pl-tools { flex-direction: column; justify-content: center; gap: 14px; padding: 10px 0 4px; }
 .pl-page .pl-sorts { justify-content: center; gap: 22px; }

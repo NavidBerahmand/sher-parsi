@@ -459,8 +459,8 @@ async function viewPoets() {
     const dark = settings.get().theme === 'dark';
     const face = (p) => `<img class="pl-face" src="${esc(portrait(clean(p.FullUrl), dark))}" alt="" width="1024" height="1024" loading="lazy" decoding="async">`;
     const wall = new Set(wallChoice());
-    // Under every poet (the bust stands in for a missing portrait): a small tick «نمایش در صفحه اصلی» that puts the poet on the home wall.
-    const tick = (p) => { const s = clean(p.FullUrl); return s ? `<label class="pt-wall"><span class="pl-tick"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></span><span>نمایش در صفحه اصلی</span></label>` : ''; };
+    // Under every poet (the bust stands in for a missing portrait): a small tick «نمایش در خانه» that puts the poet on the home wall.
+    const tick = (p) => { const s = clean(p.FullUrl); return s ? `<label class="pt-wall"><span class="pl-tick"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></span><span>نمایش در خانه</span></label>` : ''; };
     const tile = (p) => `<li class="pt"><a href="${catHref(p.FullUrl)}"><span class="pt-pic">${face(p)}</span><b>${esc(p.Nickname)}</b></a>${tick(p)}</li>`;
     // Alphabetical: one group per letter (آ goes with ا); by century: one group per century; by readership: a single group.
     const key = (p) => mode === 'alpha' ? norm(p.Nickname).charAt(0).replace('آ', 'ا') : mode === 'cent' ? (centOf.get(clean(p.FullUrl)) || '') : '';
@@ -1249,7 +1249,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.138';
+export const VERSION = '0.9.139';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
