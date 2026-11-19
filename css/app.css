@@ -1182,3 +1182,22 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
   background: radial-gradient(circle closest-side, rgb(255 255 255 / .085) 0%, rgb(255 255 255 / .078) 20%, rgb(255 255 255 / .058) 40%, rgb(255 255 255 / .032) 60%, rgb(255 255 255 / .02) 70%, rgb(255 255 255 / .009) 80%, rgb(255 255 255 / .002) 90%, transparent 100%); }
 @media (hover: hover) { .pt:hover::after { opacity: 1; } }
 .pt:has(a:active)::after, .pt:has(a:focus-visible)::after { opacity: 1; }
+/* Every poet square is closed all round, the outer edge too (Navid 2026-11-19): the grid draws its top and right edge,
+   each cell its bottom and left edge, so every line is one hairline thick. */
+.poet-grid { border: 0 solid var(--line); border-top-width: 1px; border-inline-start-width: 1px; }
+.poet-grid > .pt, .poet-grid > .pt.pt { border-bottom-width: 1px !important; border-inline-end-width: 1px !important; }
+/* The «نمایش در خانه» tick is gone; the book ribbon at each square's top left marks a poet (red = on the home wall). */
+.pt-wall { display: none; }
+.pt-mark { position: absolute; z-index: 3; top: 0; left: 4%; width: 38px; height: 52px; display: flex; justify-content: center; align-items: flex-start; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pt-mark svg { width: 22.4px; height: 35.2px; overflow: visible; fill: #f1e7d3; stroke: #f1e7d3; opacity: .5; transition: fill .2s, stroke .2s, opacity .2s; }
+.pt-mark svg path { vector-effect: non-scaling-stroke; stroke-width: 1px; stroke-linejoin: round; }
+.pt-mark:hover svg { opacity: .8; }
+.pt-mark.on svg { fill: var(--saved); stroke: var(--saved); opacity: 1; }
+.pt-mark:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px; }
+@media (max-width: 519px) { .pt-mark { width: 30px; height: 42px; } .pt-mark svg { width: 17px; height: 27px; } }
+/* «نشان‌ها» › «سخنوران»: the marked poets as the same squares, on the portrait green. */
+.saved-poets { margin-top: 18px; --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted: #c9cbb6; --accent: #eef0df; --line: rgb(255 255 255 / .14); color: var(--ink); }
+:root[data-theme="dark"] .saved-poets { --bg: #2f3526; --line: rgb(255 255 255 / .08); }
+.saved-poets .pt { background: var(--bg); }
+/* Five tabs in «نشان‌ها» fit a phone: they share the width instead of pushing the page sideways. */
+@media (max-width: 519px) { #stabs { width: 100%; max-width: 100%; gap: 2px; } #stabs button { flex: 1 1 auto; min-width: 0; padding: 0 6px; font-size: .84rem; white-space: nowrap; } }

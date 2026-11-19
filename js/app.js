@@ -387,6 +387,33 @@ async function poetName(slug) {
   try { return (await getPoet(slug)).Nickname; } catch { return ''; }
 }
 const catHref = (u) => `#/c/${clean(u)}`;
+// Poet squares (poets page and «نشان‌ها» › «سخنوران»): portrait, name, and the book ribbon at the top left.
+// A marked (red) poet shows on the home wall (Navid 2026-11-19); the mark is the wall choice (sp.wall).
+const POET_RIBBON = '<svg viewBox="0 0 14 22" aria-hidden="true"><path d="M1 0v20.5l6-4.6 6 4.6V0"/></svg>';
+function poetTile(slug, name, marked) {
+  const dark = settings.get().theme === 'dark';
+  return `<li class="pt"><a href="#/c/${esc(slug)}"><span class="pt-pic"><img class="pl-face" src="${esc(portrait(slug, dark))}" alt="" width="1024" height="1024" loading="lazy" decoding="async"></span><b>${esc(name)}</b></a>`
+    + `<span class="pt-mark${marked ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${marked}" aria-label="نشان کردن سخنور" data-slug="${esc(slug)}">${POET_RIBBON}</span></li>`;
+}
+function togglePoetMark(slug) {
+  const keep = new Set(wallChoice());
+  const on = !keep.has(slug);
+  if (on) keep.add(slug); else keep.delete(slug);
+  if (!keep.size) { toast('دست‌کم یک سخنور در خانه می‌ماند'); return; }
+  setWallChoice([...keep]);
+  document.querySelectorAll('.pt-mark').forEach((m) => { if (m.dataset.slug === slug) { m.classList.toggle('on', on); m.setAttribute('aria-pressed', on); } });
+  toast(on ? 'سخنور نشان شد و در خانه می‌آید' : 'نشان سخنور برداشته شد');
+  if (!on && current.view === 'saved' && savedTab === 'poets') viewSaved();
+}
+document.addEventListener('click', (e) => {
+  const m = e.target.closest('.pt-mark');
+  if (!m) return;
+  e.preventDefault(); e.stopPropagation(); togglePoetMark(m.dataset.slug);
+}, true);
+document.addEventListener('keydown', (e) => {
+  const m = e.target.closest?.('.pt-mark');
+  if (m && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); togglePoetMark(m.dataset.slug); }
+}, true);
 const poemHref = (u) => `#/p/${clean(u)}`;
 function firstLines(poem, n = 2) {
   return blocks(poem).filter((b) => b.kind === 'bayt' || b.kind === 'single' || b.kind === 'center').slice(0, n);
@@ -431,7 +458,7 @@ async function viewPoets() {
   document.body.classList.add('poet-bg');
   main.innerHTML = `${pageClose()}<div class="wrap fadein pl-page">
     <div class="page-title"><h1>همه سخنوران</h1><p>${fa(poets.length)} سخنور</p></div>
-    <p class="pl-hint">با انتخاب سخنوران، آنها را همیشه در صفحهٔ خانه خود داشته باشید.</p>
+    <p class="pl-hint">هر سخنوری را نشان کنی، در صفحهٔ خانه‌ات می‌آید.</p>
     <div class="search"><label>${ICON.search}<input type="search" id="q" placeholder="جست‌وجوی نام سخنور" autocomplete="off"></label></div>
     <div class="pl-tools"><span class="pl-sorts"><button type="button" class="pl-sort" id="plSort"></button><button type="button" class="pl-sort" id="plCent"></button></span></div>
     <div class="poet-groups" id="pl"></div></div>`;
@@ -460,12 +487,8 @@ async function viewPoets() {
     let list = nq ? poets.filter((p) => norm(p.Nickname).includes(nq)) : poets;
     if (mode === 'alpha') list = [...list].sort((a, b) => norm(a.Nickname).localeCompare(norm(b.Nickname), 'fa'));
     if (mode === 'cent') list = [...list].sort((a, b) => (centPos.get(clean(a.FullUrl)) ?? 1e9) - (centPos.get(clean(b.FullUrl)) ?? 1e9));
-    const dark = settings.get().theme === 'dark';
-    const face = (p) => `<img class="pl-face" src="${esc(portrait(clean(p.FullUrl), dark))}" alt="" width="1024" height="1024" loading="lazy" decoding="async">`;
     const wall = new Set(wallChoice());
-    // Under every poet (the bust stands in for a missing portrait): a small tick «نمایش در خانه» that puts the poet on the home wall.
-    const tick = (p) => { const s = clean(p.FullUrl); return s ? `<label class="pt-wall"><span class="pl-tick"><input type="checkbox" data-slug="${esc(s)}"${wall.has(s) ? ' checked' : ''}><i></i></span><span>نمایش در خانه</span></label>` : ''; };
-    const tile = (p) => `<li class="pt"><a href="${catHref(p.FullUrl)}"><span class="pt-pic">${face(p)}</span><b>${esc(p.Nickname)}</b></a>${tick(p)}</li>`;
+    const tile = (p) => { const sl = clean(p.FullUrl); return poetTile(sl, p.Nickname, wall.has(sl)); };
     // Alphabetical: one group per letter (آ goes with ا); by century: one group per century; by readership: a single group.
     const key = (p) => mode === 'alpha' ? norm(p.Nickname).charAt(0).replace('آ', 'ا') : mode === 'cent' ? (centOf.get(clean(p.FullUrl)) || '') : '';
     const groups = [];
@@ -476,15 +499,6 @@ async function viewPoets() {
   draw();
   wireClose('pageX');
   $('#q').addEventListener('input', (e) => draw(e.target.value));
-  // Ticks choose the wall's portraits; at least one always stays.
-  pl.addEventListener('change', (e) => {
-    const box = e.target.closest('input[type=checkbox]');
-    if (!box) return;
-    const keep = new Set(wallChoice());
-    if (box.checked) keep.add(box.dataset.slug); else keep.delete(box.dataset.slug);
-    if (!keep.size) { box.checked = true; return; }
-    setWallChoice([...keep]);
-  });
 }
 
 // Whole-poet download for offline reading, beside the close button on the poet's page.
@@ -1104,6 +1118,7 @@ function viewSaved() {
     bayts: [ICON.bookmark, 'هنوز بیتی نشان نکرده‌ای', 'روی هر بیت بزن و «نشان کردن» را انتخاب کن.'],
     history: [ICON.clock, 'هنوز شعری نخوانده‌ای', 'شعرهایی که می‌خوانی اینجا می‌مانند.'],
     books: [ICON.bookmark, 'هنوز کتابی نشان نکرده‌ای', 'نوار نشانِ گوشهٔ جلد هر کتاب را بزن.'],
+    poets: [ICON.bookmark, 'هنوز سخنوری نشان نکرده‌ای', 'در صفحهٔ «همه سخنوران» نوار نشانِ گوشهٔ هر سخنور را بزن.'],
   };
   const item = (x) => {
     if (savedTab === 'bayts') {
@@ -1119,7 +1134,15 @@ function viewSaved() {
   };
   const draw = () => {
     const isBooks = savedTab === 'books';
-    $('#ssort').style.display = isBooks ? 'none' : '';
+    $('#ssort').style.display = isBooks || savedTab === 'poets' ? 'none' : '';
+    if (savedTab === 'poets') {
+      const ps = wallChoice();
+      $('#sl').hidden = true; $('#sbooks').hidden = false;
+      $('#sbooks').innerHTML = ps.length ? `<div class="saved-poets"><ul class="poet-grid">${ps.map((sl) => poetTile(sl, POET_NAME(sl), true)).join('')}</ul></div>`
+        : `<ul class="saved-list"><li class="empty-state">${EMPTY.poets.join('')}</li></ul>`;
+      document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
+      return;
+    }
     if (isBooks) {
       const bl = books.all();
       let html;
@@ -1150,7 +1173,7 @@ function viewSaved() {
     document.querySelectorAll('#ssort button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.o === savedSort));
   };
   main.innerHTML = `${pageClose('sX')}<div class="wrap fadein"><div class="page-title"><h1>نشان‌ها</h1></div>
-    <div class="tabs" id="stabs" role="tablist"><button role="tab" data-t="poems">شعرها</button><button role="tab" data-t="bayts">بیت‌ها</button><button role="tab" data-t="books">کتاب‌ها</button><button role="tab" data-t="history">خوانده‌ها</button></div>
+    <div class="tabs" id="stabs" role="tablist"><button role="tab" data-t="poems">شعرها</button><button role="tab" data-t="bayts">بیت‌ها</button><button role="tab" data-t="books">کتاب‌ها</button><button role="tab" data-t="poets">سخنوران</button><button role="tab" data-t="history">خوانده‌ها</button></div>
     <div class="sort-row" id="ssort"><span>ترتیب:</span><button data-o="time">زمان نشان کردن</button><button data-o="poet">سخنور</button></div>
     <ul class="saved-list" id="sl"></ul><div id="sbooks" hidden></div></div>`;
   wireClose('sX');
@@ -1253,7 +1276,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.144';
+export const VERSION = '0.9.145';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
