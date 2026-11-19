@@ -1158,3 +1158,27 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .pt:has(a:focus-visible) .pt-pic::after { opacity: 1; }
 .poet-groups .empty-state { text-align: center; padding: 40px 0; }
 @media (max-width: 519px) { .pt { padding: 12px 4px 14px; } .pt b { font-size: .95rem; } .pt-wall { font-size: .72rem; gap: 6px; } }
+/* Poets page as square cells like the home wall, set edge to edge (Navid 2026-11-19): 3 a row (2 on narrow phones),
+   the cells parted by the same hairline as the century headings (var(--line)), only between cells, never on the outer edge. */
+.poet-grid { gap: 0; }
+.pt { aspect-ratio: 1; justify-content: center; padding: 6% 6px; border: 0 solid var(--line); border-bottom-width: 1px; border-inline-end-width: 1px; }
+.pt a { gap: 6px; }
+.pt-pic { width: 58%; max-width: none; }
+.pt-wall { margin-top: 4px; }
+.poet-grid > .pt:nth-child(3n) { border-inline-end-width: 0; }
+.poet-grid > .pt:nth-child(3n+1):nth-last-child(-n+3), .poet-grid > .pt:nth-child(3n+1):nth-last-child(-n+3) ~ .pt { border-bottom-width: 0; }
+@media (max-width: 519px) {
+  .poet-grid { gap: 0; }
+  .pt { padding: 5% 4px; }
+  .pt-pic { width: 54%; }
+  .poet-grid > .pt:nth-child(3n) { border-inline-end-width: 1px; }
+  .poet-grid > .pt:nth-child(2n) { border-inline-end-width: 0; }
+  .poet-grid > .pt:nth-child(3n+1):nth-last-child(-n+3), .poet-grid > .pt:nth-child(3n+1):nth-last-child(-n+3) ~ .pt { border-bottom-width: 1px; }
+  .poet-grid > .pt.pt:nth-child(2n+1):nth-last-child(-n+2), .poet-grid > .pt:nth-child(2n+1):nth-last-child(-n+2) ~ .pt.pt { border-bottom-width: 0; }
+}
+/* Hover light: the whole cell, as on a wall tile. */
+.pt-pic::after { display: none; }
+.pt::after { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .9s;
+  background: radial-gradient(circle closest-side, rgb(255 255 255 / .085) 0%, rgb(255 255 255 / .078) 20%, rgb(255 255 255 / .058) 40%, rgb(255 255 255 / .032) 60%, rgb(255 255 255 / .02) 70%, rgb(255 255 255 / .009) 80%, rgb(255 255 255 / .002) 90%, transparent 100%); }
+@media (hover: hover) { .pt:hover::after { opacity: 1; } }
+.pt:has(a:active)::after, .pt:has(a:focus-visible)::after { opacity: 1; }
