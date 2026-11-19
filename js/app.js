@@ -447,6 +447,7 @@ function openLibMenu(el) {
   // On a poet's page (Navid 2026-11-19): دانلود، اضافه به کتابخانهٔ من، خوانده‌شده، اشتراک‌گذاری.
   const page = el.dataset.where === 'page', mark = el.closest('.book')?.querySelector('.bk-mark');
   const inLib = book && books.has(href);
+  const done = book && el.querySelector('.lib-pct')?.textContent === `${fa(100)}٪`;
   const saved = book ? isBookSaved(cat) : isPoetSaved(slug);
   const row = (id, icon, label, dis = false) => `<button type="button" id="${id}"${dis ? ' disabled' : ''}>${icon}<span>${label}</span></button>`;
   openSheet(`<h3>${esc(book ? title : POET_NAME(slug))}</h3>${book && author ? `<p class="lib-menu-sub">${esc(author)}</p>` : ''}
@@ -454,11 +455,12 @@ function openLibMenu(el) {
       ${book && !page ? row('lmPoet', ICON.user, 'صفحهٔ سخنور') : ''}
       ${saved ? row('lmUndl', ICON.trash, 'حذف دانلود') : row('lmDl', DL_ICON, 'دانلود')}
       ${page ? (inLib ? row('lmDel', ICON.trash, 'حذف از کتابخانه') : row('lmAdd', ICON.bookmark, 'اضافه به کتابخانهٔ من')) : ''}
-      ${book ? row('lmRead', ICON.check, 'خوانده‌شده') : ''}
+      ${book ? (done ? row('lmUnread', ICON.x, 'حذف از خوانده‌شده‌ها') : row('lmRead', ICON.check, 'خوانده‌شده')) : ''}
       ${row('lmShare', ICON.share, 'اشتراک‌گذاری')}
       ${page ? '' : row('lmDel', ICON.trash, 'حذف از کتابخانه')}
     </div>`, (s) => {
-    s.querySelector('#lmPoet')?.addEventListener('click', () => { closeSheet(); location.hash = `#/c/${slug}`; });
+    // The sheet holds a history step: the poet page takes it over (closing first would let «back» undo the jump).
+    s.querySelector('#lmPoet')?.addEventListener('click', () => { overlayNavigate(sheetBack, `#/c/${slug}`); closeSheet(true); });
     s.querySelector('#lmUndl')?.addEventListener('click', async () => {
       closeSheet();
       try { await (book ? unsaveBook(cat, other) : unsavePoet(slug)); toast('دانلود حذف شد'); } catch { toast('حذف دانلود کامل نشد'); }
@@ -472,11 +474,22 @@ function openLibMenu(el) {
       toast(ok ? 'کتاب برای خواندن آفلاین ذخیره شد' : 'دانلود کامل نشد، دوباره امتحان کن');
       if (current.view === 'saved') viewSaved(); else refreshClouds();
     });
+    s.querySelector('#lmUnread')?.addEventListener('click', async () => {
+      closeSheet();
+      try {
+        readPoems.unmark(href, await catPoemUrls(cat, other));
+        // A book that was in the library only as «خوانده‌شده» goes back up into the main list.
+        const d = doneBooks.all().find((x) => x.href === href);
+        if (d) { if (!books.has(href)) books.toggle(d); doneBooks.remove(href); }
+        toast('از خوانده‌شده‌ها برداشته شد');
+      } catch { toast('اتصال برقرار نشد'); }
+      if (current.view === 'saved') viewSaved(); else fillLibMeta(el.parentElement);
+    });
     s.querySelector('#lmAdd')?.addEventListener('click', () => { closeSheet(); if (mark) toggleBook(mark); });
     s.querySelector('#lmRead')?.addEventListener('click', async () => {
       closeSheet();
       try {
-        readPoems.addAll(await catPoemUrls(cat, other));
+        readPoems.mark(href, await catPoemUrls(cat, other));
         // On a poet page only the number turns ١٠٠٪; the book still joins «خوانده‌شده‌ها» in the library.
         if (page && mark && !books.has(href)) doneBooks.add({ href, title, author, d: +mark.dataset.d, p: +mark.dataset.p });
         toast('کتاب خوانده‌شده شد');
@@ -523,7 +536,7 @@ function fillLibMeta(root) {
   root.querySelectorAll('.lib-meta').forEach(async (el) => {
     const cat = el.dataset.cat, other = !!el.dataset.other;
     const read = urls.filter((u) => (other ? parentOf(u) === cat : u.startsWith(`${cat}/`))).length;
-    if (!read) return;
+    if (!read) { el.querySelector('.lib-pct').textContent = `${fa(0)}٪`; return; }
     try {
       const n = await poemCount(cat, other);
       const done = n > 0 && read >= n;
@@ -1407,7 +1420,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.153';
+export const VERSION = '0.9.154';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

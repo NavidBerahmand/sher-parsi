@@ -62,6 +62,19 @@ export const readPoems = {
   all() { return [...new Set([...read('sp.read', []), ...read('sp.history', []).map((x) => x.url)])]; },
   add(url) { const l = read('sp.read', []); if (url && !l.includes(url)) { l.push(url); write('sp.read', l); } },
   addAll(urls) { write('sp.read', [...new Set([...read('sp.read', []), ...urls])]); },
+  // «خوانده‌شده» by hand on a book (key = its href): remembers which poems it added, so «حذف از خوانده‌شده‌ها» can take back only those.
+  mark(key, urls) {
+    const had = new Set(this.all()), added = urls.filter((u) => !had.has(u));
+    const m = read('sp.markedRead', {}); m[key] = [...new Set([...(m[key] || []), ...added])]; write('sp.markedRead', m);
+    this.addAll(urls);
+  },
+  unmark(key, urls) {
+    const m = read('sp.markedRead', {});
+    // A book read to the end by itself has no record: then every poem of it leaves the read list.
+    const drop = new Set(m[key] || urls);
+    delete m[key]; write('sp.markedRead', m);
+    write('sp.read', read('sp.read', []).filter((u) => !drop.has(u)));
+  },
 };
 // Reading history: last 60 poems, newest first.
 export const history = {
@@ -113,7 +126,7 @@ export const doneBooks = {
 };
 
 // Backup: everything the reader made on this device, as one JSON file to carry to another device.
-const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.books', 'sp.bayts', 'sp.history', 'sp.read', 'sp.doneBooks', 'sp.wall', 'sp.resume'];
+const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.books', 'sp.bayts', 'sp.history', 'sp.read', 'sp.markedRead', 'sp.doneBooks', 'sp.wall', 'sp.resume'];
 export function exportData() {
   const data = {};
   BACKUP_KEYS.forEach((k) => { const v = read(k, null); if (v !== null) data[k] = v; });
