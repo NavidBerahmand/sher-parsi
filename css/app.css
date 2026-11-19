@@ -1201,3 +1201,6 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .saved-poets .pt { background: var(--bg); }
 /* Five tabs in «نشان‌ها» fit a phone: they share the width instead of pushing the page sideways. */
 @media (max-width: 519px) { #stabs { width: 100%; max-width: 100%; gap: 2px; } #stabs button { flex: 1 1 auto; min-width: 0; padding: 0 6px; font-size: .84rem; white-space: nowrap; } }
+/* Unmarked poet ribbon: empty, outlined with exactly the squares' hairline (Navid 2026-11-19). */
+.pt-mark:not(.on) svg { fill: none; stroke: var(--line); opacity: 1; }
+.pt-mark:not(.on):hover svg { stroke: var(--muted); }
