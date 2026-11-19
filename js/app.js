@@ -5,6 +5,7 @@ import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, highlight, norm as searchNorm } from './search.js';
 import { mountWall, unmountWall, wallChoice, setWallChoice } from './wall.js';
 import { attachSheetDrag } from './sheetdrag.js';
+import { ms } from './icons.js';
 import { overlayOpened, overlayClosed, overlayNavigate, overlayIsOpen, overlaySwap, overlayForget } from './overlay.js';
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -70,25 +71,26 @@ function meaningHTML(raw) {
     + (src ? `<small class="m-src">منبع: ${esc(src)}</small>` : '');
 }
 const ICON = {
-  chev: '<svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
-  back: '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
-  next: '<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
-  bookmark: '<svg viewBox="0 0 24 24"><path d="M7 4h10v16l-5-3.5L7 20z"/></svg>',
-  share: '<svg viewBox="0 0 24 24"><path d="M12 4v11M8 8l4-4 4 4"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>',
-  copy: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
-  image: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9.5" cy="9.5" r="1.6"/><path d="M20 15l-4.5-4.5L6 20"/></svg>',
-  down: '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
-  cloud: '<svg viewBox="0 0 24 24"><path d="M12 11v7M9 15l3 3 3-3"/><path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9"/></svg>',
-  x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-  dots: '<svg class="dots3" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>',
-  user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>',
-  trash: '<svg viewBox="0 0 24 24"><path d="M4.5 7h15M10 7V4.5h4V7M6.5 7l1 13h9l1-13"/></svg>',
-  home: '<svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6.5 9.5V20h11V9.5"/></svg>',
-  check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
-  search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg>',
-  star: '<svg viewBox="0 0 24 24"><path d="M12 3l2.2 5.6L20 9.3l-4.5 3.8 1.4 5.9L12 15.9 7.1 19l1.4-5.9L4 9.3l5.8-.7z"/></svg>',
-  shuffle: '<svg viewBox="0 0 24 24"><path d="M4 7h3.5c4.5 0 4.5 10 9 10H20M4 17h3.5c1.6 0 2.6-1.2 3.4-2.8M13.1 9.8C13.9 8.2 14.9 7 16.5 7H20M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5"/></svg>',
-  clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
+  chev: ms('chevron_left', 'chev'),
+  back: ms('chevron_right'),
+  next: ms('chevron_left'),
+  bookmark: ms('bookmark', 'tog', 'bookmark_fill'),
+  share: ms('ios_share'),
+  copy: ms('content_copy'),
+  image: ms('image'),
+  down: ms('expand_more'),
+  download: ms('download'),
+  cloud: ms('upload'),
+  x: ms('close'),
+  dots: ms('more_horiz', 'dots3'),
+  user: ms('person'),
+  trash: ms('delete'),
+  home: ms('home'),
+  check: ms('check'),
+  search: ms('search'),
+  star: ms('star'),
+  shuffle: ms('shuffle'),
+  clock: ms('history'),
   lantern: '<svg viewBox="0 0 64 64"><path d="M32 6v6M24 12h16M22 18c0-3 4-6 10-6s10 3 10 6v22c0 6-4 10-10 10s-10-4-10-10z"/><path d="M26 54h12M28 58h8M32 24c3 3 4 6 4 9a4 4 0 0 1-8 0c0-3 1-6 4-9z"/></svg>',
 };
 
@@ -641,9 +643,8 @@ async function viewPoets() {
 // Whole-poet download for offline reading, beside the close button on the poet's page.
 const poetSaving = new Map(); // slug -> { f: progress 0..1, b: bytes }
 // Offline state (Navid 2026-11-19): an empty cloud = not downloaded; a filled cloud with a tick = downloaded.
-const CLOUD_D = 'M7 18.5a4.5 4.5 0 0 1-.55-8.97A6 6 0 0 1 18.1 8.6a4.75 4.75 0 0 1-.6 9.9z';
-const DL_ICON = `<svg class="cl" viewBox="0.6 -0.55 24 24"><path d="${CLOUD_D}"/></svg>`;
-const OK_ICON = `<svg class="cl ok" viewBox="0.6 -0.55 24 24"><path d="${CLOUD_D}"/><path class="ck" d="M9.2 13.4l2 2 3.8-4"/></svg>`;
+const DL_ICON = ms('cloud', 'cl');
+const OK_ICON = ms('cloud_done', 'cl ok');
 // Size in Persian: «۸۵۰ کیلوبایت» / «۲٫۴ مگابایت».
 // With the whole size: «۲٫۴ از ۹٫۱ مگابایت», both in the unit of the whole.
 const faNum = (b, mb) => mb ? fa((b / 1048576).toFixed(1)).replace('.', '٫') : fa(Math.round(b / 1024));
@@ -1342,7 +1343,7 @@ function openBackup() {
       <p>همهٔ نشان‌ها (${n(saved.all())} شعر، ${n(bayts.all())} بیت)، خوانده‌ها، سخنوران انتخابی و تنظیمات در یک فایل. این فایل را روی گوشی یا رایانهٔ دیگر بارگذاری کن تا همه‌چیز آنجا هم باشد.</p>
     </div>
     <div class="actions two">
-      <button id="bkOut">${ICON.down}گرفتن فایل</button>
+      <button id="bkOut">${ICON.download}گرفتن فایل</button>
       <button id="bkIn">${ICON.cloud}بارگذاری فایل</button>
     </div>
     <input type="file" id="bkFile" accept=".json,application/json" hidden>`, (s) => {
@@ -1420,7 +1421,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.157';
+export const VERSION = '0.9.158';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

@@ -2,6 +2,7 @@
 // Drag (or scroll) in any direction; tap a portrait to bring it forward with its story.
 import { getPoet, getCat, getManifest, NAMES, NICK, TOP, portrait, savePoet, isPoetSaved, shelf, shelfHTML } from './data.js';
 import { attachSheetDrag } from './sheetdrag.js';
+import { ms } from './icons.js';
 import { overlayOpened, overlayClosed, overlayNavigate, overlayForget } from './overlay.js';
 
 // Hand-written era and a famous bayt for some poets; the rest take their years from the data.
@@ -138,7 +139,7 @@ export function mountWall() {
       <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></button>
     </header>
     <div class="wall" id="wall" role="region" aria-label="دیوار سخنوران"></div>
-    <div class="w-bar"><a class="w-all" href="#/poets">همه سخنوران</a><a class="w-search w-lib" href="#/saved" aria-label="کتابخانهٔ من"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3.5" width="4.3" height="17" rx="1.3"/><rect x="8.5" y="3.5" width="4.3" height="17" rx="1.3"/><rect x="14" y="4.2" width="4.3" height="16.3" rx="1.3" transform="rotate(12 14 20.5)"/></svg></a><button type="button" class="w-search" aria-label="جست‌وجو در اشعار"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg></button>${resumeLink()}</div>
+    <div class="w-bar"><a class="w-all" href="#/poets">همه سخنوران</a><a class="w-search w-lib" href="#/saved" aria-label="کتابخانهٔ من">${ms('library')}</a><button type="button" class="w-search" aria-label="جست‌وجو در اشعار">${ms('search')}</button>${resumeLink()}</div>
     <div class="w-grain" aria-hidden="true"></div>
     <div class="w-veil" id="wVeil"></div>
     <div class="w-focus" id="wFocus" aria-hidden="true"><div class="w-glow"></div><img alt=""></div>
@@ -409,7 +410,7 @@ export function mountWall() {
   function dlButton(slug) {
     const saved = isPoetSaved(slug), prog = saving.get(slug);
     const label = saved ? 'برای خواندن آفلاین ذخیره شده' : 'دانلود همه آثار برای خواندن آفلاین';
-    return `<button class="wp-dl${saved ? ' saved' : ''}${prog != null ? ' busy' : ''}" data-slug="${p_esc(slug)}" aria-label="${label}" data-tip="${saved ? 'ذخیره شده' : 'دانلود برای آفلاین'}" style="--p:${prog ?? 0}"><svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg></button>`;
+    return `<button class="wp-dl${saved ? ' saved' : ''}${prog != null ? ' busy' : ''}" data-slug="${p_esc(slug)}" aria-label="${label}" data-tip="${saved ? 'ذخیره شده' : 'دانلود برای آفلاین'}" style="--p:${prog ?? 0}">${saved ? ms('cloud_done') : ms('download')}</button>`;
   }
   const p_esc = esc;
   async function startSave(btn) {
@@ -440,7 +441,7 @@ export function mountWall() {
     return `
       <div class="wp-grip" id="wpClose" aria-hidden="true"><i></i></div>
       ${dlButton(p.slug)}
-      <button class="wp-x" id="wpX" aria-label="بستن" data-tip="بستن"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <button class="wp-x" id="wpX" aria-label="بستن" data-tip="بستن">${ms('close')}</button>
       <h2 class="wp-name">${p.full}</h2>
       <p class="wp-era">${p.era || [years, esc(places)].filter(Boolean).join(' · ')}</p>
       ${p.bayt ? `<blockquote class="wp-bayt"><span>${p.bayt[0]}</span><span>${p.bayt[1]}</span></blockquote>` : ''}

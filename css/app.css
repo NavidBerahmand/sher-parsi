@@ -1243,4 +1243,10 @@ svg.cl.ok path.ck { fill: none; stroke: var(--ck, var(--bg)); stroke-width: 1.9;
 /* Cloud sits in the exact centre of the round poet-page button (Navid 2026-11-19, 0.9.152); the cloud path itself is centred by its viewBox. */
 .page-dl:not(.busy) { justify-content: center; padding: 0; gap: 0; }
 /* «کتابخانهٔ من» disc on the home bar, beside search (Navid 2026-11-19, 0.9.155). */
-.w-lib svg { width: 19px; height: 19px; fill: currentColor; stroke: none; } /* library icon: three spines on a shelf, the last one leaning (Navid 2026-11-19, 0.9.157) */
+.w-search svg.ms, .w-lib svg.ms { width: 21px; height: 21px; } /* home discs: Material search + library_books (0.9.158) */
+/* Material Symbols (Rounded 400, self-hosted in js/icons.js; Navid 2026-11-19, 0.9.158): solid shapes, so never stroked.
+   A toggled icon carries its filled form (.f) and shows it when on, in place of the outline (.o). */
+svg.ms { fill: currentColor !important; stroke: none !important; }
+svg.ms .f { display: none; }
+.icon-btn.on svg.ms .o, .psheet-tools .pt-save.on svg.ms .o, .poems .mk-save svg.ms .o, #bSave[aria-pressed="true"] svg.ms .o { display: none; }
+.icon-btn.on svg.ms .f, .psheet-tools .pt-save.on svg.ms .f, .poems .mk-save svg.ms .f, #bSave[aria-pressed="true"] svg.ms .f { display: inline; }
