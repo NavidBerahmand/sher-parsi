@@ -1100,3 +1100,5 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .page-dl.busy { width: 178px; }
 .page-dl.busy .dl-txt { opacity: 1; transition-delay: .18s; }
 .page-dl.busy::before { content: none; }
+/* Cover titles: line-clamp needs overflow hidden, which cut the dots above tall letters (فـ); room above, same position (0.9.124). */
+.cover .frame b, .wp-shelf .cover .frame b { padding-top: .3em; margin-top: -.3em; padding-bottom: .15em; margin-bottom: -.15em; }
