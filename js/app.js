@@ -183,7 +183,7 @@ document.addEventListener('click', (e) => {
   if (r && r.dataset.line) pendingFind = { url: r.dataset.url, line: r.dataset.line };
 });
 // Home search button: opens the menu with the cursor already in the search box.
-document.addEventListener('click', (e) => { if (e.target.closest('.w-search')) { e.preventDefault(); location.hash = '#/search'; } });
+document.addEventListener('click', (e) => { if (e.target.closest('.w-search:not(.w-lib)')) { e.preventDefault(); location.hash = '#/search'; } });
 document.addEventListener('click', (e) => { if (e.target.closest('.menu-trigger')) { e.preventDefault(); setMenu(!menu.classList.contains('open')); } });
 menu.addEventListener('click', (e) => {
   if (e.target === menu) return setMenu(false);
@@ -1420,7 +1420,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.154';
+export const VERSION = '0.9.155';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
