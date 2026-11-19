@@ -1085,7 +1085,7 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .cover { container-type: inline-size; }
 .cover .frame { padding-top: 8%; }
 .cover .frame b, .wp-shelf .cover .frame b { font-size: 9.2cqw; line-height: 1.35; -webkit-line-clamp: 2; text-wrap: balance; }
-.cover .frame small { margin-top: auto; margin-bottom: 9%; font-size: 4.6cqw; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.cover .frame small { margin-top: auto; margin-bottom: 9%; font-size: 8.3cqw; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 /* Unsaved ribbon: cream at half opacity, so it shows on every cover colour (Navid 2026-11-18). */
 .cover .bk-mark:not(.on) svg { fill: #f1e7d3; stroke: #f1e7d3; opacity: .5; }
 /* Cover art must not inherit the icon rule (svg { stroke: currentColor }), which outlined every shape; draw it as designed. */
