@@ -1,4 +1,4 @@
-import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, setBookSaved, coverHTML, CENTURIES } from './data.js';
+import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, FEATURED, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, saveBook, isBookSaved, setBookSaved, coverHTML, CENTURIES } from './data.js';
 import { settings, apply, onDeviceTheme, saved, history, bayts, books, readPoems, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
@@ -80,6 +80,9 @@ const ICON = {
   down: '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
   cloud: '<svg viewBox="0 0 24 24"><path d="M12 11v7M9 15l3 3 3-3"/><path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9"/></svg>',
   x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  dots: '<svg class="dots3" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>',
+  user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>',
+  trash: '<svg viewBox="0 0 24 24"><path d="M4.5 7h15M10 7V4.5h4V7M6.5 7l1 13h9l1-13"/></svg>',
   home: '<svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6.5 9.5V20h11V9.5"/></svg>',
   check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg>',
@@ -412,10 +415,69 @@ document.addEventListener('click', (e) => {
 }, true);
 // «کتابخانهٔ من»: under each book and poet, the reading percent (poems opened / poems in it) and the offline cloud.
 // cat = the book's category url (or the poet's slug); other = the poet's loose poems («سایر اشعار»), only the top category's own poems.
-function libMeta(cat, other = false) {
-  const slug = clean(cat).split('/')[0];
-  return `<span class="lib-meta" data-cat="${esc(clean(cat))}"${other ? ' data-other="1"' : ''}><span class="lib-pct">${fa(0)}٪</span><span class="lib-cl">${isPoetSaved(slug) ? OK_ICON : DL_ICON}</span></span>`;
+function libMeta(cat, other = false, info = {}) {
+  cat = clean(cat);
+  const book = info.kind !== 'poet';
+  const saved = book ? isBookSaved(cat) : isPoetSaved(cat);
+  const data = Object.entries({ kind: book ? 'book' : 'poet', href: info.href || '', title: info.title || '', author: info.author || '' }).map(([k, v]) => ` data-${k}="${esc(v)}"`).join('');
+  // Right to left: «…» menu, the cloud, then the percent at the far left (Navid 2026-11-19).
+  return `<span class="lib-meta" data-cat="${esc(cat)}"${other ? ' data-other="1"' : ''}${data}><button type="button" class="lib-dots" aria-label="گزینه‌ها">${ICON.dots}</button><span class="lib-cl">${saved ? OK_ICON : DL_ICON}</span><span class="lib-pct">${fa(0)}٪</span></span>`;
 }
+// The «…» menu under a book or poet in «کتابخانهٔ من».
+async function catPoemUrls(cat, other) {
+  const out = [];
+  const walk = async (u, deep) => { const c = await getCat(u); (c.Poems || []).forEach((p) => out.push(clean(p.FullUrl))); if (deep) for (const k of c.ChildCats || []) await walk(clean(k.FullUrl), true); };
+  await walk(cat, !other);
+  return out;
+}
+function openLibMenu(el) {
+  const { cat, kind, href, title, author } = el.dataset, other = !!el.dataset.other, book = kind === 'book';
+  const slug = cat.split('/')[0];
+  const saved = book ? isBookSaved(cat) : isPoetSaved(slug);
+  const row = (id, icon, label, dis = false) => `<button type="button" id="${id}"${dis ? ' disabled' : ''}>${icon}<span>${label}</span></button>`;
+  openSheet(`<h3>${esc(book ? title : POET_NAME(slug))}</h3>${book && author ? `<p class="lib-menu-sub">${esc(author)}</p>` : ''}
+    <div class="lib-menu">
+      ${book ? row('lmPoet', ICON.user, 'صفحهٔ سخنور') : ''}
+      ${row('lmDl', saved ? OK_ICON : DL_ICON, saved ? 'دانلود شده' : 'دانلود', saved)}
+      ${book ? row('lmRead', ICON.check, 'خوانده‌شده') : ''}
+      ${row('lmShare', ICON.share, 'اشتراک‌گذاری')}
+      ${row('lmDel', ICON.trash, 'حذف از کتابخانه')}
+    </div>`, (s) => {
+    s.querySelector('#lmPoet')?.addEventListener('click', () => { closeSheet(); location.hash = `#/c/${slug}`; });
+    s.querySelector('#lmDl').addEventListener('click', async () => {
+      closeSheet();
+      if (!book) { toast('دانلود آثار سخنور شروع شد'); await startPoetSave(slug); if (current.view === 'saved') viewSaved(); return; }
+      toast('دانلود کتاب شروع شد');
+      const ok = await saveBook(cat, other).catch(() => false);
+      toast(ok ? 'کتاب برای خواندن آفلاین ذخیره شد' : 'دانلود کامل نشد، دوباره امتحان کن');
+      if (current.view === 'saved') viewSaved();
+    });
+    s.querySelector('#lmRead')?.addEventListener('click', async () => {
+      closeSheet();
+      try { readPoems.addAll(await catPoemUrls(cat, other)); toast('کتاب خوانده‌شده شد'); } catch { toast('اتصال برقرار نشد'); }
+      if (current.view === 'saved') viewSaved();
+    });
+    s.querySelector('#lmShare').addEventListener('click', async () => {
+      const url = `${location.origin}${location.pathname}${book ? href : `#/c/${slug}`}`;
+      const name = book ? `${title} · ${author}` : POET_NAME(slug);
+      closeSheet();
+      if (navigator.share) { try { await navigator.share({ title: name, url }); } catch { /* cancelled */ } } else { await copy(url); toast('پیوند کپی شد'); }
+    });
+    s.querySelector('#lmDel').addEventListener('click', () => {
+      closeSheet();
+      if (!book) { togglePoetMark(slug); return; }
+      const item = books.all().find((x) => x.href === href);
+      if (item) books.toggle(item);
+      toast('از کتابخانه حذف شد');
+      if (current.view === 'saved') viewSaved();
+    });
+  });
+}
+document.addEventListener('click', (e) => {
+  const d = e.target.closest('.lib-dots');
+  if (!d) return;
+  e.preventDefault(); e.stopPropagation(); openLibMenu(d.closest('.lib-meta'));
+}, true);
 const COUNT_KEY = 'sp.counts';
 async function poemCount(cat, other) {
   const key = `${cat}${other ? '/~other' : ''}`;
@@ -1174,7 +1236,7 @@ function viewSaved() {
     if (savedTab === 'poets') {
       const ps = wallChoice();
       $('#sl').hidden = true; $('#sbooks').hidden = false;
-      $('#sbooks').innerHTML = ps.length ? `<div class="saved-poets"><ul class="poet-grid">${ps.map((sl) => poetTile(sl, POET_NAME(sl), true, libMeta(sl))).join('')}</ul></div>`
+      $('#sbooks').innerHTML = ps.length ? `<div class="saved-poets"><ul class="poet-grid">${ps.map((sl) => poetTile(sl, POET_NAME(sl), true, libMeta(sl, false, { kind: 'poet' }))).join('')}</ul></div>`
         : `<ul class="saved-list"><li class="empty-state">${EMPTY.poets.join('')}</li></ul>`;
       fillLibMeta($('#sbooks'));
       document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
@@ -1186,7 +1248,7 @@ function viewSaved() {
       if (!bl.length) { const [ic, t, d] = EMPTY.books; html = `<ul class="saved-list"><li class="empty-state">${ic}<b>${t}</b>${d}</li></ul>`; }
       else {
         const list2 = savedSort === 'poet' ? [...bl].sort((p, q) => (p.author || '').localeCompare(q.author || '', 'fa')) : bl;
-        html = `<div class="books">${list2.map((b, i) => coverHTML(b, b.author, i, libMeta(b.href.replace(/^#\/c\//, '').replace(/\/~other$/, ''), /\/~other$/.test(b.href)))).join('')}</div>`
+        html = `<div class="books">${list2.map((b, i) => coverHTML(b, b.author, i, libMeta(b.href.replace(/^#\/c\//, '').replace(/\/~other$/, ''), /\/~other$/.test(b.href), { href: b.href, title: b.title, author: b.author }))).join('')}</div>`
           + '<h2 class="lib-done-head" hidden>خوانده‌شده‌ها</h2><div class="books lib-done" hidden></div>';
       }
       $('#sl').hidden = true; $('#sbooks').hidden = false; $('#sbooks').innerHTML = html; fillLibMeta($('#sbooks'));
@@ -1314,7 +1376,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.150';
+export const VERSION = '0.9.151';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

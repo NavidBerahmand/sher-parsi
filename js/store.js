@@ -61,6 +61,7 @@ export const saved = {
 export const readPoems = {
   all() { return [...new Set([...read('sp.read', []), ...read('sp.history', []).map((x) => x.url)])]; },
   add(url) { const l = read('sp.read', []); if (url && !l.includes(url)) { l.push(url); write('sp.read', l); } },
+  addAll(urls) { write('sp.read', [...new Set([...read('sp.read', []), ...urls])]); },
 };
 // Reading history: last 60 poems, newest first.
 export const history = {

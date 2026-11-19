@@ -1223,3 +1223,19 @@ svg.cl.ok path.ck { fill: none; stroke: var(--ck, var(--bg)); stroke-width: 1.9;
 .lib-done-head[hidden], .lib-done[hidden] { display: none; }
 .book.read-done { opacity: .45; transition: opacity .2s; }
 .book.read-done:hover { opacity: .7; }
+/* «کتابخانهٔ من»: under each book/poet, right to left: «…» menu, cloud, and the percent at the far left (Navid 2026-11-19). */
+.lib-meta, .pt .lib-meta { justify-content: flex-start; gap: 10px; }
+.pt .lib-meta { width: 100%; padding: 0 14px; margin-top: 8px; }
+.lib-meta .lib-pct { margin-inline-start: auto; }
+.lib-dots { display: grid; place-items: center; width: 30px; height: 26px; margin-inline-start: -4px; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; border-radius: 8px; }
+.lib-dots:hover { color: var(--ink); }
+.lib-dots svg.dots3 { width: 22px; height: 22px; fill: currentColor; stroke: none; }
+.lib-menu-sub { margin: -6px 0 10px; color: var(--muted); font-size: .9rem; }
+.lib-menu { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.lib-menu button { display: flex; align-items: center; gap: 14px; width: 100%; height: 50px; padding: 0 16px; border: 0; border-radius: 14px; background: var(--surface-2); color: var(--ink); font: inherit; font-size: .95rem; text-align: start; cursor: pointer; }
+.lib-menu button:active { transform: scale(.98); }
+.lib-menu button:disabled { opacity: .55; cursor: default; }
+.lib-menu button svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.lib-menu button svg.cl.ok path:first-child { fill: currentColor; }
+.lib-menu button svg.cl.ok path.ck { stroke: var(--surface-2); }
+#lmDel { color: var(--saved); }

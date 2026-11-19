@@ -223,6 +223,39 @@ export async function savePoet(slug, onProgress = () => {}) {
   return true;
 }
 
+// One book for offline reading (Navid 2026-11-19, «کتابخانهٔ من» › … › دانلود): its own files, plus the poet's top files so it opens.
+// cat = the book's category url; other = the poet's loose poems (only the top category's own poems).
+const BOOKS_KEY = 'sp.savedBooks';
+const booksSet = () => { try { return new Set(JSON.parse(localStorage.getItem(BOOKS_KEY)) || []); } catch { return new Set(); } };
+export const isBookSaved = (cat) => booksSet().has(clean(cat)) || isPoetSaved(clean(cat).split('/')[0]);
+export async function saveBook(cat, other = false, onProgress = () => {}) {
+  cat = clean(cat);
+  const slug = cat.split('/')[0], urls = [];
+  const walk = async (url, deep) => {
+    const c = await getCat(url);
+    if (BUNDLED) { const base = await bundleName(url); for (let i = 0; i < (c._chunks || 1); i++) urls.push(`${base}${i ? '.' + i : ''}.json`); }
+    else { urls.push(`${DATA_BASE}poets/${clean(url)}/_cat.json`); (c.Poems || []).forEach((p) => urls.push(`${DATA_BASE}poets/${clean(p.FullUrl)}.json`)); }
+    if (deep) for (const k of c.ChildCats || []) await walk(k.FullUrl, true);
+  };
+  await walk(cat, !other);
+  if (!other && cat !== slug) urls.push(BUNDLED ? `${await bundleName(slug)}.json` : `${DATA_BASE}poets/${slug}/_cat.json`);
+  urls.push(BUNDLED ? `${await rootOf(slug)}p/${slug}.json` : `${DATA_BASE}poets/${slug}/poet.json`);
+  const cache = 'caches' in self ? await caches.open(DATA_CACHE) : null;
+  let done = 0, fails = 0, i = 0;
+  const one = async () => {
+    while (i < urls.length) {
+      const u = urls[i++];
+      try { if (!(cache && await cache.match(u))) { const r = await fetch(u); if (!r.ok) throw 0; if (cache) await cache.put(u, r); } } catch { fails++; }
+      onProgress(++done / urls.length);
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, one));
+  if (fails) return false;
+  const s = booksSet(); s.add(cat);
+  try { localStorage.setItem(BOOKS_KEY, JSON.stringify([...s])); } catch { /* ignore */ }
+  return true;
+}
+
 // Curated poets for the home page, in the order a reader is likely to look for them.
 export const FEATURED = [
   ['hafez', NAMES.hafez], ['saadi', NAMES.saadi], ['moulavi', NAMES.moulavi], ['khayyam', NAMES.khayyam],
