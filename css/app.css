@@ -1087,3 +1087,5 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .cover .frame small { margin-top: auto; margin-bottom: 9%; font-size: 4.6cqw; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 /* Unsaved ribbon: cream at half opacity, so it shows on every cover colour (Navid 2026-11-18). */
 .cover .bk-mark:not(.on) svg { fill: #f1e7d3; stroke: #f1e7d3; opacity: .5; }
+/* Cover art must not inherit the icon rule (svg { stroke: currentColor }), which outlined every shape; draw it as designed. */
+.cover .art svg { fill: #000; stroke: none; stroke-width: 1; stroke-linecap: butt; stroke-linejoin: miter; }
