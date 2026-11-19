@@ -1097,6 +1097,6 @@ body.psheet-open .page-dl { opacity: 0; pointer-events: none; }
 .page-dl:hover { background: linear-gradient(to right, #4a4f40 calc(var(--p, 0) * 100%), #000 0); }
 .page-dl .dl-ico { display: grid; place-items: center; flex: none; width: 18px; height: 18px; }
 .page-dl .dl-txt { direction: rtl; font-family: var(--ui); font-size: .82rem; color: #fff; opacity: 0; transition: opacity .2s; font-variant-numeric: tabular-nums; }
-.page-dl.busy { width: 142px; }
+.page-dl.busy { width: 178px; }
 .page-dl.busy .dl-txt { opacity: 1; transition-delay: .18s; }
 .page-dl.busy::before { content: none; }

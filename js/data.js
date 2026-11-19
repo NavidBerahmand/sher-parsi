@@ -171,24 +171,27 @@ async function poetFiles(slug, found = () => {}, books = () => {}) {
   return urls;
 }
 
-// onProgress(0..1, bytes stored so far). Files are stored while the poet's books are still being
+// onProgress(0..1, bytes stored so far, whole size or 0). Files are stored while the poet's books are still being
 // listed, so the size grows from the first moment; the fill never goes backwards. Resolves true when every file is stored.
 export async function savePoet(slug, onProgress = () => {}) {
+  // Whole size, worked out once by tools/poet_sizes.py (manifest "S"); 0 when unknown.
+  const total = BUNDLED ? ((await getLocal('data/manifest.json')).Poets || []).find((p) => clean(p.FullUrl) === slug)?.S || 0 : 0;
+  onProgress(0, 0, total);
   const cache = 'caches' in self ? await caches.open(DATA_CACHE) : null;
   let found = 0, done = 0, fails = 0, bytes = 0, listing = true, shown = 0, active = 0, booksDone = 0, booksAll = 0;
   const waiting = [], jobs = [];
   const size = async (r) => { try { return (await r.clone().blob()).size; } catch { return 0; } };
   const report = () => {
-    const f = listing ? 0.92 * (booksAll ? booksDone / booksAll : 0) * (done / Math.max(found, 1)) : done / Math.max(found, 1);
-    shown = Math.max(shown, f); onProgress(shown, bytes);
+    const f = total ? Math.min(1, bytes / total) : listing ? 0.92 * (booksAll ? booksDone / booksAll : 0) * (done / Math.max(found, 1)) : done / Math.max(found, 1);
+    shown = Math.max(shown, f); onProgress(shown, bytes, total);
   };
   const store = async (u) => {
     try {
       const hit = cache && await cache.match(u);
-      if (hit) bytes += await size(hit);
+      if (hit) { const n = await size(hit); bytes += n; }
       else {
         const r = await fetch(u); if (!r.ok) throw 0;
-        bytes += await size(r);
+        const n = await size(r); bytes += n; // read the size first: «bytes += await …» would lose sizes counted meanwhile
         if (cache) await cache.put(u, r);
       }
     } catch { fails++; }
