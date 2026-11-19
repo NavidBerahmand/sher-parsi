@@ -1217,3 +1217,9 @@ svg.cl.ok path.ck { fill: none; stroke: var(--ck, var(--bg)); stroke-width: 1.9;
 .lib-meta svg.cl { width: 22px; height: 22px; }
 .pt .lib-meta { justify-content: center; gap: 18px; margin-top: 8px; }
 .pt .lib-meta svg.cl { width: 20px; height: 20px; }
+/* «کتابخانهٔ من» › کتاب‌ها: books read to 100% sit at the bottom under «خوانده‌شده‌ها», faded (Navid 2026-11-19). */
+.lib-done-head { display: flex; align-items: center; gap: 16px; margin: 40px 0 0; font-size: 1.1rem; font-weight: 670; color: var(--muted); }
+.lib-done-head::before, .lib-done-head::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.lib-done-head[hidden], .lib-done[hidden] { display: none; }
+.book.read-done { opacity: .45; transition: opacity .2s; }
+.book.read-done:hover { opacity: .7; }

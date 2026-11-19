@@ -436,7 +436,11 @@ function fillLibMeta(root) {
     if (!read) return;
     try {
       const n = await poemCount(cat, other);
-      el.querySelector('.lib-pct').textContent = `${fa(n ? Math.min(100, Math.max(1, Math.round((read / n) * 100))) : 0)}٪`;
+      const done = n > 0 && read >= n;
+      el.querySelector('.lib-pct').textContent = `${fa(done ? 100 : n ? Math.min(99, Math.max(1, Math.round((read / n) * 100))) : 0)}٪`;
+      // A book read to the end moves down to «خوانده‌شده‌ها», faded (Navid 2026-11-19).
+      const book = el.closest('.book'), shelfDone = root.querySelector('.lib-done');
+      if (done && book && shelfDone && !shelfDone.contains(book)) { book.classList.add('read-done'); shelfDone.append(book); shelfDone.hidden = false; root.querySelector('.lib-done-head').hidden = false; }
     } catch { /* offline: leave 0 */ }
   });
 }
@@ -1182,7 +1186,8 @@ function viewSaved() {
       if (!bl.length) { const [ic, t, d] = EMPTY.books; html = `<ul class="saved-list"><li class="empty-state">${ic}<b>${t}</b>${d}</li></ul>`; }
       else {
         const list2 = savedSort === 'poet' ? [...bl].sort((p, q) => (p.author || '').localeCompare(q.author || '', 'fa')) : bl;
-        html = `<div class="books">${list2.map((b, i) => coverHTML(b, b.author, i, libMeta(b.href.replace(/^#\/c\//, '').replace(/\/~other$/, ''), /\/~other$/.test(b.href)))).join('')}</div>`;
+        html = `<div class="books">${list2.map((b, i) => coverHTML(b, b.author, i, libMeta(b.href.replace(/^#\/c\//, '').replace(/\/~other$/, ''), /\/~other$/.test(b.href)))).join('')}</div>`
+          + '<h2 class="lib-done-head" hidden>خوانده‌شده‌ها</h2><div class="books lib-done" hidden></div>';
       }
       $('#sl').hidden = true; $('#sbooks').hidden = false; $('#sbooks').innerHTML = html; fillLibMeta($('#sbooks'));
       document.querySelectorAll('#stabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.t === savedTab));
@@ -1309,7 +1314,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.148';
+export const VERSION = '0.9.149';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
