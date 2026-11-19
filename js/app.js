@@ -1262,7 +1262,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) main.focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.131';
+export const VERSION = '0.9.132';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -1354,13 +1354,13 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:' && !document.q
 function logoHint() {
   const logo = [...document.querySelectorAll('.menu-trigger')].find((b) => b.getBoundingClientRect().width > 0);
   if (!logo || current.view !== 'home' || menu.classList.contains('open')) return;
-  const r = logo.getBoundingClientRect();
+  const r = (logo.querySelector('.dots') || logo).getBoundingClientRect();
   const tip = document.createElement('div');
-  tip.className = 'logo-hint'; tip.setAttribute('role', 'status'); tip.textContent = 'پیکربندی اینجاست';
+  tip.className = 'logo-hint'; tip.setAttribute('role', 'status'); tip.textContent = 'منو و تنظیمات';
   document.body.appendChild(tip);
   const w = tip.offsetWidth, cx = r.left + r.width / 2;
   const left = Math.max(12, Math.min(innerWidth - w - 12, cx - w / 2));
-  tip.style.left = `${left}px`; tip.style.top = `${r.bottom + 12}px`;
+  tip.style.left = `${left}px`; tip.style.top = `${r.bottom + 10}px`;
   tip.style.setProperty('--ax', `${cx - left}px`);
   requestAnimationFrame(() => tip.classList.add('show'));
   const bye = () => { tip.classList.remove('show'); setTimeout(() => tip.remove(), 400); };
