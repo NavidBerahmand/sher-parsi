@@ -362,6 +362,8 @@ function openAbout() {
       <p>متن همهٔ اشعار از <a href="https://ganjoor.net" target="_blank" rel="noopener">گنجور</a> گرفته شده است. سپاس از گنجور و همهٔ کسانی که این گنجینه را گرد آورده‌اند.</p>
       <p>برای نصب روی گوشی: در سافاری دکمهٔ اشتراک‌گذاری و سپس «افزودن به صفحهٔ اصلی» را بزن؛ در کروم از منوی سه‌نقطه «نصب برنامه» را انتخاب کن.</p>
       <p>قلم این سایت «کهربا» از <a href="https://fontiran.com/license/YVO2HC8R" target="_blank" rel="noopener">فونت ایران</a> است و به صورت قانونی و با مجوز استفاده می‌شود.</p>
+      <h4 class="about-h">حریم خصوصی</h4>
+      <p>«شعر پارسی» نیازی به ثبت‌نام ندارد و هیچ اطلاعات شخصی‌ای از شما نمی‌گیرد. نشان‌ها، درصد خوانده‌شده‌ها، تنظیمات و شعرهایی که دانلود می‌کنید فقط روی دستگاه خودتان ذخیره می‌شوند و به جایی فرستاده نمی‌شوند. با پاک کردن داده‌های مرورگر، همهٔ آن‌ها پاک می‌شوند. برای نگه داشتن آن‌ها می‌توانید از «پشتیبان‌گیری» استفاده کنید. این سایت کوکی و تبلیغ ندارد و چیزی از گوگل یا سرویس‌های دیگر بارگذاری نمی‌کند.</p>
       <p class="muted">نسخهٔ ${fa(VERSION)}</p>
       <p class="about-credit">ساختهٔ نوید برهمند · <a href="https://berahmand.com" target="_blank" rel="noopener" dir="ltr">Berahmand.com</a></p>
     </div>`);
@@ -1515,7 +1517,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.164';
+export const VERSION = '0.9.165';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
