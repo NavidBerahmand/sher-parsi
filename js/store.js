@@ -133,24 +133,58 @@ export function exportData() {
   return { app: 'sher-parsi', v: 1, at: new Date().toISOString(), data };
 }
 // Merges lists (nothing already here is lost); settings and chosen poets are taken from the file.
+// Everything in the file is checked first: only well-formed items with plain site addresses get in,
+// so a damaged or tampered file can't break the pages that list them.
+const PATH = /^[A-Za-z0-9_~.-]+(\/[A-Za-z0-9_~.-]+)*$/;
+const isPath = (u) => typeof u === 'string' && u.length < 300 && PATH.test(u);
+const str = (v) => (typeof v === 'string' ? v.slice(0, 2000) : '');
+const at = (v) => (Number.isFinite(v) ? v : 0);
+const CHECK = {
+  'sp.saved': (x) => isPath(x.url) && { url: x.url, title: str(x.title), poet: str(x.poet), book: str(x.book), line: str(x.line), at: at(x.at) },
+  'sp.history': (x) => isPath(x.url) && { url: x.url, title: str(x.title), poet: str(x.poet), book: str(x.book), line: str(x.line), at: at(x.at) },
+  'sp.bayts': (x) => isPath(x.url) && Number.isInteger(x.i) && x.i >= 0 && Array.isArray(x.lines) && x.lines.length > 0 && x.lines.length <= 8
+    && { url: x.url, i: x.i, lines: x.lines.map(str), title: str(x.title), poet: str(x.poet), at: at(x.at) },
+  'sp.books': (x) => isBook(x.href) && { href: x.href, title: str(x.title), author: str(x.author), at: at(x.at) },
+  'sp.doneBooks': (x) => isBook(x.href) && { href: x.href, title: str(x.title), author: str(x.author), d: at(x.d), p: at(x.p), at: at(x.at) },
+};
+const isBook = (h) => typeof h === 'string' && h.startsWith('#/c/') && isPath(h.slice(4));
+const checked = (key, list) => (Array.isArray(list) ? list.map((x) => (x && typeof x === 'object' ? CHECK[key](x) : false)).filter(Boolean) : null);
 export function importData(obj) {
-  if (!obj || obj.app !== 'sher-parsi' || typeof obj.data !== 'object') throw new Error('bad file');
+  if (!obj || obj.app !== 'sher-parsi' || !obj.data || typeof obj.data !== 'object') throw new Error('bad file');
   const d = obj.data;
   const merge = (key, id) => {
-    if (!Array.isArray(d[key])) return;
+    const theirs = checked(key, d[key]);
+    if (!theirs) return;
     const mine = read(key, []), seen = new Set(mine.map(id));
-    const all = [...mine, ...d[key].filter((x) => x && !seen.has(id(x)))];
+    const all = [...mine, ...theirs.filter((x) => !seen.has(id(x)))];
     all.sort((a, b) => (b.at || 0) - (a.at || 0));
     write(key, key === 'sp.history' ? all.slice(0, 60) : all);
   };
   merge('sp.saved', (x) => x.url);
+  merge('sp.books', (x) => x.href);
   merge('sp.doneBooks', (x) => x.href);
   merge('sp.bayts', (x) => bkey(x.url, x.i));
   merge('sp.history', (x) => x.url);
-  if (Array.isArray(d['sp.read'])) write('sp.read', [...new Set([...read('sp.read', []), ...d['sp.read'].filter((u) => typeof u === 'string')])]);
-  if (d['sp.settings'] && typeof d['sp.settings'] === 'object') write('sp.settings', d['sp.settings']);
-  if (Array.isArray(d['sp.wall'])) write('sp.wall', d['sp.wall']);
+  if (Array.isArray(d['sp.read'])) write('sp.read', [...new Set([...read('sp.read', []), ...d['sp.read'].filter(isPath)])]);
+  // Which poems a hand-made «خوانده‌شده» added, per book: joined with this device's record.
+  const mr = d['sp.markedRead'];
+  if (mr && typeof mr === 'object' && !Array.isArray(mr)) {
+    const m = read('sp.markedRead', {});
+    Object.keys(mr).forEach((k) => { if (isBook(k) && Array.isArray(mr[k])) m[k] = [...new Set([...(m[k] || []), ...mr[k].filter(isPath)])]; });
+    write('sp.markedRead', m);
+  }
+  const st = d['sp.settings'];
+  if (st && typeof st === 'object' && !Array.isArray(st)) {
+    const keep = {};
+    if (st.font === 'sans' || st.font === 'naskh') keep.font = st.font;
+    if (Number.isFinite(st.size) && st.size >= 0.5 && st.size <= 3) keep.size = st.size;
+    if (Number.isFinite(st.weight) && st.weight >= 100 && st.weight <= 900) keep.weight = st.weight;
+    if (typeof st.harakat === 'boolean') keep.harakat = st.harakat;
+    if (st.themeChosen === true && (st.theme === 'dark' || st.theme === 'light')) { keep.themeChosen = true; keep.theme = st.theme; }
+    write('sp.settings', keep);
+  }
+  if (Array.isArray(d['sp.wall'])) write('sp.wall', d['sp.wall'].filter((x) => isPath(x) && !x.includes('/')));
   // Reading position («ادامه خواندن»): keep whichever is newer, this device's or the file's.
   const r = d['sp.resume'];
-  if (r && typeof r === 'object' && r.url && (r.at || 0) > (read('sp.resume', {})?.at || 0)) write('sp.resume', r);
+  if (r && typeof r === 'object' && isPath(r.url) && at(r.at) > (read('sp.resume', {})?.at || 0)) write('sp.resume', { url: r.url, line: str(r.line), at: at(r.at) });
 }

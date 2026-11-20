@@ -1,61 +1,12 @@
 // Home page: an endless wall of carved poet portraits.
-// Drag (or scroll) in any direction; tap a portrait to bring it forward with its story.
-import { getPoet, getCat, getManifest, NAMES, NICK, TOP, portrait, savePoet, isPoetSaved, shelf, shelfHTML } from './data.js';
-import { attachSheetDrag } from './sheetdrag.js';
+// Drag (or scroll) in any direction; tap a portrait to open the poet's page.
+import { getPoet, getCat, getManifest, NAMES, NICK, TOP, portrait } from './data.js';
 import { ms } from './icons.js';
-import { overlayOpened, overlayClosed, overlayNavigate, overlayForget } from './overlay.js';
 
-// Hand-written era and a famous bayt for some poets; the rest take their years from the data.
-const INFO = [
-  { slug: 'hafez', era: '۷۲۶ – ۷۹۲ ق · شیراز', full: NAMES.hafez, name: 'حافظ', bayt: ['الا یا ایها الساقی ادر کأسا و ناولها', 'که عشق آسان نمود اول ولی افتاد مشکل‌ها'] },
-  { slug: 'saadi', era: '۶۱۵ – ۶۹۴ ق · شیراز', full: NAMES.saadi, name: 'سعدی', bayt: ['بنی آدم اعضای یکدیگرند', 'که در آفرینش ز یک گوهرند'] },
-  { slug: 'moulavi', era: '۶۰۴ – ۶۷۲ ق · بلخ', full: NAMES.moulavi, name: 'مولانا', bayt: ['بشنو این نی چون شکایت می‌کند', 'از جدایی‌ها حکایت می‌کند'] },
-  { slug: 'khayyam', era: '۴۳۹ – ۵۲۶ ق · نیشابور', full: NAMES.khayyam, name: 'خیام', bayt: ['این قافلهٔ عمر عجب می‌گذرد', 'دریاب دمی که با طرب می‌گذرد'] },
-  { slug: 'ferdousi', era: '۳۲۹ – ۴۱۱ ق · مشهد', full: NAMES.ferdousi, name: 'فردوسی', bayt: ['توانا بود هر که دانا بود', 'ز دانش دل پیر برنا بود'] },
-  { slug: 'saeb', era: '۱۰۰۱ – ۱۰۸۰ ق · اصفهان', full: NAMES.saeb, name: 'صائب', bayt: ['اظهار عجز پیش ستم‌پیشگان خطاست', 'اشک کباب باعث طغیان آتش است'] },
-  { slug: 'seyf', full: NAMES.seyf, name: 'سیف فرغانی', bayt: ['ای تیغتان چو نیزه برای ستم دراز', 'این تیزی سنان شما نیز بگذرد'] },
-  { slug: 'nezami', full: NAMES.nezami, bayt: ['جوانی گفت پیری را چه تدبیر؟', 'که یار از من گریزد چون شوم پیر'] },
-  { slug: 'parvin', full: NAMES.parvin, bayt: ['محتسب، مستی به ره دید و گریبانش گرفت', 'مست گفت: ای دوست، این پیراهن است، افسار نیست'] },
-  { slug: 'attar', full: NAMES.attar, bayt: ['ای روی درکشیده به بازار آمده', 'خلقی بدین طلسم گرفتار آمده'] },
-  { slug: 'sanaee', full: NAMES.sanaee, bayt: ['ملکا ذکر تو گویم که تو پاکی و خدایی', 'نروم جز به همان ره که توام راه نمایی'] },
-  { slug: 'vahshi', full: NAMES.vahshi, bayt: ['دوستان! شرح پریشانی من، گوش کنید', 'داستان غم پنهانی من، گوش کنید'] },
-  { slug: 'roodaki', full: NAMES.roodaki, bayt: ['بوی جوی مولیان آید همی', 'یاد یار مهربان آید همی'] },
-  { slug: 'naserkhosro', full: NAMES.naserkhosro, bayt: ['درخت تو گر بار دانش بگیرد', 'به زیر آوری چرخ نیلوفری را'] },
-  { slug: 'manoochehri', full: NAMES.manoochehri, bayt: ['خیزید و خز آرید که هنگام خزانست', 'باد خنک از جانب خوارزم وزانست'] },
-  { slug: 'farrokhi', full: NAMES.farrokhi, bayt: ['با کاروان حله برفتم ز سیستان', 'با حله تنیده ز دل بافته ز جان'] },
-  { slug: 'khaghani', full: NAMES.khaghani, bayt: ['هان! ای دل عبرت‌بین! از دیده عبر کن! هان!', 'ایوان مدائن را آیینه عبرت دان!'] },
-  { slug: 'anvari', full: NAMES.anvari, bayt: ['هر بلایی کز آسمان آید', 'گرچه بر دیگری قضا باشد'] },
-  { slug: 'eraghi', full: NAMES.eraghi, bayt: ['نخستین باده کاندر جام کردند', 'ز چشم مست ساقی وام کردند'] },
-  { slug: 'shabestari', full: NAMES.shabestari, bayt: ['دلی کز معرفت نور و صفا دید', 'ز هر چیزی که دید اول خدا دید'] },
-  { slug: 'jami', full: NAMES.jami, bayt: ['بس که در جان فگار و چشم بیدارم تویی', 'هر که پیدا می‌شود از دور پندارم تویی'] },
-  { slug: 'hatef', full: NAMES.hatef, bayt: ['که یکی هست و هیچ نیست جز او', 'وحده لا إله إلا هو'] },
-  { slug: 'abusaeed', full: NAMES.abusaeed, bayt: ['باز آ باز آ، هر آنچه هستی باز آ', 'گر کافر و گبر و بت‌پرستی باز آ'] },
-  { slug: 'bahar', full: NAMES.bahar, bayt: ['ای دیو سپید پای در بند', 'ای گنبد گیتی ای دماوند'] },
-  { slug: 'babataher', full: NAMES.babataher, bayt: ['ز دست دیده و دل هر دو فریاد', 'که هر چه دیده بیند، دل کند یاد'] },
-  { slug: 'mohtasham', full: NAMES.mohtasham, bayt: ['باز این چه شورش است که در خلق عالم است', 'باز این چه نوحه و چه عزا و چه ماتم است'] },
-  { slug: 'bahaee', full: NAMES.bahaee, bayt: ['تا کی به تمنای وصال تو یگانه', 'اشکم شود از هر مژه چون سیل روانه'] },
-  { slug: 'forooghi', full: NAMES.forooghi, bayt: ['کی رفته‌ای ز دل که تمنا کنم تو را', 'کی بوده‌ای نهفته که پیدا کنم تو را'] },
-  { slug: 'obeyd', full: NAMES.obeyd, bayt: ['اگر داری تو عقل و دانش و هوش', 'بیا بشنو حدیث گربه و موش'] },
-  { slug: 'khosro', full: NAMES.khosro, bayt: ['ابر می‌بارد و من می‌شوم از یار جدا', 'چون کنم دل به چنین روز ز دلدار جدا؟'] },
-  { slug: 'shahriar', full: NAMES.shahriar, bayt: ['علی ای همای رحمت، تو چه آیتی خدا را', 'که به ماسوا فکندی همه سایه هما را'] },
-  { slug: 'rahi', full: NAMES.rahi, bayt: ['خیال‌انگیز و جان‌پرور چو بوی گل سراپایی', 'نداری غیر از این عیبی که می‌دانی که زیبایی'] },
-  { slug: 'iqbal', full: NAMES.iqbal, bayt: ['چون چراغ لاله سوزم در خیابان شما', 'ای جوانان عجم جان من و جان شما'] },
-  { slug: 'shahnematollah', full: NAMES.shahnematollah, bayt: ['ما خاک راه را به نظر کیمیا کنیم', 'صد درد دل به گوشه چشمی دوا کنیم'] },
-  { slug: 'aref', full: NAMES.aref, bayt: ['از خون جوانان وطن لاله دمیده', 'از ماتم سرو قدشان سرو خمیده'] },
-  { slug: 'iraj', full: NAMES.iraj, bayt: ['گویند مرا چو زاد مادر', 'پستان به دهن گرفتن آموخت'] },
-  { slug: 'yazdi', full: NAMES.yazdi, bayt: ['آن زمان که بنهادم سر به پای آزادی', 'دست خود ز جان شستم از برای آزادی'] },
-  { slug: 'ouhadi', full: NAMES.ouhadi, bayt: ['فراقی کامشبم دل می‌خراشد', 'من اول روز دانستم که باشد'] },
-  { slug: 'khajoo', full: NAMES.khajoo, bayt: ['بیا که جات کنم بر کنار مردم چشم', 'زیادتم چه دهی انتظار مردم چشم'] },
-  { slug: 'feyz', full: NAMES.feyz, bayt: ['ای خوش آن روزی که ما جان در ره جانان کنیم', 'ترک یک جان کرده خود را منبع صد جان کنیم'] },
-  { slug: 'bidel', full: NAMES.bidel, bayt: ['من نمی‌گویم به‌کلی از تعلق‌ها برآ', 'اندکی زین دردسر آزاد باید زیستن'] },
-  { slug: 'abdullah', full: NAMES.abdullah, bayt: ['مردی باید زهر دو عالم شده فرد', 'کو جرعه درد دوستان داند خورد'] },
-  { slug: 'jahan', full: NAMES.jahan, bayt: ['گرچه جهان ندارد با دلبران وفایی', 'دیدی که کس جفایی زین گونه با جهان کرد'] },
-  { slug: 'eshghi', full: NAMES.eshghi, bayt: ['ای وطن، ای مهد عشق پاک!', 'ای آن که ذکر عشق تو شام و سحر کنم'] },
-];
 // Every poet has a portrait. The reader picks which of them show on the wall (ticks in the all-poets list).
 // Names under the portraits match ganjoor.net's home page exactly (Navid 2026-11-18); NAMES stays as is elsewhere.
 const GANJOOR_NAME = { saadi: 'سعدی', hafez: 'حافظ', attar: 'عطار', saeb: 'صائب', sanaee: 'سنایی', nezami: 'نظامی', khaghani: 'خاقانی', roodaki: 'رودکی', anvari: 'انوری', naserkhosro: 'ناصرخسرو', manoochehri: 'منوچهری' };
-const ALL = TOP.map((slug) => ({ slug, ...INFO.find((q) => q.slug === slug), full: GANJOOR_NAME[slug] || NAMES[slug] }));
+const ALL = TOP.map((slug) => ({ slug, full: GANJOOR_NAME[slug] || NAMES[slug] }));
 // Any other poet can be ticked too (Navid 2026-11-19): it shows the faceless bust, with Ganjoor's name once the manifest is in.
 const entry = (slug) => ALL.find((p) => p.slug === slug) || { slug, get full() { return NICK.get(slug) || ''; } };
 const WALL_KEY = 'sp.wall';
@@ -114,7 +65,6 @@ function sunImage(r, peak = 0.055) {
   ctx.putImageData(img, 0, 0);
   return c.toDataURL('image/png');
 }
-const fa = (n) => String(n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 let root = null;
@@ -140,10 +90,7 @@ export function mountWall() {
     </header>
     <div class="wall" id="wall" role="region" aria-label="دیوار سخنوران"></div>
     <div class="w-bar"><a class="w-all" href="#/poets">همه سخنوران</a><a class="w-search w-lib" href="#/saved" aria-label="کتابخانهٔ من">${ms('library')}</a><button type="button" class="w-search" aria-label="جست‌وجو در اشعار">${ms('search')}</button>${resumeLink()}</div>
-    <div class="w-grain" aria-hidden="true"></div>
-    <div class="w-veil" id="wVeil"></div>
-    <div class="w-focus" id="wFocus" aria-hidden="true"><div class="w-glow"></div><img alt=""></div>
-    <aside class="w-panel" id="wPanel" role="dialog" aria-modal="true" aria-hidden="true" tabindex="-1"></aside>`;
+    <div class="w-grain" aria-hidden="true"></div>`;
   document.body.appendChild(root);
 
   const wall = root.querySelector('#wall');
@@ -194,9 +141,9 @@ export function mountWall() {
           el.className = 'w-tile';
           el.style.width = el.style.height = TILE - SEAM + 'px';
           el.dataset.pi = pi;
-          el.tabIndex = 0;
           el.setAttribute('role', 'button');
           el.setAttribute('aria-label', p.full);
+          setFirst(el, !firstOf.has(pi));
           el.innerHTML = `<div class="w-tglow"></div><img src="${img(p)}" alt="" draggable="false" loading="lazy" onload="this.classList.add('loaded')"><div class="w-name">${esc(p.full)}</div>`;
           wall.appendChild(el);
           pool.set(key, el);
@@ -211,7 +158,21 @@ export function mountWall() {
         }
       }
     }
-    for (const [key, el] of pool) if (!needed.has(key)) { el.remove(); pool.delete(key); }
+    for (const [key, el] of pool) {
+      if (needed.has(key)) continue;
+      el.remove(); pool.delete(key);
+      // The copy the keyboard could reach went off screen: hand that over to another copy of the same poet.
+      if (firstOf.get(+el.dataset.pi) === el) {
+        firstOf.delete(+el.dataset.pi);
+        for (const other of pool.values()) if (other.dataset.pi === el.dataset.pi) { setFirst(other, true); break; }
+      }
+    }
+  }
+  // The wall repeats every poet many times: only one copy of each takes the Tab key and is read by a screen reader.
+  const firstOf = new Map(); // poet index -> its reachable tile
+  function setFirst(el, yes) {
+    el.tabIndex = yes ? 0 : -1;
+    if (yes) { el.removeAttribute('aria-hidden'); firstOf.set(+el.dataset.pi, el); } else el.setAttribute('aria-hidden', 'true');
   }
   render();
 
@@ -253,7 +214,6 @@ export function mountWall() {
     openPoet(+tile.dataset.pi);
   });
   on(window, 'wheel', (e) => {
-    if (panel.contains(e.target) || focusEl.classList.contains('show')) return;
     if (POETS.length === 1) return;
     offX -= e.deltaX; offY -= e.deltaY;
     render();
@@ -302,7 +262,7 @@ export function mountWall() {
       const dt = last ? Math.min(t - last, 100) / 1000 : 0; last = t;
       if (document.getElementById('splash')) { calmSince = t; return; }
       if (dragging) { touch(); return; }
-      if (root.classList.contains('focused') || document.hidden) { rest(1200); return; }
+      if (document.hidden) { rest(1200); return; }
       if (POETS.length === 1 || still.matches) return;
       const e = Math.min(1, Math.max(0, (t - calmSince) / 4000)); // ease back in over 4s
       const k = e * e * (3 - 2 * e);
@@ -314,31 +274,8 @@ export function mountWall() {
     cleanup.push(() => cancelAnimationFrame(raf));
   }
 
-  /* ── Focus: the portrait comes forward, its story opens beside it ── */
-  const focusEl = root.querySelector('#wFocus');
-  const focusImg = focusEl.querySelector('img');
-  const veil = root.querySelector('#wVeil');
-  const panel = root.querySelector('#wPanel');
-  let fromTile = null, returnFocus = null, drag = null;
-
-  function targetRect() {
-    if (innerWidth < 768) {
-      const free = innerHeight * 0.36; // the panel takes the bottom 64%
-      const s = Math.min(innerWidth * 0.5, free * 0.84, 230);
-      return { x: (innerWidth - s) / 2, y: (free - s) / 2, s };
-    }
-    const panelW = Math.min(480, innerWidth * 0.36);
-    const free = innerWidth - panelW; // panel sits on the left in RTL
-    const s = Math.min(free * 0.62, innerHeight * 0.72);
-    return { x: panelW + (free - s) / 2, y: (innerHeight - s) / 2, s };
-  }
-  function place(r) {
-    focusEl.style.width = focusEl.style.height = r.s + 'px';
-    focusEl.style.transform = `translate(${r.x}px, ${r.y}px)`;
-  }
-
   // Each poet's story and works, fetched quietly as soon as the wall shows,
-  // so the panel opens complete and nothing appears or shifts afterwards.
+  // so a poet's page opens at once (and offline) when its portrait is tapped.
   const loadInfo = (slug) => Promise.all([getPoet(slug), getCat(slug)]).then(([poet, cat]) => { const d = { poet, cat }; info.set(slug, d); return d; });
   // Fetched once the wall has painted and the browser is idle, so it never slows the first view.
   const prefetch = () => POETS.slice(0, 24).forEach((q) => { if (!info.has(q.slug)) loadInfo(q.slug).catch(() => {}); });
@@ -346,132 +283,6 @@ export function mountWall() {
 
   // A tap on a portrait opens the poet's own page (the half card is gone, Navid 2026-11-18).
   function openPoet(pi) { location.hash = `#/c/${POETS[pi].slug}`; }
-  const focusBack = () => closeFocus(true);
-  async function openFocus(pi, tile) {
-    const p = POETS[pi];
-    overlayOpened(focusBack);
-    fromTile = tile; returnFocus = document.activeElement;
-    const b = tile.getBoundingClientRect();
-    focusImg.src = img(p);
-    focusEl.style.transition = 'none';
-    place({ x: b.left, y: b.top, s: b.width });
-    focusEl.offsetWidth; // commit start position
-    focusEl.style.transition = '';
-    tile.classList.add('w-hidden');
-    root.classList.add('focused');
-    focusEl.classList.add('show');
-    veil.classList.add('show');
-    place(targetRect());
-    const ready = info.get(p.slug); // loaded in the background when the wall opened
-    panel.innerHTML = panelHTML(p, ready?.poet || null, ready?.cat || null);
-    fitName(); fillShelves(p, ready?.cat);
-    drag?.reset(); panel.classList.remove('full'); root.classList.remove('panel-full');
-    panel.classList.add('open');
-    panel.setAttribute('aria-hidden', 'false');
-    panel.scrollTop = 0;
-    setTimeout(() => panel.focus({ preventScroll: true }), 50);
-    if (ready) return;
-    try {
-      // Not loaded yet: swap in the full story once the panel has finished rising.
-      const [d] = await Promise.all([loadInfo(p.slug), new Promise((r) => setTimeout(r, 850))]);
-      if (panel.dataset.slug === p.slug) { panel.innerHTML = panelHTML(p, d.poet, d.cat); fitName(); fillShelves(p, d.cat); }
-    } catch { /* offline: the short panel is still useful */ }
-  }
-
-  function closeFocus(fromBack) {
-    if (!focusEl.classList.contains('show')) return;
-    if (fromBack !== true) overlayClosed(focusBack);
-    drag?.reset(); panel.classList.remove('full'); root.classList.remove('panel-full');
-    panel.classList.remove('open');
-    panel.setAttribute('aria-hidden', 'true');
-    veil.classList.remove('show');
-    root.classList.remove('focused');
-    const t = fromTile;
-    if (t && t.isConnected) {
-      const b = t.getBoundingClientRect();
-      place({ x: b.left, y: b.top, s: b.width });
-    }
-    focusEl.classList.remove('show');
-    setTimeout(() => { t?.classList.remove('w-hidden'); if (!focusEl.classList.contains('show')) focusImg.removeAttribute('src'); }, 680);
-    returnFocus?.focus?.({ preventScroll: true });
-  }
-
-  // The full name stays on one line: shrink it if the panel is too narrow.
-  function fitName() {
-    const h = panel.querySelector('.wp-name');
-    if (!h) return;
-    h.style.fontSize = '';
-    const over = h.scrollWidth / h.clientWidth;
-    if (over > 1) h.style.fontSize = `calc(${getComputedStyle(h).fontSize} / ${(over * 1.02).toFixed(3)})`;
-  }
-
-  // Download the whole poet for offline reading: a small icon that fills in once saved.
-  const saving = new Map(); // slug -> progress 0..1
-  function dlButton(slug) {
-    const saved = isPoetSaved(slug), prog = saving.get(slug);
-    const label = saved ? 'برای خواندن آفلاین ذخیره شده' : 'دانلود همه آثار برای خواندن آفلاین';
-    return `<button class="wp-dl${saved ? ' saved' : ''}${prog != null ? ' busy' : ''}" data-slug="${p_esc(slug)}" aria-label="${label}" data-tip="${saved ? 'ذخیره شده' : 'دانلود برای آفلاین'}" style="--p:${prog ?? 0}">${saved ? ms('cloud_done') : ms('download')}</button>`;
-  }
-  const p_esc = esc;
-  async function startSave(btn) {
-    const slug = btn.dataset.slug;
-    if (isPoetSaved(slug) || saving.has(slug)) return;
-    saving.set(slug, 0);
-    const cur = () => panel.querySelector(`.wp-dl[data-slug="${slug}"]`);
-    cur()?.classList.add('busy');
-    const ok = await savePoet(slug, (f) => { saving.set(slug, f); cur()?.style.setProperty('--p', f.toFixed(3)); }).catch(() => false);
-    saving.delete(slug);
-    const b = cur();
-    if (b) { b.classList.remove('busy'); b.classList.toggle('saved', ok); b.style.setProperty('--p', 0); if (ok) { b.setAttribute('aria-label', 'برای خواندن آفلاین ذخیره شده'); b.dataset.tip = 'ذخیره شده'; } }
-  }
-
-  const shelves = new Map();
-  async function fillShelves(p, cat) {
-    if (!cat) return;
-    if (!shelves.has(p.slug)) shelves.set(p.slug, shelf(cat).catch(() => { shelves.delete(p.slug); return []; }));
-    const groups = await shelves.get(p.slug);
-    const box = panel.querySelector('#wpShelves');
-    if (box && panel.dataset.slug === p.slug) box.innerHTML = shelfHTML(groups, p.full, 'wp-shelf');
-  }
-  function panelHTML(p, poet, cat) {
-    panel.dataset.slug = p.slug;
-    const years = poet?.BirthYearInLHijri && poet?.DeathYearInLHijri ? `${fa(poet.BirthYearInLHijri)} – ${fa(poet.DeathYearInLHijri)} ق` : '';
-    const places = poet ? [poet.BirthPlace, poet.DeathPlace].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(' · ') : '';
-    const intro = poet?.Description ? poet.Description.split(/(?<=[.!؟])\s+/).slice(0, 3).join(' ') : '';
-    return `
-      <div class="wp-grip" id="wpClose" aria-hidden="true"><i></i></div>
-      ${dlButton(p.slug)}
-      <button class="wp-x" id="wpX" aria-label="بستن" data-tip="بستن">${ms('close')}</button>
-      <h2 class="wp-name">${p.full}</h2>
-      <p class="wp-era">${p.era || [years, esc(places)].filter(Boolean).join(' · ')}</p>
-      ${p.bayt ? `<blockquote class="wp-bayt"><span>${p.bayt[0]}</span><span>${p.bayt[1]}</span></blockquote>` : ''}
-      ${intro ? `<p class="wp-intro">${esc(intro)}</p>` : poet ? '' : '<div class="wp-wait"><i></i><i></i><i></i></div>'}
-      <div class="wp-shelves" id="wpShelves"></div>`;
-  }
-
-  cleanup.push(() => { overlayForget(focusBack); });
-
-  on(veil, 'click', () => closeFocus());
-  on(focusEl, 'click', () => closeFocus());
-  on(panel, 'click', (e) => {
-    if (e.target.closest('#wpClose, #wpX')) closeFocus();
-    const a = e.target.closest('a[href^="#/"]');
-    if (a) { e.preventDefault(); overlayNavigate(focusBack, a.getAttribute('href')); }
-    const dl = e.target.closest('.wp-dl'); if (dl) startSave(dl);
-  });
-  on(document, 'keydown', (e) => { if (e.key === 'Escape') closeFocus(); });
-  // Phones: the panel rests at 64% height; drag up to open it fully, down to close.
-  // It follows the finger and settles by position and flick speed.
-  const half = () => panel.offsetHeight - innerHeight * 0.64;
-  drag = attachSheetDrag({
-    el: panel, backdrop: veil, start: 1, handle: () => panel.querySelector('.wp-grip'),
-    snapMs: 760, ease: 'cubic-bezier(.22,1,.36,1)', // rises and settles gently
-    snaps: () => [0, half()],
-    enabled: () => innerWidth < 768 && panel.classList.contains('open'),
-    canScroll: (i) => i === 0,
-    onSnap: (i) => { panel.classList.toggle('full', i === 0); root.classList.toggle('panel-full', i === 0); if (i === 1) panel.scrollTop = 0; },
-    onClose: closeFocus,
-  });
 }
 
 export function unmountWall() {

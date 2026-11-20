@@ -220,6 +220,7 @@ export async function savePoet(slug, onProgress = () => {}) {
   if (fails) return false;
   const s = savedSet(); s.add(slug);
   try { localStorage.setItem(SAVED_KEY, JSON.stringify([...s])); } catch { /* ignore */ }
+  keepStorage();
   return true;
 }
 
@@ -259,6 +260,47 @@ export async function saveBook(cat, other = false, onProgress = () => {}) {
   if (fails) return false;
   const s = booksSet(); s.add(cat);
   try { localStorage.setItem(BOOKS_KEY, JSON.stringify([...s])); } catch { /* ignore */ }
+  keepStorage();
+  return true;
+}
+
+// Ask the browser not to clear this site's storage when the device runs low, once something is downloaded.
+function keepStorage() { try { navigator.storage?.persist?.().catch(() => {}); } catch { /* not supported */ } }
+// On opening the app: a download whose files the browser has cleared meanwhile loses its filled cloud,
+// so the cloud never promises a poet or book that would not open offline. Resolves true when something changed.
+export async function verifySaved() {
+  if (!BUNDLED || !('caches' in self)) return false;
+  const poets = savedSet(), books = booksSet();
+  if (!poets.size && !books.size) return false;
+  let changed = false;
+  try {
+    const cache = await caches.open(DATA_CACHE);
+    for (const slug of [...poets]) if (!(await cache.match(`${await rootOf(slug)}p/${slug}.json`))) { poets.delete(slug); changed = true; }
+    for (const k of [...books]) if (!(await cache.match(`${await bundleName(k)}.json`))) { books.delete(k); changed = true; }
+  } catch { return false; }
+  if (changed) { writeSet(SAVED_KEY, poets); writeSet(BOOKS_KEY, books); }
+  return changed;
+}
+
+// The poems' data was rebuilt (manifest "V", a fingerprint of every data file, tools/poem_counts.py): the long-lived
+// cache would go on serving the old files for ever, so it is emptied and whatever was downloaded is fetched again.
+// The first time a version is seen it is only noted. Resolves true when the cache was renewed.
+const VER_KEY = 'sp.dataV';
+export async function checkDataVersion() {
+  if (!BUNDLED) return false;
+  const v = (await getLocal('data/manifest.json')).V;
+  if (!v) return false;
+  let old;
+  try { old = localStorage.getItem(VER_KEY); if (old === v) return false; localStorage.setItem(VER_KEY, v); } catch { return false; }
+  if (old === null) return false;
+  try { localStorage.removeItem('sp.counts'); } catch { /* ignore */ }
+  for (const k of [...local.keys()]) if (k !== 'data/manifest.json') local.delete(k);
+  if (!('caches' in self)) return true;
+  const cache = await caches.open(DATA_CACHE);
+  await Promise.all((await cache.keys()).filter((r) => !r.url.endsWith('/data/manifest.json')).map((r) => cache.delete(r)));
+  // Downloads come back by themselves; one that fails loses its filled cloud instead of promising old files.
+  for (const slug of [...savedSet()]) if (!(await savePoet(slug).catch(() => false))) { const st = savedSet(); st.delete(slug); writeSet(SAVED_KEY, st); }
+  for (const k of [...booksSet()]) if (!(await saveBook(...bookKey(k)).catch(() => false))) { const st = booksSet(); st.delete(k); writeSet(BOOKS_KEY, st); }
   return true;
 }
 
@@ -297,13 +339,6 @@ export async function unsaveBook(cat, other = false) {
   writeSet(BOOKS_KEY, b);
   await dropFiles(urls);
 }
-
-// Curated poets for the home page, in the order a reader is likely to look for them.
-export const FEATURED = [
-  ['hafez', NAMES.hafez], ['saadi', NAMES.saadi], ['moulavi', NAMES.moulavi], ['khayyam', NAMES.khayyam],
-  ['ferdousi', NAMES.ferdousi], ['nezami', NAMES.nezami], ['attar', NAMES.attar], ['babataher', NAMES.babataher],
-  ['parvin', NAMES.parvin], ['shahriar', NAMES.shahriar], ['rahi', NAMES.rahi], ['vahshi', NAMES.vahshi],
-];
 
 // Pools for "poem of the day" and "random poem": short forms read best on a phone.
 export const DAILY_POOL = [
@@ -396,7 +431,8 @@ export function coverHTML(b, author, i, after = '') {
   const { s, d, p } = coverPick(b, author), pal = PALETTES[p];
   // A bookmark ribbon at the top left: outline, red once the book is saved.
   const mark = `<span class="bk-mark${on ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${on}" aria-label="نشان کردن کتاب" data-href="${e(b.href)}" data-title="${e(b.title)}" data-author="${e(author)}" data-d="${d}" data-p="${p}">${RIBBON}</span>`;
-  return `<a class="book" href="${e(b.href)}" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover" style="--cloth:${pal.bg};--ink-c:${pal.ink}">${mark}<span class="art" data-d="${d}" data-p="${p}" data-s="${s}"></span><span class="frame"><b>${e(b.title)}</b><small>${e(author)}</small></span></span>${after}</a>`;
+  // The link is a layer over the cover, beside the ribbon and the row under the book: buttons never sit inside a link.
+  return `<div class="book" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover" style="--cloth:${pal.bg};--ink-c:${pal.ink}"><a class="book-link" href="${e(b.href)}" aria-label="${e(b.title)}${author ? '، ' + e(author) : ''}"></a>${mark}<span class="art" data-d="${d}" data-p="${p}" data-s="${s}"></span><span class="frame" aria-hidden="true"><b>${e(b.title)}</b><small>${e(author)}</small></span></span>${after}</div>`;
 }
 export function shelfHTML(groups, author, extra = '', meta = null) {
   let n = 0;
