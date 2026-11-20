@@ -1,7 +1,7 @@
 // Data layer: the public Ganjoor data set (github.com/ganjoor/ganjoor-data),
 // served as static JSON through jsDelivr. Pinned to a commit so responses are
 // immutable and safe to cache forever (offline reading).
-export const DATA_SHA = '05d7bc88cca1fe5b95eb7038d4af2d271b320ab3';
+export const DATA_SHA = '616e4042699fb2ac9a148b17c7b61221bd3edfe8';
 export const DATA_BASE = `https://cdn.jsdelivr.net/gh/ganjoor/ganjoor-data@${DATA_SHA}/`;
 
 const mem = new Map();
