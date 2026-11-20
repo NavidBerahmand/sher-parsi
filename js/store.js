@@ -74,6 +74,8 @@ export const readPoems = {
     const drop = new Set(m[key] || urls);
     delete m[key]; write('sp.markedRead', m);
     write('sp.read', read('sp.read', []).filter((u) => !drop.has(u)));
+    // The last 60 opened poems count as read too: without this the book would stay partly read.
+    write('sp.history', read('sp.history', []).filter((x) => !drop.has(x.url)));
   },
 };
 // Reading history: last 60 poems, newest first.

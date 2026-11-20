@@ -107,6 +107,38 @@ export async function search(raw) {
   return { status: 'ok', more, words, typing };
 }
 
+/**
+ * No connection: the index can't be reached, so look through the poems this device already holds
+ * (downloaded poets and books, and books opened before), file by file. Same result shape as search(),
+ * with offline: true. Throws when nothing is stored, so the caller can say that search needs the internet.
+ */
+export async function searchOffline(raw) {
+  const q = norm(raw), needle = squash(q);
+  const words = q.split(/\s+/).filter(Boolean).map((w) => w.replace(ZW, '')).filter(Boolean);
+  if (needle.length < 2) return { status: 'short' };
+  if (!('caches' in self)) throw new Error('no cache');
+  const store = await caches.open('sp-data-v1');
+  const files = (await store.keys()).filter((r) => /\/data\/b\/[^/]+\.json$/.test(new URL(r.url).pathname));
+  if (!files.length) throw new Error('nothing stored');
+  let fi = 0; const waiting = [], seen = new Set();
+  async function more(n) {
+    while (waiting.length < n && fi < files.length) {
+      const d = await store.match(files[fi++]).then((r) => r.json()).catch(() => null);
+      for (const p of Object.values(d?.poems || {})) {
+        const url = String(p.FullUrl || '').replace(/^\/+/, '');
+        for (const row of p.V || []) {
+          const text = row[1];
+          if (!text || !squash(norm(text)).includes(needle) || seen.has(`${url}|${text}`)) continue;
+          seen.add(`${url}|${text}`);
+          waiting.push({ text, url, title: p.Title, poet: url.split('/')[0] });
+        }
+      }
+    }
+    return { items: waiting.splice(0, n), done: fi >= files.length && !waiting.length };
+  }
+  return { status: 'ok', more, words, typing: !/\s$/.test(raw), offline: true };
+}
+
 /** Wrap the words of a line that match the query in <mark>. Input is plain text; output is HTML. */
 export function highlight(text, words, typing, esc) {
   const last = words.length - 1;

@@ -2,7 +2,7 @@ import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, DAILY_P
 import { settings, apply, onDeviceTheme, saved, history, bayts, books, doneBooks, readPoems, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
-import { search, highlight, norm as searchNorm } from './search.js';
+import { search, searchOffline, highlight, norm as searchNorm } from './search.js';
 import { mountWall, unmountWall, wallChoice, setWallChoice } from './wall.js';
 import { attachSheetDrag } from './sheetdrag.js';
 import { ms } from './icons.js';
@@ -256,6 +256,7 @@ $('#mxBody').addEventListener('scroll', (e) => {
   const b = e.currentTarget;
   if (searchMore && b.scrollTop + b.clientHeight > b.scrollHeight - 200) searchMore();
 });
+const OFFLINE_NOTE = '<p class="mx-note mx-off">به اینترنت وصل نیستی؛ فقط در شعرهای ذخیره‌شده روی این دستگاه جست‌وجو شد.</p>';
 const POET_NAME = (slug) => NAMES[slug] || NICK.get(slug) || slug;
 async function runSearch() {
   const raw = mxQ.value, seq = ++searchSeq;
@@ -265,11 +266,12 @@ async function runSearch() {
   mxRes.innerHTML = '<p class="mx-note">در حال جست‌وجو…</p>';
   let r;
   getManifest().catch(() => {}); // fills NICK, the names of poets outside NAMES
-  try { r = await search(raw); } catch { if (seq === searchSeq) mxRes.innerHTML = '<p class="mx-note">جست‌وجو نیاز به اینترنت دارد</p>'; return; }
+  // No connection: look through the poems already on this device instead.
+  try { r = await search(raw); } catch { try { r = await searchOffline(raw); } catch { if (seq === searchSeq) mxRes.innerHTML = '<p class="mx-note">جست‌وجو نیاز به اینترنت دارد. بدون اینترنت فقط در شعرهایی که روی این دستگاه ذخیره شده‌اند جست‌وجو می‌شود.</p>'; return; } }
   if (seq !== searchSeq) return;
   if (r.status === 'short') { mxRes.innerHTML = '<p class="mx-note">عبارت را کمی کامل‌تر بنویس؛ واژه‌های خیلی رایج مثل «دل» یا «که» به‌تنهایی جست‌وجو نمی‌شوند.</p>'; return; }
   if (r.status === 'none') { mxRes.innerHTML = '<p class="mx-note">چیزی پیدا نشد</p>'; return; }
-  mxRes.innerHTML = '<ul class="mx-list"></ul><p class="mx-note mx-wait">…</p>';
+  mxRes.innerHTML = `${r.offline ? OFFLINE_NOTE : ''}<ul class="mx-list"></ul><p class="mx-note mx-wait">…</p>`;
   const ul = mxRes.querySelector('ul'), wait = mxRes.querySelector('.mx-wait');
   let busy = false, count = 0;
   const page = async () => {
@@ -310,11 +312,11 @@ function viewSearch() {
     res.innerHTML = '<p class="mx-note">در حال جست‌وجو…</p>';
     let r;
     getManifest().catch(() => {});
-    try { r = await search(raw); } catch { if (seq === pageSeq2) res.innerHTML = '<p class="mx-note">جست‌وجو نیاز به اینترنت دارد</p>'; return; }
+    try { r = await search(raw); } catch { try { r = await searchOffline(raw); } catch { if (seq === pageSeq2) res.innerHTML = '<p class="mx-note">جست‌وجو نیاز به اینترنت دارد. بدون اینترنت فقط در شعرهایی که روی این دستگاه ذخیره شده‌اند جست‌وجو می‌شود.</p>'; return; } }
     if (seq !== pageSeq2) return;
     if (r.status === 'short') { res.innerHTML = '<p class="mx-note">عبارت را کمی کامل‌تر بنویس؛ واژه‌های خیلی رایج مثل «دل» یا «که» به‌تنهایی جست‌وجو نمی‌شوند.</p>'; return; }
     if (r.status === 'none') { res.innerHTML = '<p class="mx-note">چیزی پیدا نشد</p>'; return; }
-    res.innerHTML = '<ul class="mx-list"></ul><p class="mx-note mx-wait">…</p>';
+    res.innerHTML = `${r.offline ? OFFLINE_NOTE : ''}<ul class="mx-list"></ul><p class="mx-note mx-wait">…</p>`;
     const ul = res.querySelector('ul'), wait = res.querySelector('.mx-wait');
     let busy = false, count = 0;
     const page = async () => {
@@ -360,7 +362,7 @@ function openAbout() {
       <p>متن همهٔ اشعار از <a href="https://ganjoor.net" target="_blank" rel="noopener">گنجور</a> گرفته شده است. سپاس از گنجور و همهٔ کسانی که این گنجینه را گرد آورده‌اند.</p>
       <p>برای نصب روی گوشی: در سافاری دکمهٔ اشتراک‌گذاری و سپس «افزودن به صفحهٔ اصلی» را بزن؛ در کروم از منوی سه‌نقطه «نصب برنامه» را انتخاب کن.</p>
       <p>قلم این سایت «کهربا» از <a href="https://fontiran.com/license/YVO2HC8R" target="_blank" rel="noopener">فونت ایران</a> است و به صورت قانونی و با مجوز استفاده می‌شود.</p>
-      <a class="font-badge" href="https://fontiran.com/license/YVO2HC8R" target="_blank" rel="noopener"><img src="https://fontiran.com/storage/uploads/images/2025/11/badge2-minjcHOH8rKPv7J.png" width="100" height="100" alt="فونت کهربا" loading="lazy"></a>
+      <a class="font-badge" href="https://fontiran.com/license/YVO2HC8R" target="_blank" rel="noopener"><img src="https://fontiran.com/storage/uploads/images/2025/11/badge2-minjcHOH8rKPv7J.png" width="100" height="100" alt="فونت کهربا" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.font-badge').remove()"></a>
       <p class="muted">نسخهٔ ${fa(VERSION)}</p>
       <p class="about-credit">ساختهٔ نوید برهمند · <a href="https://berahmand.com" target="_blank" rel="noopener" dir="ltr">Berahmand.com</a></p>
     </div>`);
@@ -588,9 +590,23 @@ async function randomFrom(catUrl, seed) {
 }
 
 /* ───────── Views ───────── */
+// A random poem of a random named poet: walk down from the poet into a random book and section until poems are found.
+async function randomAny() {
+  const pickOf = (l) => l[Math.floor(Math.random() * l.length)];
+  let cat = await getCat(pickOf(TOP));
+  for (let depth = 0; depth < 8; depth++) {
+    const kids = cat.ChildCats || [], poems = cat.Poems || [];
+    if (kids.length && (!poems.length || Math.random() < kids.length / (kids.length + 1))) { cat = await getCat(clean(pickOf(kids).FullUrl)); continue; }
+    return poems.length ? pickOf(poems) : null;
+  }
+  return null;
+}
 async function randomPoem(go = (h) => { location.hash = h; }) {
   try {
-    const pick = await randomFrom(DAILY_POOL[Math.floor(Math.random() * DAILY_POOL.length)]);
+    // From any of the named poets, not only a handful: a few tries, then the old short list as a fallback.
+    let pick;
+    for (let i = 0; i < 4 && !pick; i++) pick = await randomAny().catch(() => null);
+    pick ||= await randomFrom(DAILY_POOL[Math.floor(Math.random() * DAILY_POOL.length)]);
     go(poemHref(pick.FullUrl));
   } catch (e) { go(location.hash); toast('اتصال برقرار نشد'); }
 }
@@ -911,7 +927,7 @@ function placeCard(card) {
 let sheetEl = null, sheetPushed = false, sheetCat = '';
 // A poem opened on top of any page (random poem): the address of that page and what it showed.
 let sheetOver = null;
-function openPoemOver(href, replace = false) {
+function openPoemOver(href, replace = false, opts = { random: true }) {
   const path = clean(decodeURIComponent(href.replace(/^#\/p\//, '')));
   sheetOver = { hash: location.hash, view: current.view, path: current.path };
   // Opened over a poem being read: remember it, and where in it, to put it back on close.
@@ -921,7 +937,7 @@ function openPoemOver(href, replace = false) {
   sheetPushed = true;
   current.view = 'poem'; current.path = path;
   const seq = ++routeSeq;
-  viewPoem(path, { random: true }, true).catch(() => { if (seq !== routeSeq) return; toast('شعر باز نشد'); requestCloseSheet(); });
+  viewPoem(path, opts, true).catch(() => { if (seq !== routeSeq) return; toast('شعر باز نشد'); requestCloseSheet(); });
 }
 function closePoemSheet(instant) {
   if (!sheetEl) return;
@@ -1500,7 +1516,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.162';
+export const VERSION = '0.9.163';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -1546,9 +1562,11 @@ window.addEventListener('hashchange', () => {
 // Tapping a poem in a list opens it over the list instead of on a new page.
 main.addEventListener('click', (e) => {
   const a = e.target.closest('a[href^="#/p/"]');
-  if (!a || (current.view !== 'cat' && current.view !== 'search') || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  if (!a || (current.view !== 'cat' && current.view !== 'search' && current.view !== 'saved') || e.metaKey || e.ctrlKey || e.shiftKey) return;
   e.preventDefault();
   const href = a.getAttribute('href');
+  // From «کتابخانهٔ من» the poem rises over the library itself, so closing it lands back there, at the same place.
+  if (current.view === 'saved') { openPoemOver(href, false, {}); return; }
   const path = clean(decodeURIComponent(href.slice(4)));
   window.history.pushState(null, '', href);
   sheetPushed = true;

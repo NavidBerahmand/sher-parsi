@@ -8,7 +8,7 @@
   --surface-2: #ebe8db;
   --ink: #2b2e22;
   --ink-soft: #43473a;
-  --muted: #7a7e69;
+  --muted: #666a56; /* was #7a7e69: small grey text now passes 4.5:1 on the cream page and on the tab strip */
   --line: #e2dfd0;
   --accent: #5f6549;
   --accent-soft: #e6e8dc;
@@ -1262,3 +1262,6 @@ svg.ms .f { display: none; }
 .lib-busy small { font-size: .78rem; font-variant-numeric: tabular-nums; }
 @keyframes libdl { from { opacity: .35; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .lib-busy svg.cl { animation: none; } }
+/* Phones: the menu card grows to fit all its rows, so «دربارهٔ شعر پارسی» is not hidden under the settings. */
+@media (max-width: 700px) { .mx-card { height: min(calc(100dvh - 40px), 600px); } }
+.mx-off { padding: 12px 8px 6px; font-size: .82rem; }
