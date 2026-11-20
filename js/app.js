@@ -360,6 +360,7 @@ function openAbout() {
     <div class="about">
       <p>شعر پارسی ساده ساخته شده تا فقط شعر بخوانی، بی‌شلوغی و بی‌حواس‌پرتی. شعر سخنوران دلخواهت را دانلود کن تا بدون اینترنت هم همیشه در گوشی‌ات باشد و هر جا که هستی به‌راحتی بخوانی. هر بیتی را که دوست داری نشان کن تا بماند، یا از آن تصویری بساز و با دیگران به اشتراک بگذار.</p>
       <p>متن همهٔ اشعار از <a href="https://ganjoor.net" target="_blank" rel="noopener">گنجور</a> گرفته شده است. سپاس از گنجور و همهٔ کسانی که این گنجینه را گرد آورده‌اند.</p>
+      <p>معنی بیت‌ها و خلاصهٔ شعرهایی که با «هوش مصنوعی:» شروع می‌شوند، کار <a href="https://dev.arman.ac/posts/largest-commentary-in-the-history-of-persian-poetry/" target="_blank" rel="noopener">آرمان نژاد</a> است که با مدل هوش مصنوعی <span dir="ltr">Claude Opus 5.5</span> برای همهٔ گنجور نوشته شده است. معنی‌های دیگر کار ویراستاران گنجور است.</p>
       <p>برای نصب روی گوشی: در سافاری دکمهٔ اشتراک‌گذاری و سپس «افزودن به صفحهٔ اصلی» را بزن؛ در کروم از منوی سه‌نقطه «نصب برنامه» را انتخاب کن.</p>
       <p>قلم این سایت «کهربا» از <a href="https://fontiran.com/license/YVO2HC8R" target="_blank" rel="noopener">فونت ایران</a> است و به صورت قانونی و با مجوز استفاده می‌شود.</p>
       <h4 class="about-h">حریم خصوصی</h4>
@@ -1518,7 +1519,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.168';
+export const VERSION = '0.9.169';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
