@@ -232,7 +232,7 @@ main { display: block; padding-top: calc(var(--bar-h) + env(safe-area-inset-top,
   -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent), linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent); mask-composite: intersect; }
 /* Poet page: the page takes the portrait's own green, so the picture melts into it. */
 html:has(body.poet-bg), body.poet-bg { background: #585e4a; }
-body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted: #c9cbb6; --accent: #eef0df; --hair: rgb(255 255 255 / .14); --line: rgb(255 255 255 / .14); color: var(--ink); }
+body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted: #d6d8c5; --accent: #eef0df; --hair: rgb(255 255 255 / .14); --line: rgb(255 255 255 / .14); color: var(--ink); }
 :root[data-theme="dark"]:has(body.poet-bg), :root[data-theme="dark"] body.poet-bg { background: #2f3526; }
 :root[data-theme="dark"] body.poet-bg main { --bg: #2f3526; --hair: rgb(255 255 255 / .08); --line: rgb(255 255 255 / .08); }
 .poet-head h1 { font-size: 1.8rem; margin: 0; }
@@ -1265,3 +1265,15 @@ svg.ms .f { display: none; }
 /* Phones: the menu card grows to fit all its rows, so «دربارهٔ شعر پارسی» is not hidden under the settings. */
 @media (max-width: 700px) { .mx-card { height: min(calc(100dvh - 40px), 600px); } }
 .mx-off { padding: 12px 8px 6px; font-size: .82rem; }
+
+/* QC fixes (0.9.170). Short screens (a phone on its side): the menu card scrolls as one piece, so its links are
+   never squeezed out by the settings under them. */
+@media (max-height: 520px) {
+  .mx-card { overflow-y: auto; overscroll-behavior: contain; }
+  .mx-body { flex: none; overflow: visible; }
+}
+/* The narrowest phones (320px): the home bar keeps all four buttons inside the screen. */
+@media (max-width: 350px) {
+  .w-bar { gap: 6px; }
+  .w-bar .w-all { padding-inline: 12px; font-size: .78rem; }
+}

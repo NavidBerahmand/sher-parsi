@@ -50,9 +50,16 @@ function fixPoem(p) {
   (p.Verses || []).forEach((v) => { v.Text = fixMarks(v.Text); });
   return p;
 }
+// A few lines in Ganjoor's export still carry web-page code («&quot;صبر&quot;», «&laquo;…&raquo;», a stray «</div»):
+// show the characters they stand for and drop the tags. A line that was nothing but a tag is left out.
+const ENT = { quot: '"', laquo: '«', raquo: '»', amp: '&', lt: '<', gt: '>', nbsp: ' ', zwnj: '\u200c', apos: "'" };
+export const plainText = (s) => (typeof s === 'string' && /[&<]/.test(s)
+  ? s.replace(/<\/?[a-z][^>]*>?/gi, '').replace(/&(#\d+|[a-z]+);/gi, (m, e) => (e[0] === '#' ? String.fromCodePoint(+e.slice(1)) : ENT[e.toLowerCase()] ?? m))
+  : s);
 function expand(p) {
   if (!p || p.Verses) return p;
-  p.Verses = p.V.map(([pos, Text, CoupletIndex, SectionIndex1, CoupletSummary]) => ({ Position: POS[pos], Text: fixMarks(Text), CoupletIndex, SectionIndex1, CoupletSummary }));
+  p.Verses = p.V.filter((v) => !(typeof v[1] === 'string' && v[1].includes('<') && !plainText(v[1]).trim()))
+    .map(([pos, Text, CoupletIndex, SectionIndex1, CoupletSummary]) => ({ Position: POS[pos], Text: fixMarks(plainText(Text)), CoupletIndex, SectionIndex1, CoupletSummary }));
   p.Title = fixMarks(p.Title);
   delete p.V;
   return p;
