@@ -50,7 +50,7 @@
     <button class="menu-btn menu-trigger" aria-label="منو" aria-haspopup="true"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></button>
   </header>
 
-  <div class="mx" id="menu" aria-hidden="true">
+  <div class="mx" id="menu" aria-hidden="true" inert>
     <div class="mx-card" role="dialog" aria-modal="true" aria-label="منو">
       <div class="mx-top"><button type="button" class="lb-x" id="mxX" aria-label="بستن منو"><svg class="ms" viewBox="0 -960 960 960" aria-hidden="true"><path class="o" d="m249-207-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z"/></svg></button><label class="mx-search"><svg class="ms" viewBox="0 -960 960 960" aria-hidden="true"><path class="o" d="M796-121 533-384q-30 26-70 40.5T378-329q-108 0-183-75t-75-181q0-106 75-181t182-75q106 0 180.5 75T632-585q0 43-14 83t-42 75l264 262-44 44ZM377-389q81 0 138-57.5T572-585q0-81-57-138.5T377-781q-82 0-139.5 57.5T180-585q0 81 57.5 138.5T377-389Z"/></svg>
         <input type="search" id="mxQ" placeholder="جست‌وجو در همهٔ اشعار" autocomplete="off" enterkeyhint="search" aria-label="جست‌وجو در اشعار"><button type="button" class="mx-clr" id="mxClr" aria-label="پاک کردن" hidden><svg class="ms" viewBox="0 -960 960 960" aria-hidden="true"><path class="o" d="m249-207-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z"/></svg></button></label></div>
@@ -81,7 +81,7 @@
   <main id="main" tabindex="-1"></main>
 
   <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
-  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true" tabindex="-1">
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="گزینه‌ها" aria-hidden="true" tabindex="-1">
     <div class="sheet-handle" aria-hidden="true"></div>
     <div class="sheet-body" id="sheetBody"></div>
   </section>

@@ -101,6 +101,7 @@ function openSheet(html, onMount) {
   sheetReturn = document.activeElement;
   sheetBody.innerHTML = `<button type="button" class="sheet-x" aria-label="بستن">${ICON.x}</button>${html}`;
   sheetBody.querySelector('.sheet-x').addEventListener('click', () => closeSheet());
+  sheet.setAttribute('aria-label', sheetBody.querySelector('h3')?.textContent.trim() || 'گزینه‌ها');
   backdrop.hidden = false;
   requestAnimationFrame(() => { backdrop.classList.add('show'); sheet.classList.add('show'); sheet.setAttribute('aria-hidden', 'false'); sheet.focus(); });
   onMount?.(sheetBody);
@@ -167,6 +168,7 @@ function setMenu(open, fromBack) {
   if (open) overlayOpened(menuBack); else if (!fromBack) overlayClosed(menuBack);
   menu.classList.toggle('open', open);
   menu.setAttribute('aria-hidden', String(!open));
+  menu.inert = !open; // a closed menu takes no Tab stops and is not read out
   document.body.classList.toggle('menu-open', open);
   document.querySelectorAll('.menu-trigger').forEach((b) => b.setAttribute('aria-expanded', String(open)));
   if (open) {
@@ -363,14 +365,19 @@ function openAbout() {
       <p>معنی بیت‌ها و خلاصهٔ شعرهایی که با «هوش مصنوعی:» شروع می‌شوند، کار <a href="https://dev.arman.ac/posts/largest-commentary-in-the-history-of-persian-poetry/" target="_blank" rel="noopener">آرمان نژاد</a> است که با مدل هوش مصنوعی <span dir="ltr">Claude Opus 5.5</span> برای همهٔ گنجور نوشته شده است. معنی‌های دیگر کار ویراستاران گنجور است.</p>
       <p>برای نصب روی گوشی: در سافاری دکمهٔ اشتراک‌گذاری و سپس «افزودن به صفحهٔ اصلی» را بزن؛ در کروم از منوی سه‌نقطه «نصب برنامه» را انتخاب کن.</p>
       <p>قلم این سایت «کهربا» از <a href="https://fontiran.com/license/YVO2HC8R" target="_blank" rel="noopener">فونت ایران</a> است و به صورت قانونی و با مجوز استفاده می‌شود.</p>
+      <h4 class="about-h">گزارش ایراد</h4>
+      <p>اگر غلطی در متن شعرها دیدی، جایی از سایت درست کار نکرد یا پیشنهادی داشتی، به <a href="mailto:berahmand@gmail.com?subject=%D8%B4%D8%B9%D8%B1%20%D9%BE%D8%A7%D8%B1%D8%B3%DB%8C" dir="ltr">berahmand@gmail.com</a> بنویس.</p>
       <h4 class="about-h">حریم خصوصی</h4>
-      <p>«شعر پارسی» نیازی به ثبت‌نام ندارد و هیچ اطلاعات شخصی‌ای از شما نمی‌گیرد. نشان‌ها، درصد خوانده‌شده‌ها، تنظیمات و شعرهایی که دانلود می‌کنید فقط روی دستگاه خودتان ذخیره می‌شوند و به جایی فرستاده نمی‌شوند. با پاک کردن داده‌های مرورگر، همهٔ آن‌ها پاک می‌شوند. برای نگه داشتن آن‌ها می‌توانید از «پشتیبان‌گیری» استفاده کنید. این سایت کوکی و تبلیغ ندارد و چیزی از گوگل یا سرویس‌های دیگر بارگذاری نمی‌کند.</p>
+      <p>«شعر پارسی» نیازی به ثبت‌نام ندارد و هیچ اطلاعات شخصی‌ای از شما نمی‌گیرد. نشان‌ها، درصد خوانده‌شده‌ها، تنظیمات و شعرهایی که دانلود می‌کنید فقط روی دستگاه خودتان ذخیره می‌شوند و به جایی فرستاده نمی‌شوند. با پاک کردن داده‌های مرورگر، همهٔ آن‌ها پاک می‌شوند. در آیفون و آیپد، سافاری داده‌های سایتی را که هفت روز باز نشده باشد خودش پاک می‌کند؛ برای اینکه چیزی پاک نشود، «شعر پارسی» را به صفحهٔ اصلی گوشی اضافه کنید و از همان‌جا باز کنید. برای نگه داشتن یا بردن داده‌ها به دستگاه دیگر هم می‌توانید از «پشتیبان» در منو استفاده کنید. این سایت کوکی و تبلیغ ندارد و چیزی از گوگل یا سرویس‌های دیگر بارگذاری نمی‌کند.</p>
       <p class="muted">نسخهٔ ${fa(VERSION)}</p>
       <p class="about-credit">ساختهٔ نوید برهمند · <a href="https://berahmand.com" target="_blank" rel="noopener" dir="ltr">Berahmand.com</a></p>
     </div>`);
 }
 
 /* ───────── Helpers ───────── */
+// The name of the page under any open poem, shown on the browser tab and in the history.
+let pageTitle = 'شعر پارسی';
+function setTitle(t) { pageTitle = t ? `${t} · شعر پارسی` : 'شعر پارسی'; if (!sheetEl) document.title = pageTitle; }
 // The one close button every page uses: a black disc, top left. Back to wherever the reader came from, else home.
 const pageClose = (id = 'pageX') => `<button class="icon-btn page-x tip-l" id="${id}" aria-label="بستن" data-tip="بستن">${ICON.x}</button>`;
 function wireClose(id, up = '#/') { $('#' + id)?.addEventListener('click', () => { if (curN > 0) window.history.back(); else location.hash = up; }); }
@@ -753,6 +760,7 @@ async function viewCat(path) {
   }
 
   const author = poet?.Nickname || '';
+  setTitle(isPoet ? author || cat.Title : [cat.Title, author].filter(Boolean).join(' · '));
   // On a poet's page the works are grouped (a divan's forms get their own shelf); deeper pages show one shelf.
   const groups = isPoet && !other ? await shelf(cat) : null;
   // Inside a book its parts are a plain list, not more covers.
@@ -947,6 +955,7 @@ function closePoemSheet(instant) {
   if (sheet.classList.contains('show')) { overlayForget(sheetBack); closeSheet(true); }
   stackCleanup?.();
   const el = sheetEl; sheetEl = null;
+  document.title = pageTitle;
   if (el.contains(document.activeElement)) main.focus({ preventScroll: true }); // focus must not stay in a sheet that is going away
   document.body.classList.remove('psheet-open');
   if (instant) { el.remove(); refreshTopEdge(); return; }
@@ -988,7 +997,7 @@ function openSheetShell() {
   el.className = 'psheet-wrap';
   el.innerHTML = `<div class="psheet-backdrop"></div>
     <section class="psheet" role="dialog" aria-modal="true" aria-label="شعر" tabindex="-1">
-      <div class="psheet-grip" aria-label="بستن"><i></i></div>
+      <div class="psheet-grip" aria-hidden="true"><i></i></div>
       <div class="stack" id="stack"></div><div class="stack-end" id="stackEnd"></div>
     </section>
     <div class="psheet-tools">
@@ -1493,7 +1502,8 @@ async function route(keepScroll = false) {
   if (view !== 'cat' && view !== 'poem') delete main.dataset.cat;
   const listBefore = main.dataset.cat;
   current.view = view; current.path = path;
-  document.title = 'شعر پارسی';
+  // The browser tab names the page; a poem's own title is set when it opens.
+  if (view !== 'poem') setTitle({ poets: 'همه سخنوران', saved: 'کتابخانهٔ من', search: 'جست‌وجو', fal: 'فال حافظ' }[view] || '');
   const navKey = { home: 'home', poets: 'poets', cat: 'poets', fal: 'fal', saved: 'saved', poem: falNext === path ? 'fal' : '' }[view];
   document.querySelectorAll('.mx-nav a').forEach((a) => (a.dataset.nav === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
   if (view !== 'poem') closePoemSheet(true);
@@ -1519,7 +1529,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.169';
+export const VERSION = '0.9.170';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
