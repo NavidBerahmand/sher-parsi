@@ -17,13 +17,13 @@ A calm, minimal reader for classical Persian poetry
 <table>
   <tr>
     <td><img src="docs/screenshots/home-light.webp" width="200" alt="صفحهٔ اصلی: دیوار سخنوران"></td>
-    <td><img src="docs/screenshots/poem-light.webp" width="200" alt="صفحهٔ شعر"></td>
-    <td><img src="docs/screenshots/bayt-light.webp" width="200" alt="معنی بیت"></td>
+    <td><img src="docs/screenshots/poem-light.webp" width="200" alt="صفحهٔ شعر: سیف فرغانی"></td>
+    <td><img src="docs/screenshots/library-light.webp" width="200" alt="کتابخانهٔ من"></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/poets-light.webp" width="200" alt="همه سخنوران"></td>
-    <td><img src="docs/screenshots/library-light.webp" width="200" alt="کتابخانهٔ من"></td>
-    <td><img src="docs/screenshots/poem-dark.webp" width="200" alt="حالت شب"></td>
+    <td><img src="docs/screenshots/poets-dark.webp" width="200" alt="همه سخنوران، حالت شب"></td>
+    <td><img src="docs/screenshots/prose-dark.webp" width="200" alt="نثر: ناصرخسرو، حالت شب"></td>
+    <td><img src="docs/screenshots/bayt-light.webp" width="200" alt="معنی بیت: شاهنامه"></td>
   </tr>
 </table>
 
@@ -35,7 +35,7 @@ A calm, minimal reader for classical Persian poetry
 
 ## فارسی
 
-«شعر پارسی» وب‌اپی است برای خواندن شعر کلاسیک فارسی، بی‌شلوغی و بی‌حواس‌پرتی. روی گوشی و رایانه کار می‌کند، می‌شود آن را به صفحهٔ اصلی گوشی اضافه کرد و شعرهای دانلودشده بدون اینترنت هم خوانده می‌شوند.
+«شعر پارسی» ساده ساخته شده تا فقط شعر بخوانی، بی‌شلوغی و بی‌حواس‌پرتی. روی گوشی و رایانه کار می‌کند، می‌شود آن را به صفحهٔ اصلی گوشی اضافه کرد و شعرهای دانلودشده بدون اینترنت هم خوانده می‌شوند.
 
 ### چه دارد
 
