@@ -139,13 +139,29 @@ export async function searchOffline(raw) {
   return { status: 'ok', more, words, typing: !/\s$/.test(raw), offline: true };
 }
 
-/** Wrap the words of a line that match the query in <mark>. Input is plain text; output is HTML. */
-export function highlight(text, words, typing, esc) {
+/** Wrap the words of a line that match the query in <mark>. Input is plain text; output is HTML.
+ *  A long text (prose, notes) is cut to a few lines around the first match, with «…» where it goes on (Navid 2026-11-20, 0.9.168). */
+export function highlight(text, words, typing, esc, max = 150) {
   const last = words.length - 1;
-  return text.split(/(\s+)/).map((tok) => {
-    if (/^\s+$/.test(tok)) return tok;
+  let toks = text.split(/(\s+)/);
+  const isHit = (tok) => {
+    if (/^\s+$/.test(tok)) return false;
     const n = norm(tok).replace(ZW, '').replace(/\s/g, '');
-    const hit = n && words.some((w, i) => (typing && i === last ? n.startsWith(w) : n === w) || (words.length > 1 && n.includes(w) && w.length > 2));
-    return hit ? `<mark>${esc(tok)}</mark>` : esc(tok);
-  }).join('');
+    return !!n && words.some((w, i) => (typing && i === last ? n.startsWith(w) : n === w) || (words.length > 1 && n.includes(w) && w.length > 2));
+  };
+  let pre = '', post = '';
+  if (text.length > max) {
+    const at = Math.max(0, toks.findIndex(isHit));
+    // About a third of the room before the match, the rest after it.
+    let a = at, b = at, len = toks[at].length;
+    while (a > 0 && len + toks[a - 1].length <= max * 0.35) len += toks[--a].length;
+    while (b < toks.length - 1 && len + toks[b + 1].length <= max) len += toks[++b].length;
+    while (a > 0 && len + toks[a - 1].length <= max) len += toks[--a].length;
+    while (a < at && /^\s+$/.test(toks[a])) a++;
+    while (b > at && /^\s+$/.test(toks[b])) b--;
+    if (a > 0) pre = '… ';
+    if (b < toks.length - 1) post = ' …';
+    toks = toks.slice(a, b + 1);
+  }
+  return pre + toks.map((tok) => (isHit(tok) ? `<mark>${esc(tok)}</mark>` : esc(tok))).join('') + post;
 }
