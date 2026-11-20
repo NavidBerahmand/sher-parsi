@@ -727,7 +727,7 @@ async function viewCat(path) {
   const [cat0, poet] = await Promise.all([getCat(real), getPoet(slug).catch(() => null)]);
   const cat = other ? { ...cat0, Title: 'سایر اشعار', ChildCats: [] } : cat0;
   const isPoet = !path.includes('/');
-  const seen = history.seen();
+  const seen = readSet(); // every poem ever opened (sp.read), not just the last 60 (Navid 2026-11-20)
   const looseAsBook = isPoet && (cat.ChildCats || []).length > 0 && (cat.Poems || []).length > 0;
   const poems = looseAsBook ? [] : cat.Poems || [];
   const PAGE = 120;
@@ -857,7 +857,8 @@ let stackObs = null, stackRO = null, stackCleanup = null;
 const cardCtx = new WeakMap();
 
 // List marks: a bookmark if the poem is saved, a dot if it has been read.
-function marksHTML(u, seen = history.seen()) {
+const readSet = () => new Set(readPoems.all().map(clean));
+function marksHTML(u, seen = readSet()) {
   return (saved.has(u) ? `<i class="mk-save" title="نشان‌شده">${ICON.bookmark}</i>` : '')
     + (seen.has(u) ? '<i class="seen" title="خوانده‌شده"></i>' : '');
 }
@@ -1517,7 +1518,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.165';
+export const VERSION = '0.9.166';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
