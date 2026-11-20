@@ -57,7 +57,7 @@ export const saved = {
   remove(url) { write('sp.saved', this.all().filter((x) => x.url !== url)); },
 };
 
-// Every poem ever opened (not only the last 60): the reading percent of books and poets in «کتابخانهٔ من».
+// Every poem ever opened: the reading percent of books and poets in «کتابخانهٔ من».
 export const readPoems = {
   all() { return [...new Set([...read('sp.read', []), ...read('sp.history', []).map((x) => x.url)])]; },
   add(url) { const l = read('sp.read', []); if (url && !l.includes(url)) { l.push(url); write('sp.read', l); } },
@@ -74,17 +74,17 @@ export const readPoems = {
     const drop = new Set(m[key] || urls);
     delete m[key]; write('sp.markedRead', m);
     write('sp.read', read('sp.read', []).filter((u) => !drop.has(u)));
-    // The last 60 opened poems count as read too: without this the book would stay partly read.
+    // The reading history counts as read too: without this the book would stay partly read.
     write('sp.history', read('sp.history', []).filter((x) => !drop.has(x.url)));
   },
 };
-// Reading history: last 60 poems, newest first.
+// Reading history: every poem opened, newest first, with no limit (Navid 2026-11-20, 0.9.167: the backup keeps all of it).
 export const history = {
   all() { return read('sp.history', []); },
   add(item) {
     const list = this.all().filter((x) => x.url !== item.url);
     list.unshift({ ...item, at: Date.now() });
-    write('sp.history', list.slice(0, 60));
+    write('sp.history', list);
     readPoems.add(item.url);
   },
   seen() { return new Set(this.all().map((x) => x.url)); },
@@ -160,7 +160,7 @@ export function importData(obj) {
     const mine = read(key, []), seen = new Set(mine.map(id));
     const all = [...mine, ...theirs.filter((x) => !seen.has(id(x)))];
     all.sort((a, b) => (b.at || 0) - (a.at || 0));
-    write(key, key === 'sp.history' ? all.slice(0, 60) : all);
+    write(key, all);
   };
   merge('sp.saved', (x) => x.url);
   merge('sp.books', (x) => x.href);
