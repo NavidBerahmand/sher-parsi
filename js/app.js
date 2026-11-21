@@ -610,9 +610,13 @@ async function randomAny() {
   }
   return null;
 }
+let randomPoolP = null;
 async function randomPoem(go = (h) => { location.hash = h; }) {
   try {
     // From any of the named poets, not only a handful: a few tries, then the old short list as a fallback.
+    // First from the pool of well-known verse poems (tools/random_pool.py: no prose, no obscure corners).
+    const pool = await (randomPoolP ||= fetch('data/random.json').then((r) => (r.ok ? r.json() : [])).catch(() => { randomPoolP = null; return []; }));
+    if (pool.length) return go(poemHref(pool[Math.floor(Math.random() * pool.length)]));
     let pick;
     for (let i = 0; i < 4 && !pick; i++) pick = await randomAny().catch(() => null);
     pick ||= await randomFrom(DAILY_POOL[Math.floor(Math.random() * DAILY_POOL.length)]);
@@ -1529,7 +1533,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.171';
+export const VERSION = '0.9.172';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

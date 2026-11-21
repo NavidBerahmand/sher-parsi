@@ -1,5 +1,5 @@
 // Service worker: app shell is precached; poem data (immutable, pinned commit) is cached on first read.
-const SHELL = 'sp-shell-v125';
+const SHELL = 'sp-shell-v126';
 const DATA = 'sp-data-v1';
 // Every portrait (light and dark) and the faceless bust: fetched quietly after install, so the wall, the poet pages
 // and «کتابخانهٔ من» show their pictures offline too. A failed one never blocks the install.
@@ -45,8 +45,8 @@ self.addEventListener('fetch', (e) => {
   // and which survives app updates.
   // The search index is rebuilt with the data, so it is never kept in the long-lived cache.
   if (url.pathname.includes('/data/s/')) return;
-  // The poet list changes when poets are added, so it is fetched fresh (cached copy only when offline).
-  if (url.pathname.endsWith('/data/manifest.json')) {
+  // The poet list and the random-poem pool change with the data, so they are fetched fresh (cached copy only when offline).
+  if (url.pathname.endsWith('/data/manifest.json') || url.pathname.endsWith('/data/random.json')) {
     e.respondWith(caches.open(DATA).then(async (c) => {
       try { const res = await fetch(req, { cache: 'no-cache' }); if (res.ok) c.put(req, res.clone()); return res; }
       catch { return (await c.match(req, { ignoreSearch: true })) || Response.error(); }
