@@ -219,7 +219,7 @@ document.addEventListener('keydown', (e) => {
 $('#mxX').addEventListener('click', () => setMenu(false));
 // An icon beside every menu item (Navid 2026-11-21): home, a person for poets, the library, a die for the random poem, an i for «درباره»; each in a black disc like the top buttons.
 {
-  const MX_ICON = { home: 'home', poets: 'person', saved: 'library', mxRandom: 'casino', mxAbout: 'info_i' };
+  const MX_ICON = { home: 'home', poets: 'person', saved: 'library', mxRandom: 'ifl', mxAbout: 'info_i' };
   document.querySelectorAll('#mxNav > a, #mxNav > button').forEach((el) => {
     const name = MX_ICON[el.dataset.nav || el.id];
     if (name) el.innerHTML = `<i class="mx-disc" aria-hidden="true">${ms(name, 'mx-ic')}</i><span>${el.innerHTML}</span>`;
@@ -1040,7 +1040,7 @@ function openSheetShell() {
       <button class="icon-btn pt-home" aria-label="خانه" data-tip="خانه">${ICON.home}</button>
       <button class="icon-btn pt-share" aria-label="اشتراک‌گذاری" data-tip="اشتراک‌گذاری">${ICON.share}</button>
       <button class="icon-btn pt-save" aria-label="نشان کردن" data-tip="نشان کردن">${ICON.bookmark}</button>
-    </div>${sheetOver?.random ? `<button type="button" class="pt-dice" aria-label="شعر تصادفی دیگر">${ms('casino')}</button>` : ''}`;
+    </div>${sheetOver?.random ? `<button type="button" class="pt-dice" aria-label="شعر تصادفی دیگر">${ms('ifl')}</button>` : ''}`;
   document.body.appendChild(el);
   sheetEl = el;
   document.body.classList.add('psheet-open');
@@ -1566,7 +1566,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.179';
+export const VERSION = '0.9.180';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
