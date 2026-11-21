@@ -217,6 +217,14 @@ document.addEventListener('keydown', (e) => {
   }
 }, true);
 $('#mxX').addEventListener('click', () => setMenu(false));
+// An icon beside every menu item (Navid 2026-11-21): home, a person for poets, the library, a die for the random poem, info for «درباره».
+{
+  const MX_ICON = { home: 'home', poets: 'person', saved: 'library', mxRandom: 'casino', mxAbout: 'info' };
+  document.querySelectorAll('#mxNav > a, #mxNav > button').forEach((el) => {
+    const name = MX_ICON[el.dataset.nav || el.id];
+    if (name) el.innerHTML = `${ms(name, 'mx-ic')}<span>${el.innerHTML}</span>`;
+  });
+}
 // «شعر تصادفی»: the poem opens as a sheet over whatever page is on screen; closing it leaves you exactly there (Navid 2026-11-19).
 $('#mxRandom').addEventListener('click', () => {
   setMenu(false, true);
@@ -1555,7 +1563,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.172';
+export const VERSION = '0.9.173';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');

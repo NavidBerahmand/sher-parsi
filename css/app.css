@@ -1277,3 +1277,6 @@ svg.ms .f { display: none; }
   .w-bar { gap: 6px; }
   .w-bar .w-all { padding-inline: 12px; font-size: .78rem; }
 }
+/* Menu items with an icon (Navid 2026-11-21, 0.9.173). */
+.mx-nav a, .mx-nav button { display: flex; align-items: center; gap: 12px; }
+.mx-nav .mx-ic { width: 22px; height: 22px; flex: none; fill: currentColor; stroke: none; }
