@@ -234,14 +234,7 @@ $('#mxRandom').addEventListener('click', () => {
   if (sheetEl && sheetOver?.random) {
     randomPoem((h) => {
       overlayForget(menuBack);
-      const swap = () => {
-        window.removeEventListener('popstate', swap);
-        window.history.replaceState(window.history.state, '', h);
-        const path = clean(decodeURIComponent(h.replace(/^#\/p\//, '')));
-        current.view = 'poem'; current.path = path;
-        const seq = ++routeSeq;
-        viewPoem(path, { random: true, instant: true }, true).catch(() => { if (seq !== routeSeq) return; toast('شعر باز نشد'); requestCloseSheet(); });
-      };
+      const swap = () => { window.removeEventListener('popstate', swap); swapRandom(h); };
       window.addEventListener('popstate', swap);
       window.history.back();
     });
@@ -969,6 +962,14 @@ function placeCard(card) {
 }
 
 /* The poem sheet rises from the bottom over the book's list; pull it down to close. */
+// Show another random poem in the open random sheet: same history entry, new address, as if the page refreshed.
+function swapRandom(h) {
+  window.history.replaceState(window.history.state, '', h);
+  const path = clean(decodeURIComponent(h.replace(/^#\/p\//, '')));
+  current.view = 'poem'; current.path = path;
+  const seq = ++routeSeq;
+  viewPoem(path, { random: true, instant: true }, true).catch(() => { if (seq !== routeSeq) return; toast('شعر باز نشد'); requestCloseSheet(); });
+}
 let sheetEl = null, sheetPushed = false, sheetCat = '';
 // A poem opened on top of any page (random poem): the address of that page and what it showed.
 let sheetOver = null;
@@ -1039,7 +1040,7 @@ function openSheetShell() {
       <button class="icon-btn pt-home" aria-label="خانه" data-tip="خانه">${ICON.home}</button>
       <button class="icon-btn pt-share" aria-label="اشتراک‌گذاری" data-tip="اشتراک‌گذاری">${ICON.share}</button>
       <button class="icon-btn pt-save" aria-label="نشان کردن" data-tip="نشان کردن">${ICON.bookmark}</button>
-    </div>`;
+    </div>${sheetOver?.random ? `<button type="button" class="pt-dice" aria-label="شعر تصادفی دیگر">${ms('casino')}</button>` : ''}`;
   document.body.appendChild(el);
   sheetEl = el;
   document.body.classList.add('psheet-open');
@@ -1053,6 +1054,8 @@ function openSheetShell() {
   el.querySelector('.pt-home').addEventListener('click', () => { searchBack = false; sheetPushed = false; closePoemSheet(); location.hash = '#/'; });
   el.querySelector('.pt-share').addEventListener('click', () => activeCard?.querySelector('.share').click());
   el.querySelector('.pt-save').addEventListener('click', () => { activeCard?.querySelector('.save').click(); syncTools(); });
+  // Random poem: a die at the bottom right shows another one in place (Navid 2026-11-21).
+  el.querySelector('.pt-dice')?.addEventListener('click', (e) => { e.currentTarget.classList.add('roll'); randomPoem(swapRandom); });
   // Pull down from the top of the sheet to close it; it follows the finger.
   attachSheetDrag({ el: sh, handle: () => el.querySelector('.psheet-grip'), backdrop: el.querySelector('.psheet-backdrop'), onClose: requestCloseSheet });
   return sh;
@@ -1563,7 +1566,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.175';
+export const VERSION = '0.9.178';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
