@@ -1115,7 +1115,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
   document.title = `${poem.Title} · ${poetN} · شعر پارسی`;
 
   // Load the following poems of the book as the reader nears the end of the stack.
-  let busy = false, done = opts.fal || idx < 0;
+  let busy = false, done = opts.fal || opts.random || idx < 0; // a random poem stands alone: no next poem below it (Navid 2026-11-21)
   const more = new IntersectionObserver(async (es) => {
     if (!es[0].isIntersecting || busy || done) return;
     busy = true;
@@ -1566,7 +1566,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.180';
+export const VERSION = '0.9.181';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
