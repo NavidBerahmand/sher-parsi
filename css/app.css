@@ -948,7 +948,7 @@ body.wall-mode .top-edge { display: none; }
 .psheet.scrolled .psheet-grip i { opacity: 0; }
 /* Searching on a phone: the reading settings step aside so the results have room. */
 @media (max-width: 700px), (max-height: 700px) { .mx.searching .mx-foot { display: none; } }
-/* Privacy note in «دربارهٔ شعر پارسی» (Navid 2026-11-20, 0.9.165). */
+/* Privacy note in «دربارهٔ سُرایش» (Navid 2026-11-20, 0.9.165). */
 .about .about-h { margin: 18px 0 6px; font-size: 1rem; color: var(--ink); }
 .about .about-credit { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line, rgba(127,127,127,.25)); }
 
@@ -1262,7 +1262,7 @@ svg.ms .f { display: none; }
 .lib-busy small { font-size: .78rem; font-variant-numeric: tabular-nums; }
 @keyframes libdl { from { opacity: .35; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .lib-busy svg.cl { animation: none; } }
-/* Phones: the menu card grows to fit all its rows, so «دربارهٔ شعر پارسی» is not hidden under the settings. */
+/* Phones: the menu card grows to fit all its rows, so «دربارهٔ سُرایش» is not hidden under the settings. */
 @media (max-width: 700px) { .mx-card { height: min(calc(100dvh - 40px), 600px); } }
 .mx-off { padding: 12px 8px 6px; font-size: .82rem; }
 
