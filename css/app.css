@@ -1301,3 +1301,7 @@ body.psheet-open .top-edge { height: calc(env(safe-area-inset-top, 0px) + var(--
 .pt-dice:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 @media (min-width: 860px) { .pt-dice { right: 32px; bottom: 32px; } }
 
+/* Random die: centred at the bottom, the same size and height as the home page's search/library discs (Navid 2026-11-21, 0.9.179). */
+.pt-dice { right: auto; left: 50%; translate: -50% 0; bottom: calc(26px + env(safe-area-inset-bottom, 0px)); width: 39px; height: 39px; }
+.pt-dice svg { width: 21px; height: 21px; }
+@media (min-width: 860px) { .pt-dice { right: auto; bottom: 36px; width: 43px; height: 43px; } }
