@@ -1288,3 +1288,7 @@ svg.ms .f { display: none; }
 .mx-sw { padding-inline: 0; }
 
 .mx-ver { text-align: right; }
+/* Sheet corners (Navid 2026-11-21, 0.9.176): behind the rounded top corners show exactly what is above the sheet.
+   The backdrop starts below the corners, and the page-coloured top strip reaches down behind them. */
+.psheet-backdrop { top: calc(var(--sheet-top) + 24px); }
+body.psheet-open .top-edge { height: calc(env(safe-area-inset-top, 0px) + var(--sheet-top) + 24px); }
