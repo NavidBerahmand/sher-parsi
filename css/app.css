@@ -1292,3 +1292,12 @@ svg.ms .f { display: none; }
    The backdrop starts below the corners, and the page-coloured top strip reaches down behind them. */
 .psheet-backdrop { top: calc(var(--sheet-top) + 24px); }
 body.psheet-open .top-edge { height: calc(env(safe-area-inset-top, 0px) + var(--sheet-top) + 24px); }
+/* Random poem: a fixed die at the bottom right shows another poem (Navid 2026-11-21, 0.9.177). */
+.pt-dice { position: fixed; z-index: 3; right: 20px; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); width: 56px; height: 56px; border-radius: 50%; border: 0; padding: 0;
+  background: #000; color: #fff; display: grid; place-items: center; cursor: pointer; box-shadow: 0 6px 18px rgb(0 0 0 / .25); }
+.pt-dice svg { width: 26px; height: 26px; fill: currentColor; stroke: none; }
+.pt-dice.roll svg { animation: dice-roll .5s cubic-bezier(.3,.7,.3,1); }
+@keyframes dice-roll { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+.pt-dice:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (min-width: 860px) { .pt-dice { right: 32px; bottom: 32px; } }
+
