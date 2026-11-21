@@ -1277,3 +1277,14 @@ svg.ms .f { display: none; }
   .w-bar { gap: 6px; }
   .w-bar .w-all { padding-inline: 12px; font-size: .78rem; }
 }
+/* Menu items with an icon (Navid 2026-11-21, 0.9.173). */
+.mx-nav a, .mx-nav button { display: flex; align-items: center; gap: 12px; }
+.mx-nav .mx-disc { flex: none; width: 36px; height: 36px; border-radius: 50%; background: #000; color: #fff; display: grid; place-items: center; }
+.mx-nav .mx-ic { width: 18px; height: 18px; fill: currentColor; stroke: none; }
+/* Menu: everything lines up on the same right (and left) edge as the search field (Navid 2026-11-21, 0.9.175). */
+.mx-nav a, .mx-nav button { padding-inline: 0; }
+.mx-size button:first-child { text-align: right; padding: 0; }
+.mx-size button:last-child { text-align: left; padding: 0; }
+.mx-sw { padding-inline: 0; }
+
+.mx-ver { text-align: right; }

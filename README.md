@@ -128,7 +128,7 @@ Then open http://localhost:8000/sher-parsi/.
 
 ### Rebuilding the data
 
-With a clone of [ganjoor-data](https://github.com/ganjoor/ganjoor-data) and `sher-parsi-data` beside this repository, run in order: `tools/bundle.py`, `tools/poet_sizes.py`, `tools/poem_counts.py`, then `tools/build_search.py`. A new data fingerprint makes installed copies refresh the poets they have saved.
+With a clone of [ganjoor-data](https://github.com/ganjoor/ganjoor-data) and `sher-parsi-data` beside this repository, run in order: `tools/bundle.py`, `tools/poet_sizes.py`, `tools/poem_counts.py`, `tools/random_pool.py`, then `tools/build_search.py`. A new data fingerprint makes installed copies refresh the poets they have saved.
 
 ### Reporting a problem
 
