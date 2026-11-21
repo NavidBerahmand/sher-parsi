@@ -59,7 +59,7 @@ export async function baytImage({ lines, poet, title, pic }) {
   return poemImage({ groups: [lines], focus: 0, poet, title, pic });
 }
 // Placeholder site address until the domain is bought (Navid 2026-11-18).
-export const SITE_ADDR = 'sherparsi.com';
+export const SITE_ADDR = 'sorayesh.com';
 
 // groups: the poem's couplets (each an array of hemistichs). The three couplets around `focus` are sharp;
 // a few more above and below fade away towards the logo and the names.
@@ -164,7 +164,7 @@ export async function poemImage({ groups, focus, poet, title, pic }) {
   ctx.fillText(poet || '', W / 2, H - 380);
   if (title) { ctx.fillStyle = soft; ctx.font = '350 32px Kahroba'; ctx.fillText(title, W / 2, H - 310); }
   // Small at the bottom: the site's name and address.
-  ctx.fillStyle = soft; ctx.font = '450 30px Kahroba'; ctx.fillText('شعر پارسی', W / 2, H - 200);
+  ctx.fillStyle = soft; ctx.font = '450 30px Kahroba'; ctx.fillText('سُرایش', W / 2, H - 200);
   ctx.direction = 'ltr'; ctx.font = '350 24px Kahroba, sans-serif'; ctx.fillText(SITE_ADDR, W / 2, H - 158);
 
   return new Promise((res) => c.toBlob(res, 'image/png'));

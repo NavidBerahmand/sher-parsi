@@ -2,13 +2,13 @@
 
 <img src="icons/logo.svg" width="88" alt="">
 
-# شعر پارسی
+# سُرایش
 
 **خواندن شعر فارسی، ساده و آرام**
 
 A calm, minimal reader for classical Persian poetry
 
-[**navidberahmand.github.io/sher-parsi**](https://navidberahmand.github.io/sher-parsi/)
+[**sorayesh.com**](https://sorayesh.com/)
 
 [فارسی](#فارسی) · [English](#english)
 
@@ -35,7 +35,7 @@ A calm, minimal reader for classical Persian poetry
 
 ## فارسی
 
-«شعر پارسی» ساده ساخته شده تا فقط شعر بخوانی، بی‌شلوغی و بی‌حواس‌پرتی. روی گوشی و رایانه کار می‌کند، می‌شود آن را به صفحهٔ اصلی گوشی اضافه کرد و شعرهای دانلودشده بدون اینترنت هم خوانده می‌شوند.
+«سُرایش» ساده ساخته شده تا فقط شعر بخوانی، بی‌شلوغی و بی‌حواس‌پرتی. روی گوشی و رایانه کار می‌کند، می‌شود آن را به صفحهٔ اصلی گوشی اضافه کرد و شعرهای دانلودشده بدون اینترنت هم خوانده می‌شوند.
 
 ### چه دارد
 
@@ -71,7 +71,7 @@ A calm, minimal reader for classical Persian poetry
 
 ## English
 
-«شعر پارسی» (*Sher-e Parsi*, “Persian Poetry”) is a web app for reading classical Persian poetry without clutter. It works on phones and desktops, installs to the home screen, and keeps downloaded poets readable offline. The interface is in Persian.
+«سُرایش» (*Sorayesh*, “the making of verse”) is a web app for reading classical Persian poetry without clutter. It works on phones and desktops, installs to the home screen, and keeps downloaded poets readable offline. The interface is in Persian.
 
 ### Features
 
@@ -112,7 +112,7 @@ tools/              scripts that build data/ from ganjoor-data
 docs/screenshots/   images for this page
 ```
 
-The other 202 poets live in [sher-parsi-data](https://github.com/NavidBerahmand/sher-parsi-data), because both together are larger than one GitHub Pages site allows. The app reads them from `../sher-parsi-data/data/`.
+The other 202 poets live in [sher-parsi-data](https://github.com/NavidBerahmand/sher-parsi-data), a split made when the site was on GitHub Pages. The site is now served by Cloudflare Pages at sorayesh.com: `tools/cf-build.sh` puts both repositories into one `dist/` folder, with this data under `/sher-parsi-data/`, where the app reads it (`../sher-parsi-data/data/`).
 
 ### Run it locally
 

@@ -381,15 +381,15 @@ function findLine(card, path) {
 
 function openAbout() {
   openSheet(`
-    <h3>دربارهٔ شعر پارسی</h3>
+    <h3>دربارهٔ سُرایش</h3>
     <div class="about">
-      <p>شعر پارسی ساده ساخته شده تا فقط شعر بخوانی، بی‌شلوغی و بی‌حواس‌پرتی. شعر سخنوران دلخواهت را دانلود کن تا بدون اینترنت هم همیشه در گوشی‌ات باشد و هر جا که هستی به‌راحتی بخوانی. هر بیتی را که دوست داری نشان کن تا بماند، یا از آن تصویری بساز و با دیگران به اشتراک بگذار.</p>
+      <p>سُرایش ساده ساخته شده تا فقط شعر بخوانی، بی‌شلوغی و بی‌حواس‌پرتی. شعر سخنوران دلخواهت را دانلود کن تا بدون اینترنت هم همیشه در گوشی‌ات باشد و هر جا که هستی به‌راحتی بخوانی. هر بیتی را که دوست داری نشان کن تا بماند، یا از آن تصویری بساز و با دیگران به اشتراک بگذار.</p>
       <p>متن همهٔ اشعار از <a href="https://ganjoor.net" target="_blank" rel="noopener">گنجور</a> گرفته شده است. سپاس از گنجور و همهٔ کسانی که این گنجینه را گرد آورده‌اند.</p>
       <p>معنی بیت‌ها و خلاصهٔ شعرهایی که با «هوش مصنوعی:» شروع می‌شوند، کار <a href="https://dev.arman.ac/posts/largest-commentary-in-the-history-of-persian-poetry/" target="_blank" rel="noopener">آرمان نژاد</a> است که با مدل هوش مصنوعی <span dir="ltr">Claude Opus 5.5</span> برای همهٔ گنجور نوشته شده است. معنی‌های دیگر کار ویراستاران گنجور است.</p>
       <p>برای نصب روی گوشی: در سافاری دکمهٔ اشتراک‌گذاری و سپس «افزودن به صفحهٔ اصلی» را بزن؛ در کروم از منوی سه‌نقطه «نصب برنامه» را انتخاب کن.</p>
       <p>قلم این سایت «کهربا» از <a href="https://fontiran.com/license/YVO2HC8R" target="_blank" rel="noopener">فونت ایران</a> است و به صورت قانونی و با مجوز استفاده می‌شود.</p>
       <h4 class="about-h">حریم خصوصی</h4>
-      <p>«شعر پارسی» نیازی به ثبت‌نام ندارد و هیچ اطلاعات شخصی‌ای از شما نمی‌گیرد. نشان‌ها، درصد خوانده‌شده‌ها، تنظیمات و شعرهایی که دانلود می‌کنید فقط روی دستگاه خودتان ذخیره می‌شوند و به جایی فرستاده نمی‌شوند. با پاک کردن داده‌های مرورگر، همهٔ آن‌ها پاک می‌شوند. در آیفون و آیپد، سافاری داده‌های سایتی را که هفت روز باز نشده باشد خودش پاک می‌کند؛ برای اینکه چیزی پاک نشود، «شعر پارسی» را به صفحهٔ اصلی گوشی اضافه کنید و از همان‌جا باز کنید. برای نگه داشتن یا بردن داده‌ها به دستگاه دیگر هم می‌توانید از «پشتیبان» در منو استفاده کنید. این سایت کوکی و تبلیغ ندارد و چیزی از گوگل یا سرویس‌های دیگر بارگذاری نمی‌کند.</p>
+      <p>«سُرایش» نیازی به ثبت‌نام ندارد و هیچ اطلاعات شخصی‌ای از شما نمی‌گیرد. نشان‌ها، درصد خوانده‌شده‌ها، تنظیمات و شعرهایی که دانلود می‌کنید فقط روی دستگاه خودتان ذخیره می‌شوند و به جایی فرستاده نمی‌شوند. با پاک کردن داده‌های مرورگر، همهٔ آن‌ها پاک می‌شوند. در آیفون و آیپد، سافاری داده‌های سایتی را که هفت روز باز نشده باشد خودش پاک می‌کند؛ برای اینکه چیزی پاک نشود، «سُرایش» را به صفحهٔ اصلی گوشی اضافه کنید و از همان‌جا باز کنید. برای نگه داشتن یا بردن داده‌ها به دستگاه دیگر هم می‌توانید از «پشتیبان» در منو استفاده کنید. این سایت کوکی و تبلیغ ندارد و چیزی از گوگل یا سرویس‌های دیگر بارگذاری نمی‌کند.</p>
       <h4 class="about-h">گزارش مشکلات</h4>
       <p>اگر مشکلی در قسمتی از وب سایت تجربه کردید و یا پیشنهادی داشتید، برای <a href="mailto:berahmand@gmail.com?subject=%D8%B4%D8%B9%D8%B1%20%D9%BE%D8%A7%D8%B1%D8%B3%DB%8C" dir="ltr">berahmand@gmail.com</a> بفرست.</p>
       <p class="muted">نسخهٔ ${fa(VERSION)}</p>
@@ -399,8 +399,8 @@ function openAbout() {
 
 /* ───────── Helpers ───────── */
 // The name of the page under any open poem, shown on the browser tab and in the history.
-let pageTitle = 'شعر پارسی';
-function setTitle(t) { pageTitle = t ? `${t} · شعر پارسی` : 'شعر پارسی'; if (!sheetEl) document.title = pageTitle; }
+let pageTitle = 'سُرایش';
+function setTitle(t) { pageTitle = t ? `${t} · سُرایش` : 'سُرایش'; if (!sheetEl) document.title = pageTitle; }
 // The one close button every page uses: a black disc, top left. Back to wherever the reader came from, else home.
 const pageClose = (id = 'pageX') => `<button class="icon-btn page-x tip-l" id="${id}" aria-label="بستن" data-tip="بستن">${ICON.x}</button>`;
 function wireClose(id, up = '#/') { $('#' + id)?.addEventListener('click', () => { if (curN > 0) window.history.back(); else location.hash = up; }); }
@@ -1088,7 +1088,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
       activeCard = en.target; syncTools();
       const want = poemHref(c.meta.url);
       if (location.hash !== want) { window.history.replaceState(window.history.state, '', want); current.path = c.meta.url; }
-      document.title = `${c.meta.title} · ${c.meta.poet} · شعر پارسی`;
+      document.title = `${c.meta.title} · ${c.meta.poet} · سُرایش`;
       history.add(c.meta); refreshMarks(c.meta.url);
     }
   }, { root: sh, rootMargin: '-45% 0px -50% 0px' });
@@ -1112,7 +1112,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
   // Widths must be measured in the real font: stretch again once it has loaded.
   document.fonts?.load('350 20px Kahroba', 'ـبـ').then(() => document.fonts.ready).then(restretchSoon);
   history.add(cardCtx.get(stack.firstElementChild).meta); refreshMarks(cardCtx.get(stack.firstElementChild).meta.url);
-  document.title = `${poem.Title} · ${poetN} · شعر پارسی`;
+  document.title = `${poem.Title} · ${poetN} · سُرایش`;
 
   // Load the following poems of the book as the reader nears the end of the stack.
   let busy = false, done = opts.fal || opts.random || idx < 0; // a random poem stands alone: no next poem below it (Navid 2026-11-21)
@@ -1499,7 +1499,7 @@ function openBackup() {
         importData(JSON.parse(await f.text()));
         toast('بارگذاری شد');
         setTimeout(() => location.reload(), 700);
-      } catch { toast('این فایل پشتیبان شعر پارسی نیست'); }
+      } catch { toast('این فایل پشتیبان سُرایش نیست'); }
       inp.value = '';
     });
   });
@@ -1566,13 +1566,13 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '0.9.182';
+export const VERSION = '0.9.183';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
   v.textContent = 'نسخه ' + fa(VERSION);
   document.body.appendChild(v);
-  $('#mxVer').textContent = 'شعر پارسی · ' + v.textContent + ' · برگرفته از گنجور';
+  $('#mxVer').textContent = 'سُرایش · ' + v.textContent + ' · برگرفته از گنجور';
 }
 window.addEventListener('hashchange', () => {
   routeSeq++; // whatever was still loading for the page before is out of date now
