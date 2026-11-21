@@ -218,7 +218,29 @@ document.addEventListener('keydown', (e) => {
 }, true);
 $('#mxX').addEventListener('click', () => setMenu(false));
 // «شعر تصادفی»: the poem opens as a sheet over whatever page is on screen; closing it leaves you exactly there (Navid 2026-11-19).
-$('#mxRandom').addEventListener('click', () => { setMenu(false, true); randomPoem((h) => { overlayForget(menuBack); openPoemOver(h, true); }); });
+$('#mxRandom').addEventListener('click', () => {
+  setMenu(false, true);
+  // A random poem is already open: show the next one in the same sheet, as if the page refreshed.
+  // The menu's history entry is dropped and the poem's entry takes the new address, so closing still
+  // returns to exactly where the reader was before the first random poem.
+  if (sheetEl && sheetOver?.random) {
+    randomPoem((h) => {
+      overlayForget(menuBack);
+      const swap = () => {
+        window.removeEventListener('popstate', swap);
+        window.history.replaceState(window.history.state, '', h);
+        const path = clean(decodeURIComponent(h.replace(/^#\/p\//, '')));
+        current.view = 'poem'; current.path = path;
+        const seq = ++routeSeq;
+        viewPoem(path, { random: true, instant: true }, true).catch(() => { if (seq !== routeSeq) return; toast('شعر باز نشد'); requestCloseSheet(); });
+      };
+      window.addEventListener('popstate', swap);
+      window.history.back();
+    });
+    return;
+  }
+  randomPoem((h) => { overlayForget(menuBack); openPoemOver(h, true); });
+});
 $('#mxAbout').addEventListener('click', () => { setMenu(false, true); overlaySwap(menuBack, sheetBack); openAbout(); });
 $('#mxBackup').addEventListener('click', () => { setMenu(false, true); overlaySwap(menuBack, sheetBack); openBackup(); });
 $('#mxSz').addEventListener('input', (e) => { settings.set({ size: +e.target.value }); restretchSoon(); });
@@ -944,7 +966,7 @@ let sheetEl = null, sheetPushed = false, sheetCat = '';
 let sheetOver = null;
 function openPoemOver(href, replace = false, opts = { random: true }) {
   const path = clean(decodeURIComponent(href.replace(/^#\/p\//, '')));
-  sheetOver = { hash: location.hash, view: current.view, path: current.path };
+  sheetOver = { hash: location.hash, view: current.view, path: current.path, random: !!opts?.random };
   // Opened over a poem being read: remember it, and where in it, to put it back on close.
   if (sheetEl && current.view === 'poem') sheetOver.poem = { path: current.path, pushed: sheetPushed, searchBack, top: sheetEl.querySelector('.psheet')?.scrollTop || 0 };
   // From the menu the poem takes the menu's history entry, so back lands on the page itself.

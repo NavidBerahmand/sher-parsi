@@ -4,7 +4,7 @@
 A poem is in the pool when
   - it is verse only (no prose paragraphs, so no Golestan stories or prose books),
   - it has at least two lines of verse,
-  - it is Persian (Shahriar's Turkish poems are left out),
+  - it is Persian and not bawdy (Turkish and Arabic poems, hazl and the like are left out: SKIP),
   - and it is well known: Ganjoor's editors wrote a meaning for at least one of its
     couplets (not an AI one), or it is one of Hafez's ghazals.
 Ganjoor publishes no read counts; the editors' meanings are the best sign of which
@@ -14,7 +14,9 @@ import glob, json, os
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 ALWAYS = ('hafez/ghazal/',)
-SKIP = ('shahriar/torki/',)
+# Not Persian, or bawdy/satirical corners nobody wants as a surprise.
+SKIP = ('shahriar/torki/', 'saeb/divan-saeb/ghtorki/', 'saadi/mavaez/arabi/', 'saadi/hazl/', 'eshghi/divan/hazl/',
+        'iraj/masnavi/arefname/', 'obeyd/')
 VERSE = {'R', 'L', 'C1', 'C2', 'S'}
 
 pool = set()
