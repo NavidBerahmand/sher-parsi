@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the static search index for «شعر پارسی» from the bundled data in data/b.
+"""Build the static search index for «سُرایش» from the bundled data in data/b.
 
 Output (all plain JSON, served by GitHub Pages and fetched piece by piece):
   data/s/meta.json        counts, shard sizes, the list of skipped very common words
