@@ -1,6 +1,7 @@
 // Icons: Google Material Symbols (Sharp, weight 400, Apache 2.0; Navid chose Sharp 2026-11-19, 0.9.160), copied in so the site never calls Google (Navid 2026-11-19, 0.9.158).
 // Each is a filled path on Google's 960 grid. A second path ("f") is the filled look an icon takes when it is on (a saved bookmark).
 export const P = {
+  toc: 'M120-280v-60h550v60H120Zm0-170v-60h550v60H120Zm0-170v-60h550v60H120Zm689.5 340q-12.5 0-21-8.63-8.5-8.62-8.5-21.37 0-12 8.63-21 8.62-9 21.37-9 12 0 21 9t9 21.5q0 12.5-9 21t-21.5 8.5Zm0-170q-12.5 0-21-8.63-8.5-8.62-8.5-21.37 0-12 8.63-21 8.62-9 21.37-9 12 0 21 9t9 21.5q0 12.5-9 21t-21.5 8.5Zm0-170q-12.5 0-21-8.63-8.5-8.62-8.5-21.37 0-12 8.63-21 8.62-9 21.37-9 12 0 21 9t9 21.5q0 12.5-9 21t-21.5 8.5Z',
  "chevron_left": "M561-240 320-481l241-241 43 43-198 198 198 198-43 43Z",
  "chevron_right": "M530-481 332-679l43-43 241 241-241 241-43-43 198-198Z",
  "bookmark": "M200-120v-725h560v725L480-240 200-120Zm60-91 220-93 220 93v-574H260v574Zm0-574h440-440Z",

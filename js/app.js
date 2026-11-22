@@ -1,5 +1,5 @@
 import { getManifest, getPoet, getCat, getPoem, parentOf, clean, blocks, DAILY_POOL, TOP, NAMES, NICK, portrait, shelf, shelfHTML, savePoet, isPoetSaved, saveBook, isBookSaved, unsaveBook, unsavePoet, verifySaved, checkDataVersion, setBookSaved, coverHTML, CENTURIES } from './data.js';
-import { settings, apply, onDeviceTheme, saved, history, bayts, books, doneBooks, readPoems, exportData, importData } from './store.js';
+import { settings, apply, onDeviceTheme, saved, history, bayts, books, doneBooks, readPoems, spots, exportData, importData } from './store.js';
 
 import { baytImage, poemImage, shareBlob, withKashida } from './share.js';
 import { search, searchOffline, highlight, norm as searchNorm } from './search.js';
@@ -1040,6 +1040,7 @@ function openSheetShell() {
       <button class="icon-btn pt-home" aria-label="خانه" data-tip="خانه">${ICON.home}</button>
       <button class="icon-btn pt-share" aria-label="اشتراک‌گذاری" data-tip="اشتراک‌گذاری">${ICON.share}</button>
       <button class="icon-btn pt-save" aria-label="نشان کردن" data-tip="نشان کردن">${ICON.bookmark}</button>
+      <button class="icon-btn pt-toc" aria-label="فهرست کتاب" data-tip="فهرست کتاب">${ms('toc')}</button>
     </div>${sheetOver?.random ? `<button type="button" class="pt-dice" aria-label="شعر تصادفی دیگر">${ms('ifl')}</button>` : ''}`;
   document.body.appendChild(el);
   sheetEl = el;
@@ -1054,6 +1055,15 @@ function openSheetShell() {
   el.querySelector('.pt-home').addEventListener('click', () => { searchBack = false; sheetPushed = false; closePoemSheet(); location.hash = '#/'; });
   el.querySelector('.pt-share').addEventListener('click', () => activeCard?.querySelector('.share').click());
   el.querySelector('.pt-save').addEventListener('click', () => { activeCard?.querySelector('.save').click(); syncTools(); });
+  // The book's contents, from its first level (Navid 2026-11-22).
+  el.querySelector('.pt-toc').addEventListener('click', () => {
+    const seg = current.path.split('/');
+    const book = seg.length > 2 ? seg.slice(0, 2).join('/') : sheetCat || seg[0];
+    // The list under the sheet is already that page: just lower the sheet.
+    if (!sheetOver && !searchBack && book === sheetCat && main.dataset.cat === book) { requestCloseSheet(); return; }
+    // The contents take the poem's place in the history, so back goes to the page before the poem (the library).
+    searchBack = false; sheetPushed = false; closePoemSheet(); location.replace(catHref(book));
+  });
   // Random poem: a die at the bottom right shows another one in place (Navid 2026-11-21).
   el.querySelector('.pt-dice')?.addEventListener('click', (e) => { e.currentTarget.classList.add('roll'); randomPoem(swapRandom); });
   // Pull down from the top of the sheet to close it; it follows the finger.
@@ -1102,6 +1112,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
     const el = [...activeCard.querySelectorAll('.verses [data-i]')].find((x) => x.getBoundingClientRect().bottom > top);
     const line = el ? (el.querySelector('.m') || el).textContent.trim() : '';
     try { localStorage.setItem('sp.resume', JSON.stringify({ url: c.meta.url, line, at: Date.now() })); } catch { /* ignore */ }
+    spots.set(c.meta.url, line);
   };
   sh.onscroll = () => { sh.classList.toggle('scrolled', sh.scrollTop > 8); clearTimeout(resumeT); resumeT = setTimeout(saveSpot, 400); };
 
@@ -1566,7 +1577,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.1';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -1610,6 +1621,17 @@ window.addEventListener('hashchange', () => {
   route();
 });
 // Tapping a poem in a list opens it over the list instead of on a new page.
+// A book in «کتابخانهٔ من» opens where its reader stopped, like any e-reader; a book never opened goes to its contents.
+main.addEventListener('click', (e) => {
+  const a = e.target.closest('#sbooks a.book-link');
+  if (!a || current.view !== 'saved' || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  const key = clean(decodeURIComponent(a.getAttribute('href').replace(/^#\/c\//, '')));
+  const at = spots.get(key);
+  if (!at) return;
+  e.preventDefault();
+  if (at.line) pendingFind = { url: at.url, line: at.line };
+  openPoemOver(poemHref(at.url), false, {});
+});
 main.addEventListener('click', (e) => {
   const a = e.target.closest('a[href^="#/p/"]');
   if (!a || (current.view !== 'cat' && current.view !== 'search' && current.view !== 'saved') || e.metaKey || e.ctrlKey || e.shiftKey) return;

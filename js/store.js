@@ -91,6 +91,19 @@ export const history = {
   clear() { write('sp.history', []); },
 };
 
+// Where the reader stopped in each book (Navid 2026-11-22): { '<book path>': { url, line, at } }.
+// A spot is kept under every level above the poem, so a book saved at any depth finds its own.
+export const spots = {
+  all() { const m = read('sp.spots', {}); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; },
+  get(key) { return this.all()[key] || null; },
+  set(url, line) {
+    const seg = url.split('/'), m = this.all(), v = { url, line, at: Date.now() };
+    if (seg.length === 2) m[`${seg[0]}/~other`] = v;
+    for (let i = 2; i < seg.length; i++) m[seg.slice(0, i).join('/')] = v;
+    write('sp.spots', m);
+  },
+};
+
 // Saved couplets: newest first. Each: { url, i, lines: [m1, m2], title, poet, at }
 const bkey = (url, i) => `${url}#${i}`;
 export const bayts = {
@@ -128,7 +141,7 @@ export const doneBooks = {
 };
 
 // Backup: everything the reader made on this device, as one JSON file to carry to another device.
-const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.books', 'sp.bayts', 'sp.history', 'sp.read', 'sp.markedRead', 'sp.doneBooks', 'sp.wall', 'sp.resume'];
+const BACKUP_KEYS = ['sp.settings', 'sp.saved', 'sp.books', 'sp.bayts', 'sp.history', 'sp.read', 'sp.markedRead', 'sp.doneBooks', 'sp.wall', 'sp.resume', 'sp.spots'];
 export function exportData() {
   const data = {};
   BACKUP_KEYS.forEach((k) => { const v = read(k, null); if (v !== null) data[k] = v; });
@@ -189,4 +202,13 @@ export function importData(obj) {
   // Reading position («ادامه خواندن»): keep whichever is newer, this device's or the file's.
   const r = d['sp.resume'];
   if (r && typeof r === 'object' && isPath(r.url) && at(r.at) > (read('sp.resume', {})?.at || 0)) write('sp.resume', { url: r.url, line: str(r.line), at: at(r.at) });
+  // The place in each book: the newer of the two wins, book by book.
+  const sp = d['sp.spots'];
+  if (sp && typeof sp === 'object' && !Array.isArray(sp)) {
+    const m = spots.all();
+    Object.entries(sp).slice(0, 5000).forEach(([k, x]) => {
+      if (isPath(k) && x && typeof x === 'object' && isPath(x.url) && at(x.at) > (m[k]?.at || 0)) m[k] = { url: x.url, line: str(x.line), at: at(x.at) };
+    });
+    write('sp.spots', m);
+  }
 }
