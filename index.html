@@ -29,6 +29,9 @@
   <link rel="preload" href="fonts/kahroba-vf.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/app.css">
   <script>
+    // The site moved to sorayesh.com (Navid, 2026-11-22): the old GitHub Pages address sends readers there, keeping the page they asked for.
+    // Add ?stay to the old address to stay (e.g. to save a backup of what was stored there).
+    if (/\.github\.io$/.test(location.hostname) && !/[?&]stay\b/.test(location.search)) location.replace('https://sorayesh.com/' + location.hash);
     // Apply saved theme before first paint to avoid a flash.
     try {
       var s = JSON.parse(localStorage.getItem('sp.settings') || '{}');
