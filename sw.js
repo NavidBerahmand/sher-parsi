@@ -1,11 +1,11 @@
 // Service worker: app shell is precached; poem data (immutable, pinned commit) is cached on first read.
-const SHELL = 'sp-shell-v141';
+const SHELL = 'sp-shell-v142';
 const DATA = 'sp-data-v1';
 // Every portrait (light and dark) and the faceless bust: fetched quietly after install, so the wall, the poet pages
 // and «کتابخانهٔ من» show their pictures offline too. A failed one never blocks the install.
 const PORTRAITS = 'abdullah abusaeed anvari aref attar babataher bahaee bahar bidel blank eraghi eshghi farrokhi ferdousi feyz forooghi hafez hatef iqbal iraj jahan jami khaghani khajoo khayyam khosro manoochehri mohtasham moulavi naserkhosro nezami obeyd ouhadi parvin rahi roodaki saadi saeb sanaee seyf shabestari shahnematollah shahriar vahshi yazdi'.split(' ');
 const ASSETS = [
-  './', 'css/app.css', 'js/app.js', 'js/route.js', 'js/data.js', 'js/store.js', 'js/share.js', 'js/wall.js', 'js/icons.js', 'js/sheetdrag.js', 'js/search.js', 'js/overlay.js', 'js/covers/covergen.js', 'js/covers/emblems.js', 'js/covers/layouts.js',
+  './', 'css/app.css', 'js/app.js', 'js/route.js', 'js/data.js', 'js/store.js', 'js/share.js', 'js/wall.js', 'js/icons.js', 'js/sheetdrag.js', 'js/search.js', 'js/overlay.js', 'js/covers/covergen.js', 'js/covers/emblems.js', 'js/covers/layouts.js', 'js/covers/map.js',
   'img/poets/hafez.webp', 'img/poets/saadi.webp', 'img/poets/moulavi.webp', 'img/poets/khayyam.webp', 'img/poets/ferdousi.webp', 'img/poets/saeb.webp',
   'img/poets/hafez-dark.webp', 'img/poets/saadi-dark.webp', 'img/poets/moulavi-dark.webp', 'img/poets/khayyam-dark.webp', 'img/poets/ferdousi-dark.webp', 'img/poets/saeb-dark.webp',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/logo.svg', 'icons/logo-2.svg', 'icons/verses.svg', 'icons/icon-192.png', 'icons/icon-512.png',
