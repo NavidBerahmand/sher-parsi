@@ -7,6 +7,7 @@ import { mountWall, unmountWall, wallChoice, setWallChoice } from './wall.js';
 import { attachSheetDrag } from './sheetdrag.js';
 import { ms } from './icons.js';
 import { overlayOpened, overlayClosed, overlayNavigate, overlayIsOpen, overlaySwap, overlayForget } from './overlay.js';
+import { BASE, toHref, fromHref, here, go, onNavigate, resolveHere, shareURL } from './route.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const main = $('#main');
@@ -187,7 +188,7 @@ document.addEventListener('click', (e) => {
   if (r && r.dataset.line) pendingFind = { url: r.dataset.url, line: r.dataset.line };
 });
 // Home search button: opens the menu with the cursor already in the search box.
-document.addEventListener('click', (e) => { if (e.target.closest('.w-search:not(.w-lib)')) { e.preventDefault(); location.hash = '#/search'; } });
+document.addEventListener('click', (e) => { if (e.target.closest('.w-search:not(.w-lib)')) { e.preventDefault(); go('#/search'); } });
 document.addEventListener('click', (e) => { if (e.target.closest('.menu-trigger')) { e.preventDefault(); setMenu(!menu.classList.contains('open')); } });
 menu.addEventListener('click', (e) => {
   if (e.target === menu) return setMenu(false);
@@ -306,7 +307,7 @@ async function runSearch() {
       if (seq !== searchSeq) return;
       count += items.length;
       ul.insertAdjacentHTML('beforeend', items.map((it) =>
-        `<li><a href="${poemHref(it.url)}" data-url="${esc(clean(it.url))}" data-line="${esc(it.text)}"><span class="mx-l">${highlight(it.text, r.words, r.typing, esc)}</span><small>${esc(POET_NAME(it.poet))} · ${esc(it.title)}</small></a></li>`).join(''));
+        `<li><a href="${esc(toHref(poemHref(it.url)))}" data-url="${esc(clean(it.url))}" data-line="${esc(it.text)}"><span class="mx-l">${highlight(it.text, r.words, r.typing, esc)}</span><small>${esc(POET_NAME(it.poet))} · ${esc(it.title)}</small></a></li>`).join(''));
       if (done) { searchMore = null; wait.textContent = count ? '' : 'چیزی پیدا نشد'; wait.hidden = !!count; }
       else { searchMore = page; wait.textContent = '…'; const b = $('#mxBody'); if (b.scrollHeight <= b.clientHeight + 200) setTimeout(page, 0); }
     } catch { if (seq === searchSeq) wait.textContent = 'اتصال برقرار نشد'; }
@@ -351,7 +352,7 @@ function viewSearch() {
         if (seq !== pageSeq2) return;
         count += items.length;
         ul.insertAdjacentHTML('beforeend', items.map((it) =>
-          `<li><a href="${poemHref(it.url)}" data-url="${esc(clean(it.url))}" data-line="${esc(it.text)}"><span class="mx-l">${highlight(it.text, r.words, r.typing, esc)}</span><small>${esc(POET_NAME(it.poet))} · ${esc(it.title)}</small></a></li>`).join(''));
+          `<li><a href="${esc(toHref(poemHref(it.url)))}" data-url="${esc(clean(it.url))}" data-line="${esc(it.text)}"><span class="mx-l">${highlight(it.text, r.words, r.typing, esc)}</span><small>${esc(POET_NAME(it.poet))} · ${esc(it.title)}</small></a></li>`).join(''));
         if (done) { more = null; wait.textContent = count ? '' : 'چیزی پیدا نشد'; wait.hidden = !!count; }
         else { more = page; wait.textContent = '…'; if (document.body.scrollHeight <= innerHeight + 300) setTimeout(page, 0); }
       } catch { if (seq === pageSeq2) wait.textContent = 'اتصال برقرار نشد'; }
@@ -403,7 +404,7 @@ let pageTitle = 'سُرایش';
 function setTitle(t) { pageTitle = t ? `${t} · سُرایش` : 'سُرایش'; if (!sheetEl) document.title = pageTitle; }
 // The one close button every page uses: a black disc, top left. Back to wherever the reader came from, else home.
 const pageClose = (id = 'pageX') => `<button class="icon-btn page-x tip-l" id="${id}" aria-label="بستن" data-tip="بستن">${ICON.x}</button>`;
-function wireClose(id, up = '#/') { $('#' + id)?.addEventListener('click', () => { if (curN > 0) window.history.back(); else location.hash = up; }); }
+function wireClose(id, up = '#/') { $('#' + id)?.addEventListener('click', () => { if (curN > 0) window.history.back(); else go(up); }); }
 function loading() {
   // The four verse strokes of the logo, twice, shimmering while the page loads.
   main.innerHTML = '<div class="wrap" aria-busy="true"><div class="skeleton sk-verses"></div></div>';
@@ -421,7 +422,7 @@ function failed(err, retry) {
 }
 function crumbs(parts) {
   return `<nav class="crumbs" aria-label="مسیر">${parts.map((p, i) =>
-    (i ? '<span class="sep">›</span>' : '') + (p.href ? `<a href="${p.href}">${esc(p.t)}</a>` : `<span>${esc(p.t)}</span>`)).join('')}</nav>`;
+    (i ? '<span class="sep">›</span>' : '') + (p.href ? `<a href="${esc(toHref(p.href))}">${esc(p.t)}</a>` : `<span>${esc(p.t)}</span>`)).join('')}</nav>`;
 }
 async function poetName(slug) {
   try { return (await getPoet(slug)).Nickname; } catch { return ''; }
@@ -432,7 +433,7 @@ const catHref = (u) => `#/c/${clean(u)}`;
 const POET_RIBBON = '<svg viewBox="0 0 14 22" aria-hidden="true"><path d="M1 0v20.5l6-4.6 6 4.6V0"/></svg>';
 function poetTile(slug, name, marked, extra = '') {
   const dark = settings.get().theme === 'dark';
-  return `<li class="pt"><a href="#/c/${esc(slug)}"><span class="pt-pic"><img class="pl-face" src="${esc(portrait(slug, dark))}" alt="" width="1024" height="1024" loading="lazy" decoding="async"></span><b>${esc(name)}</b></a>${extra}`
+  return `<li class="pt"><a href="${esc(toHref(`#/c/${slug}`))}"><span class="pt-pic"><img class="pl-face" src="${esc(portrait(slug, dark))}" alt="" width="1024" height="1024" loading="lazy" decoding="async"></span><b>${esc(name)}</b></a>${extra}`
     + `<span class="pt-mark${marked ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${marked}" aria-label="نشان کردن سخنور" data-slug="${esc(slug)}">${POET_RIBBON}</span></li>`;
 }
 function togglePoetMark(slug) {
@@ -552,7 +553,7 @@ function openLibMenu(el) {
       if (current.view === 'saved') viewSaved(); else fillLibMeta(el.parentElement);
     });
     s.querySelector('#lmShare').addEventListener('click', async () => {
-      const url = `${location.origin}${location.pathname}${book ? href : `#/c/${slug}`}`;
+      const url = shareURL(book ? href : `#/c/${slug}`);
       const name = book ? `${title} · ${author}` : POET_NAME(slug);
       closeSheet();
       if (navigator.share) { try { await navigator.share({ title: name, url }); } catch { /* cancelled */ } } else { await copy(url); toast('پیوند کپی شد'); }
@@ -634,17 +635,17 @@ async function randomAny() {
   return null;
 }
 let randomPoolP = null;
-async function randomPoem(go = (h) => { location.hash = h; }) {
+async function randomPoem(show = (h) => { go(h); }) {
   try {
     // From any of the named poets, not only a handful: a few tries, then the old short list as a fallback.
     // First from the pool of well-known verse poems (tools/random_pool.py: no prose, no obscure corners).
     const pool = await (randomPoolP ||= fetch('data/random.json').then((r) => (r.ok ? r.json() : [])).catch(() => { randomPoolP = null; return []; }));
-    if (pool.length) return go(poemHref(pool[Math.floor(Math.random() * pool.length)]));
+    if (pool.length) return show(poemHref(pool[Math.floor(Math.random() * pool.length)]));
     let pick;
     for (let i = 0; i < 4 && !pick; i++) pick = await randomAny().catch(() => null);
     pick ||= await randomFrom(DAILY_POOL[Math.floor(Math.random() * DAILY_POOL.length)]);
-    go(poemHref(pick.FullUrl));
-  } catch (e) { go(location.hash); toast('اتصال برقرار نشد'); }
+    show(poemHref(pick.FullUrl));
+  } catch (e) { show(here()); toast('اتصال برقرار نشد'); }
 }
 
 async function viewPoets() {
@@ -791,8 +792,8 @@ async function viewCat(path) {
   // On a poet's page the works are grouped (a divan's forms get their own shelf); deeper pages show one shelf.
   const groups = isPoet && !other ? await shelf(cat) : null;
   // Inside a book its parts are a plain list, not more covers.
-  const books = groups ? '' : (cat.ChildCats || []).map((c) => `<a class="part" href="${catHref(c.FullUrl)}"><b>${esc(c.Title)}</b>${ICON.chev}</a>`).join('');
-  const poemItem = (p, i) => `<li><a href="${poemHref(p.FullUrl)}" data-u="${esc(clean(p.FullUrl))}"><span class="n">${fa(i + 1)}</span><span class="tt"><span class="fl"></span><small>${esc(p.Title)}</small></span><span class="marks">${marksHTML(clean(p.FullUrl), seen)}</span></a></li>`;
+  const books = groups ? '' : (cat.ChildCats || []).map((c) => `<a class="part" href="${esc(toHref(catHref(c.FullUrl)))}"><b>${esc(c.Title)}</b>${ICON.chev}</a>`).join('');
+  const poemItem = (p, i) => `<li><a href="${esc(toHref(poemHref(p.FullUrl)))}" data-u="${esc(clean(p.FullUrl))}"><span class="n">${fa(i + 1)}</span><span class="tt"><span class="fl"></span><small>${esc(p.Title)}</small></span><span class="marks">${marksHTML(clean(p.FullUrl), seen)}</span></a></li>`;
 
   if (seq !== routeSeq) return;
   main.dataset.cat = path;
@@ -809,14 +810,14 @@ async function viewCat(path) {
   // End of a section: a button on to the next one in the poet's works (the next sibling, or the parent's next).
   if (!isPoet && !other) nextSection(path).then((n) => {
     const box = $('#nextSec');
-    if (n && box && main.dataset.cat === path) box.outerHTML = `<a class="btn next-sec" href="${catHref(n.FullUrl)}"><small>بخش بعد</small><b>${esc(n.Title)}</b>${ICON.chev}</a>`;
+    if (n && box && main.dataset.cat === path) box.outerHTML = `<a class="btn next-sec" href="${esc(toHref(catHref(n.FullUrl)))}"><small>بخش بعد</small><b>${esc(n.Title)}</b>${ICON.chev}</a>`;
   }).catch(() => {});
 
   observeFirstLines();
   // Close: back to wherever the reader came from in the app; otherwise up one level.
   $('#pageX').addEventListener('click', () => {
     if (curN > 0) window.history.back();
-    else location.hash = isPoet ? '#/' : catHref(parentOf(path));
+    else go(isPoet ? '#/' : catHref(parentOf(path)));
   });
   $('#pageDl')?.addEventListener('click', () => startPoetSave(slug));
   $('#bioT')?.addEventListener('click', (e) => {
@@ -907,8 +908,8 @@ function refreshMarks(u) {
 function cardHTML(path, poem, poetN, cat, opts = {}) {
   const slug = path.split('/')[0], parent = parentOf(path);
   // Books inside books (سعدی › مواعظ › غزلیات): name the outer book too, or two «غزلیات» look the same.
-  const outer = cat?._outer ? ` · <a href="${catHref(parentOf(parent))}">${esc(cat._outer)}</a>` : '';
-  const bookLink = cat && parent.includes('/') ? `${outer} · <a href="${catHref(parent)}">${esc(cat.Title)}</a>` : '';
+  const outer = cat?._outer ? ` · <a href="${esc(toHref(catHref(parentOf(parent))))}">${esc(cat._outer)}</a>` : '';
+  const bookLink = cat && parent.includes('/') ? `${outer} · <a href="${esc(toHref(catHref(parent)))}">${esc(cat.Title)}</a>` : '';
   const on = saved.has(path);
   return `<article class="pcard" data-path="${esc(path)}">
     <div class="poem-bar">
@@ -920,12 +921,12 @@ function cardHTML(path, poem, poetN, cat, opts = {}) {
     </div>
     <header class="poem-head">
       ${opts.fal ? `<div class="fal-badge">${ICON.star}فال تو</div><br>` : ''}
-      <span class="who"><a href="${catHref(slug)}">${esc(poetN)}</a>${bookLink}</span>
+      <span class="who"><a href="${esc(toHref(catHref(slug)))}">${esc(poetN)}</a>${bookLink}</span>
       <h2 class="ptitle">${esc(poem.Title)}</h2>
     </header>
     <div class="verses">${renderBlocks(blocks(poem))}</div>
     ${poem.PoemSummary ? `<details class="about ${opts.fal ? 'fal' : ''}" ${opts.fal ? 'open' : ''}><summary>${opts.fal ? 'تعبیر فال' : 'دربارهٔ این شعر'}${ICON.down}</summary><p>${esc(poem.PoemSummary.replace(/\s*\n\s*/g, ' '))}</p></details>` : ''}
-    ${opts.fal ? `<div class="poem-actions"><a class="btn ghost" href="#/fal">فال دوباره</a></div>` : ''}
+    ${opts.fal ? `<div class="poem-actions"><a class="btn ghost" href="${toHref('#/fal')}">فال دوباره</a></div>` : ''}
   </article>`;
 }
 
@@ -974,8 +975,9 @@ let sheetEl = null, sheetPushed = false, sheetCat = '';
 // A poem opened on top of any page (random poem): the address of that page and what it showed.
 let sheetOver = null;
 function openPoemOver(href, replace = false, opts = { random: true }) {
+  href = fromHref(href); // a route, or a link's path
   const path = clean(decodeURIComponent(href.replace(/^#\/p\//, '')));
-  sheetOver = { hash: location.hash, view: current.view, path: current.path, random: !!opts?.random };
+  sheetOver = { hash: here(), view: current.view, path: current.path, random: !!opts?.random };
   // Opened over a poem being read: remember it, and where in it, to put it back on close.
   if (sheetEl && current.view === 'poem') sheetOver.poem = { path: current.path, pushed: sheetPushed, searchBack, top: sheetEl.querySelector('.psheet')?.scrollTop || 0 };
   // From the menu the poem takes the menu's history entry, so back lands on the page itself.
@@ -1052,7 +1054,7 @@ function openSheetShell() {
   sh.addEventListener('click', (e) => { if (e.target.closest('.pclose')) requestCloseSheet(); });
   // The three buttons above the sheet act on the poem being read.
   el.querySelector('.pt-x').addEventListener('click', requestCloseSheet);
-  el.querySelector('.pt-home').addEventListener('click', () => { searchBack = false; sheetPushed = false; closePoemSheet(); location.hash = '#/'; });
+  el.querySelector('.pt-home').addEventListener('click', () => { searchBack = false; sheetPushed = false; closePoemSheet(); go('#/'); });
   el.querySelector('.pt-share').addEventListener('click', () => activeCard?.querySelector('.share').click());
   el.querySelector('.pt-save').addEventListener('click', () => { activeCard?.querySelector('.save').click(); syncTools(); });
   // The book's contents, from its first level (Navid 2026-11-22).
@@ -1062,7 +1064,7 @@ function openSheetShell() {
     // The list under the sheet is already that page: just lower the sheet.
     if (!sheetOver && !searchBack && book === sheetCat && main.dataset.cat === book) { requestCloseSheet(); return; }
     // The contents take the poem's place in the history, so back goes to the page before the poem (the library).
-    searchBack = false; sheetPushed = false; closePoemSheet(); location.replace(catHref(book));
+    searchBack = false; sheetPushed = false; closePoemSheet(); go(catHref(book), true);
   });
   // Random poem: a die at the bottom right shows another one in place (Navid 2026-11-21).
   el.querySelector('.pt-dice')?.addEventListener('click', (e) => { e.currentTarget.classList.add('roll'); randomPoem(swapRandom); });
@@ -1097,7 +1099,7 @@ async function viewPoem(path, opts = {}, fromList = false) {
       if (!c || current.view !== 'poem') continue;
       activeCard = en.target; syncTools();
       const want = poemHref(c.meta.url);
-      if (location.hash !== want) { window.history.replaceState(window.history.state, '', want); current.path = c.meta.url; }
+      if (here() !== want) { window.history.replaceState(window.history.state, '', want); current.path = c.meta.url; }
       document.title = `${c.meta.title} · ${c.meta.poet} · سُرایش`;
       history.add(c.meta); refreshMarks(c.meta.url);
     }
@@ -1276,7 +1278,7 @@ function openPoemShare(card, ctx, path) {
   const strip = (m) => (settings.get().harakat ? m : m.replace(HARAKAT, ''));
   const idx = bs.map((b, i) => (b.m ? i : -1)).filter((i) => i >= 0);
   const groups = idx.map((i) => bs[i].m.map(strip));
-  const url = `${location.origin}${location.pathname}#/p/${path}`;
+  const url = shareURL(poemHref(path));
   const full = `${groups.map((g) => g.filter(Boolean).join('\n')).join('\n\n')}\n\n${meta.poet} · ${poem.Title}`;
   openSheet(`
     <div class="actions">
@@ -1375,7 +1377,7 @@ function viewFal() {
     try {
       const [pick] = await Promise.all([randomFrom('hafez/ghazal'), wait]);
       falNext = clean(pick.FullUrl);
-      location.hash = poemHref(pick.FullUrl);
+      go(poemHref(pick.FullUrl));
     } catch {
       $('#orb').classList.remove('opening'); e.currentTarget.disabled = false;
       toast('برای گرفتن فال به اینترنت نیاز است');
@@ -1395,12 +1397,12 @@ function viewSaved() {
   };
   const item = (x) => {
     if (savedTab === 'bayts') {
-      return `<li class="saved-item bayt-item"><a href="${esc(poemHref(x.url))}" data-url="${esc(x.url)}" data-line="${esc(x.lines[0])}">
+      return `<li class="saved-item bayt-item"><a href="${esc(toHref(poemHref(x.url)))}" data-url="${esc(x.url)}" data-line="${esc(x.lines[0])}">
         <span class="q">${x.lines.map((m) => `<span class="m">${txt(m)}</span>`).join('')}</span>
         <span class="s">${esc(x.title)}${savedSort === 'poet' ? '' : ` · ${esc(x.poet)}`}</span></a>
         <button class="icon-btn on" data-rmb="${esc(x.url)}" data-i="${+x.i || 0}" aria-label="برداشتن">${ICON.bookmark}</button></li>`;
     }
-    return `<li class="saved-item"><a href="${esc(poemHref(x.url))}">
+    return `<li class="saved-item"><a href="${esc(toHref(poemHref(x.url)))}">
       ${x.line ? `<span class="q">${txt(x.line.split(' / ')[0])}</span>` : ''}
       <span class="s">${esc(x.title)}${savedSort === 'poet' ? '' : ` · ${esc(x.poet)}`}</span></a>
       ${savedTab === 'poems' ? `<button class="icon-btn on" data-rm="${esc(x.url)}" aria-label="برداشتن">${ICON.bookmark}</button>` : ''}</li>`;
@@ -1533,9 +1535,7 @@ let routeSeq = 0;
 let curN = 0, routedOnce = false;
 async function route(keepScroll = false) {
   const seq = ++routeSeq;
-  let h;
-  try { h = decodeURIComponent(location.hash.replace(/^#\/?/, '')); }
-  catch { location.hash = '#/'; return; } // a broken address (bad % code): home
+  const h = here().replace(/^#\/?/, ''); // the page's route (route.js), e.g. 'p/hafez/ghazal/sh1'
   const [head, ...rest] = h.split('/');
   const path = clean(rest.join('/'));
   const view = head === 'p' ? 'poem' : head === 'c' ? 'cat' : head || 'home';
@@ -1566,7 +1566,7 @@ async function route(keepScroll = false) {
     else if (view === 'saved') viewSaved();
     else if (view === 'cat' && path) await viewCat(path);
     else if (view === 'poem' && path) await viewPoem(path, { fal: falNext === path });
-    else location.hash = '#/';
+    else { go('#/', true); return; }
   } catch (e) { if (seq === routeSeq) failed(e, () => route()); }
   if (seq !== routeSeq) return;
   if (view === 'poem' && falNext !== path) falNext = null;
@@ -1577,7 +1577,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '1.0.2';
+export const VERSION = '1.0.3';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
@@ -1585,18 +1585,18 @@ export const VERSION = '1.0.2';
   document.body.appendChild(v);
   $('#mxVer').textContent = 'سُرایش · ' + v.textContent + ' · برگرفته از گنجور';
 }
-window.addEventListener('hashchange', () => {
+onNavigate(() => {
   routeSeq++; // whatever was still loading for the page before is out of date now
   if (typeof window.history.state?.n === 'number') curN = window.history.state.n;
   // Back from an open poem to its own list: just lower the sheet, keep the list where it was.
   // Back from a poem opened on the search page: lower the sheet, keep the results.
-  if (sheetEl && location.hash === '#/search' && $('#sRes')) {
+  if (sheetEl && here() === '#/search' && $('#sRes')) {
     sheetPushed = false; current.view = 'search'; current.path = '';
     if (window.history.state?.pg) pageId = window.history.state.pg;
     closePoemSheet();
     return;
   }
-  if (sheetEl && sheetOver && location.hash === sheetOver.hash) {
+  if (sheetEl && sheetOver && here() === sheetOver.hash) {
     const under = sheetOver.poem;
     sheetPushed = false; current.view = sheetOver.view; current.path = sheetOver.path; sheetOver = null;
     if (under) {
@@ -1612,7 +1612,7 @@ window.addEventListener('hashchange', () => {
     return;
   }
   sheetOver = null;
-  if (sheetEl && location.hash === catHref(sheetCat)) {
+  if (sheetEl && here() === catHref(sheetCat)) {
     sheetPushed = false; current.view = 'cat'; current.path = sheetCat;
     if (window.history.state?.pg) pageId = window.history.state.pg;
     closePoemSheet();
@@ -1625,7 +1625,7 @@ window.addEventListener('hashchange', () => {
 main.addEventListener('click', (e) => {
   const a = e.target.closest('#sbooks a.book-link');
   if (!a || current.view !== 'saved' || e.metaKey || e.ctrlKey || e.shiftKey) return;
-  const key = clean(decodeURIComponent(a.getAttribute('href').replace(/^#\/c\//, '')));
+  const key = clean(fromHref(a.getAttribute('href')).replace(/^#\/c\//, ''));
   const at = spots.get(key);
   if (!at) return;
   e.preventDefault();
@@ -1633,13 +1633,14 @@ main.addEventListener('click', (e) => {
   openPoemOver(poemHref(at.url), false, {});
 });
 main.addEventListener('click', (e) => {
-  const a = e.target.closest('a[href^="#/p/"]');
-  if (!a || (current.view !== 'cat' && current.view !== 'search' && current.view !== 'saved') || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  const a = e.target.closest('a[href]');
+  if (!a || a.origin !== location.origin || (current.view !== 'cat' && current.view !== 'search' && current.view !== 'saved') || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  const href = fromHref(a.getAttribute('href'));
+  if (!href.startsWith('#/p/')) return;
   e.preventDefault();
-  const href = a.getAttribute('href');
   // From «کتابخانهٔ من» the poem rises over the library itself, so closing it lands back there, at the same place.
   if (current.view === 'saved') { openPoemOver(href, false, {}); return; }
-  const path = clean(decodeURIComponent(href.slice(4)));
+  const path = clean(href.slice(4));
   window.history.pushState(null, '', href);
   sheetPushed = true;
   current.view = 'poem'; current.path = path;
@@ -1650,9 +1651,27 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheetEl 
 
 document.fonts?.addEventListener?.('loadingdone', restretchSoon);
 
+// Every other link inside the site opens its page in the app, as the old #/ links did, without reloading.
+// (Earlier listeners that handle a link themselves call preventDefault.)
+document.addEventListener('click', (e) => {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const a = e.target.closest('a[href]');
+  if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return;
+  const raw = a.getAttribute('href');
+  // A link to a place on the same page (the «رفتن به متن» skip link): with <base> it would load the home page.
+  if (raw.startsWith('#') && !raw.startsWith('#/')) { e.preventDefault(); document.getElementById(raw.slice(1))?.focus(); return; }
+  let u;
+  try { u = new URL(a.href); } catch { return; }
+  if (u.origin !== location.origin || !u.pathname.startsWith(BASE) || /\.[a-z0-9]+$/i.test(u.pathname)) return; // another site, or a file
+  e.preventDefault();
+  go(fromHref(raw));
+});
+
 /* ───────── Boot ───────── */
 apply();
-route();
+// A poem whose address doesn't end in «shN» is told from a book by its book's list of poems.
+const isPoemPath = async (p) => ((await getCat(parentOf(p))).Poems || []).some((x) => clean(x.FullUrl) === p);
+resolveHere(isPoemPath).then(() => route());
 // A little after opening, so it never slows the first view: renew the data cache if the poems were rebuilt,
 // then make sure every filled cloud still has its files.
 setTimeout(() => checkDataVersion().catch(() => false).then(() => verifySaved()).then((changed) => { if (changed) refreshClouds(); }).catch(() => {}), 2500);
