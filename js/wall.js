@@ -2,6 +2,7 @@
 // Drag (or scroll) in any direction; tap a portrait to open the poet's page.
 import { getPoet, getCat, getManifest, NAMES, NICK, TOP, portrait } from './data.js';
 import { ms } from './icons.js';
+import { toHref, go } from './route.js';
 
 // Every poet has a portrait. The reader picks which of them show on the wall (ticks in the all-poets list).
 // Names under the portraits match ganjoor.net's home page exactly (Navid 2026-11-18); NAMES stays as is elsewhere.
@@ -18,7 +19,7 @@ function resumeLink() {
   try { r = JSON.parse(localStorage.getItem('sp.resume')); } catch { /* storage blocked */ }
   if (!r || !r.url) return '';
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-  return `<a class="w-all w-resume" href="#/p/${esc(r.url)}" data-url="${esc(r.url)}" data-line="${esc(r.line || '')}">ادامه خواندن</a>`;
+  return `<a class="w-all w-resume" href="${esc(toHref(`#/p/${r.url}`))}" data-url="${esc(r.url)}" data-line="${esc(r.line || '')}">ادامه خواندن</a>`;
 }
 const chosen = () => {
   let v = null;
@@ -89,7 +90,7 @@ export function mountWall() {
       <button class="w-menu menu-trigger" aria-label="منو" aria-haspopup="true"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></button>
     </header>
     <div class="wall" id="wall" role="region" aria-label="دیوار سخنوران"></div>
-    <div class="w-bar"><a class="w-all" href="#/poets">همه سخنوران</a><a class="w-search w-lib" href="#/saved" aria-label="کتابخانهٔ من">${ms('library')}</a><button type="button" class="w-search" aria-label="جست‌وجو در اشعار">${ms('search')}</button>${resumeLink()}</div>
+    <div class="w-bar"><a class="w-all" href="${toHref('#/poets')}">همه سخنوران</a><a class="w-search w-lib" href="${toHref('#/saved')}" aria-label="کتابخانهٔ من">${ms('library')}</a><button type="button" class="w-search" aria-label="جست‌وجو در اشعار">${ms('search')}</button>${resumeLink()}</div>
     <div class="w-grain" aria-hidden="true"></div>`;
   document.body.appendChild(root);
 
@@ -282,7 +283,7 @@ export function mountWall() {
   { const t = setTimeout(() => (window.requestIdleCallback ? requestIdleCallback(prefetch, { timeout: 3000 }) : prefetch()), 1200); cleanup.push(() => clearTimeout(t)); }
 
   // A tap on a portrait opens the poet's own page (the half card is gone, Navid 2026-11-18).
-  function openPoet(pi) { location.hash = `#/c/${POETS[pi].slug}`; }
+  function openPoet(pi) { go(`#/c/${POETS[pi].slug}`); }
 }
 
 export function unmountWall() {

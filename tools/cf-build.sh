@@ -5,8 +5,10 @@
 set -e
 rm -rf dist && mkdir dist
 cp -r index.html sw.js manifest.webmanifest LICENSE css js fonts icons img data dist/
-cp robots.txt sitemap.xml dist/
+cp robots.txt dist/
 cp tools/404.html dist/404.html
 git clone --depth 1 https://github.com/NavidBerahmand/sher-parsi-data.git dist/sher-parsi-data
 rm -rf dist/sher-parsi-data/.git dist/sher-parsi-data/README.md
+# Each page's title and description for the server (functions/), the sitemaps, and which addresses are pages.
+node tools/build_pages.mjs dist
 echo "files: $(find dist -type f | wc -l)"

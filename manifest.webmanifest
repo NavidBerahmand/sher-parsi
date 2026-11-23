@@ -4,7 +4,7 @@
   "description": "خواندن شعر فارسی، ساده و آرام",
   "lang": "fa",
   "dir": "rtl",
-  "start_url": "./#/",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#2f3526",

@@ -6,6 +6,9 @@
     This set of fonts is used in this project under the license: YVO2HC8R (https://fontiran.com/license/YVO2HC8R)
   -->
   <meta charset="utf-8">
+  <!-- Pages have real addresses (sorayesh.com/hafez/ghazal/sh1), so every file is found from the site's root. -->
+  <base href="/">
+  <script>if (/\.github\.io$/.test(location.hostname)) document.querySelector('base').setAttribute('href', '/sher-parsi/');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>سُرایش</title>
   <meta name="description" content="خواندن شعر فارسی، ساده و آرام">
@@ -43,7 +46,9 @@
       else document.querySelector('meta[name="theme-color"]').setAttribute('content', '#585e4a');
     } catch (e) {}
     // The opening card belongs to the home page only, and shows every time the site opens there (Navid, 2026-11-19).
-    if (!/^#?\/?$/.test(location.hash)) document.documentElement.classList.add('no-splash');
+    // Home is the site's root (or an old «#/» address of it); a page's own address or an old «#/p/…» one has none.
+    var home = location.pathname.slice(new URL(document.baseURI).pathname.length);
+    if (!/^(index\.html)?$/.test(home) || !/^#?\/?$/.test(location.hash)) document.documentElement.classList.add('no-splash');
   </script>
 </head>
 <body>
@@ -61,10 +66,10 @@
         <input type="search" id="mxQ" placeholder="جست‌وجو در همهٔ اشعار" autocomplete="off" enterkeyhint="search" aria-label="جست‌وجو در اشعار"><button type="button" class="mx-clr" id="mxClr" aria-label="پاک کردن" hidden><svg class="ms" viewBox="0 -960 960 960" aria-hidden="true"><path class="o" d="m249-207-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z"/></svg></button></label></div>
       <div class="mx-body" id="mxBody">
         <nav class="mx-nav" id="mxNav" aria-label="بخش‌ها">
-          <a href="#/" data-nav="home">خانه</a>
-          <a href="#/poets" data-nav="poets">همه سخنوران</a>
-          <!-- فال حافظ hidden for now (Navid 2026-11-18): <a href="#/fal" data-nav="fal">فال حافظ</a> -->
-          <a href="#/saved" data-nav="saved">کتابخانهٔ من</a>
+          <a href="./" data-nav="home">خانه</a>
+          <a href="poets" data-nav="poets">همه سخنوران</a>
+          <!-- فال حافظ hidden for now (Navid 2026-11-18): <a href="fal" data-nav="fal">فال حافظ</a> -->
+          <a href="saved" data-nav="saved">کتابخانهٔ من</a>
           <button type="button" id="mxRandom">شعر تصادفی</button>
           <button type="button" id="mxAbout">دربارهٔ سُرایش</button>
         </nav>

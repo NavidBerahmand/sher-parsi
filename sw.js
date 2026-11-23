@@ -1,11 +1,11 @@
 // Service worker: app shell is precached; poem data (immutable, pinned commit) is cached on first read.
-const SHELL = 'sp-shell-v140';
+const SHELL = 'sp-shell-v141';
 const DATA = 'sp-data-v1';
 // Every portrait (light and dark) and the faceless bust: fetched quietly after install, so the wall, the poet pages
 // and «کتابخانهٔ من» show their pictures offline too. A failed one never blocks the install.
 const PORTRAITS = 'abdullah abusaeed anvari aref attar babataher bahaee bahar bidel blank eraghi eshghi farrokhi ferdousi feyz forooghi hafez hatef iqbal iraj jahan jami khaghani khajoo khayyam khosro manoochehri mohtasham moulavi naserkhosro nezami obeyd ouhadi parvin rahi roodaki saadi saeb sanaee seyf shabestari shahnematollah shahriar vahshi yazdi'.split(' ');
 const ASSETS = [
-  './', 'index.html', 'css/app.css', 'js/app.js', 'js/data.js', 'js/store.js', 'js/share.js', 'js/wall.js', 'js/icons.js', 'js/sheetdrag.js', 'js/search.js', 'js/overlay.js', 'js/covers/covergen.js', 'js/covers/emblems.js', 'js/covers/layouts.js',
+  './', 'css/app.css', 'js/app.js', 'js/route.js', 'js/data.js', 'js/store.js', 'js/share.js', 'js/wall.js', 'js/icons.js', 'js/sheetdrag.js', 'js/search.js', 'js/overlay.js', 'js/covers/covergen.js', 'js/covers/emblems.js', 'js/covers/layouts.js',
   'img/poets/hafez.webp', 'img/poets/saadi.webp', 'img/poets/moulavi.webp', 'img/poets/khayyam.webp', 'img/poets/ferdousi.webp', 'img/poets/saeb.webp',
   'img/poets/hafez-dark.webp', 'img/poets/saadi-dark.webp', 'img/poets/moulavi-dark.webp', 'img/poets/khayyam-dark.webp', 'img/poets/ferdousi-dark.webp', 'img/poets/saeb-dark.webp',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/logo.svg', 'icons/logo-2.svg', 'icons/verses.svg', 'icons/icon-192.png', 'icons/icon-512.png',
@@ -41,6 +41,9 @@ self.addEventListener('fetch', (e) => {
 
   if (url.origin !== location.origin) return;
 
+  // Opening a page (sorayesh.com/hafez/ghazal/sh1, or any other address of the site): every page is the same app.
+  if (req.mode === 'navigate' && !/\.[a-z0-9]+$/i.test(url.pathname)) { e.respondWith(page(e, req, url)); return; }
+
   // Bundled poetry files: cache-first from the data cache, which "download poet" fills
   // and which survives app updates.
   // The search index is rebuilt with the data, so it is never kept in the long-lived cache.
@@ -68,14 +71,22 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(shell(e, req));
 });
 
+// A page: network first (the server writes each page's own title into it), the saved home page when offline or slow.
+// Only the home page itself is stored, so the cache holds one page, not one per poem opened.
+async function page(e, req, url) {
+  const root = new URL('./', location.href).pathname;
+  return shell(e, req, url.pathname === root ? undefined : './');
+}
+
 // Network first, but never wait long for it: on a weak connection (or the "lie-fi" of a dead Wi-Fi) the saved copy
 // answers after SLOW ms, while the fresh one keeps loading in the background and is there on the next open.
 const SLOW = 3000;
 let slowUntil = 0; // after one slow answer, the whole page comes from the saved copy, so its files stay one version
-async function shell(e, req) {
+// fallback: what to answer from the cache instead of the request itself (a page that isn't stored: the home page).
+async function shell(e, req, fallback) {
   const c = await caches.open(SHELL);
-  const hit = (await c.match(req, { ignoreSearch: true })) || (req.mode === 'navigate' ? await c.match('index.html') : undefined);
-  const net = fetch(req, { cache: 'no-cache' }).then(async (res) => { if (res.ok) await c.put(req, res.clone()); return res; });
+  const hit = await c.match(fallback || req, { ignoreSearch: true });
+  const net = fetch(req, { cache: 'no-cache' }).then(async (res) => { if (res.ok && !fallback) await c.put(req, res.clone()); return res; });
   if (!hit) return net;
   const fresh = net.catch(() => null);
   e.waitUntil(fresh);
