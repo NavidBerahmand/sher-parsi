@@ -13,7 +13,11 @@ Step 2:  python3 tools/cover_images.py   (needs ../sher-parsi-data beside the re
 import json, os, random, re, shutil, sys
 
 # Books Navid chose a picture for by hand; the book that had that picture takes the pinned book's one.
-PIN = {'ferdousi/shahname': 185}  # the two crowned kings (Navid, 2026-11-23)
+PIN = {  # Navid, 2026-11-23
+    'ferdousi/shahname': 185,  # the two crowned kings
+    'saadi/boostan': 465,  # green hills with trees
+    'saadi/golestan': 489,  # a flower garden
+}
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'img', 'covers')
