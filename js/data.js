@@ -2,6 +2,7 @@
 // served as static JSON through jsDelivr. Pinned to a commit so responses are
 // immutable and safe to cache forever (offline reading).
 import { toHref } from './route.js';
+import { COVERS, NCOVERS } from './covers/map.js';
 
 export const DATA_SHA = '616e4042699fb2ac9a148b17c7b61221bd3edfe8';
 export const DATA_BASE = `https://cdn.jsdelivr.net/gh/ganjoor/ganjoor-data@${DATA_SHA}/`;
@@ -438,10 +439,14 @@ export function coverHTML(b, author, i, after = '') {
   const e = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const on = bookSaved(b.href);
   const { s, d, p } = coverPick(b, author), pal = PALETTES[p];
+  // A painted picture on every cover (Navid, 2026-11-23): tools/cover_images.py gives each book its own; a book
+  // added later takes one by a hash of its path. The generated art stays only as the fallback ground.
+  const path = String(b.href).replace(/^#\/c\//, '');
+  const pic = COVERS[path] || coverHash(path) % NCOVERS + 1;
   // A bookmark ribbon at the top left: outline, red once the book is saved.
   const mark = `<span class="bk-mark${on ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${on}" aria-label="نشان کردن کتاب" data-href="${e(b.href)}" data-title="${e(b.title)}" data-author="${e(author)}" data-d="${d}" data-p="${p}">${RIBBON}</span>`;
   // The link is a layer over the cover, beside the ribbon and the row under the book: buttons never sit inside a link.
-  return `<div class="book" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover" style="--cloth:${pal.bg};--ink-c:${pal.ink}"><a class="book-link" href="${e(toHref(b.href))}" aria-label="${e(b.title)}${author ? '، ' + e(author) : ''}"></a>${mark}<span class="art" data-d="${d}" data-p="${p}" data-s="${s}"></span><span class="frame" aria-hidden="true"><b>${e(b.title)}</b><small>${e(author)}</small></span></span>${after}</div>`;
+  return `<div class="book" style="--d:${Math.min(i, 12) * 40}ms"><span class="cover" style="--cloth:${pal.bg};--ink-c:${pal.ink}"><a class="book-link" href="${e(toHref(b.href))}" aria-label="${e(b.title)}${author ? '، ' + e(author) : ''}"></a>${mark}<span class="art" data-d="${d}" data-p="${p}" data-s="${s}"><img src="img/covers/${String(pic).padStart(3, '0')}.webp" alt="" loading="lazy" decoding="async"></span><span class="frame" aria-hidden="true"><b>${e(b.title)}</b><small>${e(author)}</small></span></span>${after}</div>`;
 }
 export function shelfHTML(groups, author, extra = '', meta = null) {
   let n = 0;
