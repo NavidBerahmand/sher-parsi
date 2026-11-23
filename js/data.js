@@ -438,8 +438,9 @@ export function coverHTML(b, author, i, after = '') {
   const e = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const on = bookSaved(b.href);
   const { s, d, p } = coverPick(b, author), pal = PALETTES[p];
-  // TEST ONLY (preview branch, never merged): Saadi's books show Navid's painted covers instead of the generated art.
-  const paint = (/^#\/c\/saadi\/(golestan|boostan|divan|hazl|majales5|mavaez|nasr)$/.exec(b.href) || [])[1];
+  // TEST ONLY (preview branch, never merged): Saadi's and Hafez's books show Navid's painted covers instead of the generated art.
+  const pm = /^#\/c\/(saadi\/(?:golestan|boostan|divan|hazl|majales5|mavaez|nasr)|hafez\/(?:ghazal|ghete|robaee2|ghaside|montasab))$/.exec(b.href);
+  const paint = pm && pm[1].replace('/', '-');
   // A bookmark ribbon at the top left: outline, red once the book is saved.
   const mark = `<span class="bk-mark${on ? ' on' : ''}" role="button" tabindex="0" aria-pressed="${on}" aria-label="نشان کردن کتاب" data-href="${e(b.href)}" data-title="${e(b.title)}" data-author="${e(author)}" data-d="${d}" data-p="${p}">${RIBBON}</span>`;
   // The link is a layer over the cover, beside the ribbon and the row under the book: buttons never sit inside a link.
