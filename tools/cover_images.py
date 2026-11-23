@@ -12,6 +12,9 @@ Step 2:  python3 tools/cover_images.py   (needs ../sher-parsi-data beside the re
 """
 import json, os, random, re, shutil, sys
 
+# Books Navid chose a picture for by hand; the book that had that picture takes the pinned book's one.
+PIN = {'ferdousi/shahname': 185}  # the two crowned kings (Navid, 2026-11-23)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'img', 'covers')
 
@@ -56,6 +59,11 @@ def do_map():
     order = names + [p for p in poets if p not in names]
     paths = [b for p in order for b in books_of(p)]
     cmap = {b: i % n + 1 for i, b in enumerate(paths)}
+    for book, pic in PIN.items():
+        other = next((b for b, v in cmap.items() if v == pic and b != book), None)
+        if other:
+            cmap[other] = cmap[book]
+        cmap[book] = pic
     body = ',\n'.join(f'  {json.dumps(k, ensure_ascii=False)}: {v}' for k, v in cmap.items())
     open(os.path.join(ROOT, 'js', 'covers', 'map.js'), 'w', encoding='utf-8').write(
         '// Written by tools/cover_images.py: book path -> picture img/covers/NNN.webp. Do not edit by hand.\n'
