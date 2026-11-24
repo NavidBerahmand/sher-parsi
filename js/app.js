@@ -1042,7 +1042,7 @@ function openSheetShell() {
       <button class="icon-btn pt-home" aria-label="خانه" data-tip="خانه">${ICON.home}</button>
       <button class="icon-btn pt-share" aria-label="اشتراک‌گذاری" data-tip="اشتراک‌گذاری">${ICON.share}</button>
       <button class="icon-btn pt-save" aria-label="نشان کردن" data-tip="نشان کردن">${ICON.bookmark}</button>
-      <button class="icon-btn pt-toc" aria-label="فهرست کتاب" data-tip="فهرست کتاب">${ms('toc')}</button>
+      <button class="icon-btn pt-toc" aria-label="فهرست کتاب" data-tip="فهرست کتاب">${ms('format_list_bulleted')}</button>
     </div>${sheetOver?.random ? `<button type="button" class="pt-dice" aria-label="شعر تصادفی دیگر">${ms('ifl')}</button>` : ''}`;
   document.body.appendChild(el);
   sheetEl = el;
@@ -1577,7 +1577,7 @@ async function route(keepScroll = false) {
   if (!keepScroll) (view === 'poem' && sheetEl ? sheetEl.querySelector('.psheet') : main).focus({ preventScroll: true });
 }
 // Site version, shown very small in the bottom-right corner, in the menu and in «درباره». Bump it with each release.
-export const VERSION = '1.0.5';
+export const VERSION = '1.0.6';
 {
   const v = document.createElement('div');
   v.className = 'site-ver'; v.setAttribute('aria-hidden', 'true');
