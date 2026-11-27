@@ -247,6 +247,11 @@ body.poet-bg main { --bg: #585e4a; --ink: #f3f1e7; --ink-soft: #e4e2d6; --muted:
 .books { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px 20px; margin: 26px 0 8px; padding: 0 6px; }
 @media (min-width: 560px) { .books { grid-template-columns: repeat(3, 1fr); } }
 @media (min-width: 860px) { .books { grid-template-columns: repeat(4, 1fr); gap: 34px 26px; } }
+/* Poet page: a shelf of 1 to 3 books sits centred; each cover keeps the width it has in a full row (Navid, 1.0.7). */
+.books.few { display: flex; flex-wrap: wrap; justify-content: center; --c: 2; --g: 20px; column-gap: var(--g); }
+.books.few > .book { flex: 0 0 calc((100% - (var(--c) - 1) * var(--g)) / var(--c)); min-width: 0; }
+@media (min-width: 560px) { .books.few { --c: 3; } }
+@media (min-width: 860px) { .books.few { --c: 4; --g: 26px; } }
 .book { display: block; perspective: 900px; animation: bookIn .6s cubic-bezier(.22,1,.36,1) both; animation-delay: var(--d, 0ms); }
 @keyframes bookIn { from { opacity: 0; transform: translateY(14px); } }
 .cover { --cloth: #3d4232; --ink-c: #e9e4d0; --foil: rgb(233 228 208 / .45);
