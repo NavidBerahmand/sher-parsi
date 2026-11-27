@@ -462,6 +462,6 @@ export function shelfHTML(groups, author, extra = '', meta = null) {
   };
   // The non-divan works read «دیگر آثار» beside divans; a lone shelf needs no heading.
   const lone = groups.length === 1;
-  return groups.map((g) => `<section class="shelf">${lone ? '' : `<h3 class="shelf-h"><span>${coverEsc(g.title === 'آثار' ? 'دیگر آثار' : g.title)}</span></h3>`}<div class="books ${extra}">${g.books.map((b) => { const pb = place(b); return coverHTML(pb, author, n++, meta ? meta(pb) : ''); }).join('')}</div></section>`).join('');
+  return groups.map((g) => `<section class="shelf">${lone ? '' : `<h3 class="shelf-h"><span>${coverEsc(g.title === 'آثار' ? 'دیگر آثار' : g.title)}</span></h3>`}<div class="books${g.books.length < 4 ? ' few' : ''} ${extra}">${g.books.map((b) => { const pb = place(b); return coverHTML(pb, author, n++, meta ? meta(pb) : ''); }).join('')}</div></section>`).join('');
 }
 const coverEsc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
